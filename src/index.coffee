@@ -74,7 +74,8 @@ exports.Query = class Query
 	execute: (conn, cb) ->
 		if conn['acquire']? # Cheap hack to check for connection pools
 			conn.acquire (c) => @execute c, cb
-		conn.query @toSql, @s.parameters, cb
+		else
+			conn.query @toSql(), @s.parameters, cb
 
 exports.Select = class Select extends Query
 	constructor: (tbl, opts={}) ->

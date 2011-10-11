@@ -1,0 +1,16 @@
+{
+	"name": "query",
+  "description": "Concise SQL generation in coffee-script",
+  "version": "0.0.0",
+	"private": true,
+	"main": "lib",
+  "engines": {
+    "node": "~0.4.12"
+  },
+	"dependencies": {
+		"coffee-script": "~1.1.0",
+	},
+	"contributors": [
+		"Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)"
+	]
+}

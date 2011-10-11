@@ -1,0 +1,109 @@
+vows = require 'vows'
+assert = require 'assert'
+
+asyncTopic = (f) ->
+	(args...) -> f.call(@, args); undefined
+
+query = require '../lib'
+from = query.from
+
+suite = vows.describe('SQL generation')
+
+# A macro for building up sql tests. Each sub-context will clone the query
+newQuery = (subctx) ->
+	sql = subctx.sql
+	mod = subctx.mod
+	msg = subctx.msg || "SQL is correct \"#{sql}\""
+	par = subctx.par
+	delete subctx.sql
+	delete subctx.mod
+	delete subctx.msg
+	delete subctx.par
+
+	subctx.topic ?= if mod.length == 0
+		(q) -> q.clone().visit mod
+	else
+		(q) -> mod q.clone()
+	if sql?
+		subctx[msg] = (q) -> assert.equal q.toSql(), sql
+	if par?
+		subctx["Parameters correct: #{par}"] = (q) ->
+			assert.deepEqual(q.s.parameters, par)
+	subctx
+
+suite.addBatch
+	"When performing a SELECT": newQuery
+		topic: -> from 't1'
+		sql: "SELECT t1.* FROM t1"
+
+		"self-joins require alias": (q) ->
+			assert.throws((-> q.join("t1")), Error)
+		
+		"and executing it":
+			topic: (q) ->
+				fakeClient =
+					query: (sql, par, cb) -> cb null, "Sweet"
+				q.execute fakeClient, @callback
+
+			"the callback gets the result": (res) -> assert.equal("Sweet", res)
+
+		"and setting a limit": newQuery
+			mod: -> @limit 100
+			sql: "SELECT t1.* FROM t1 LIMIT 100"
+
+		"and a where clause is added": newQuery
+			mod: -> @where x: 2
+			sql: "SELECT t1.* FROM t1 WHERE t1.x = ?",
+			par: [ 2 ]
+
+		"and a 'lt' where clause is added": newQuery
+			mod: -> @where x: {lt: 10}
+			sql: "SELECT t1.* FROM t1 WHERE t1.x < ?"
+			par: [ 10 ]
+
+		"and an 'OR' where clause is added": newQuery
+			mod: -> @or x: {lt: 10}, y: 10
+			sql: "SELECT t1.* FROM t1 WHERE (t1.x < ? OR t1.y = ?)"
+			par: [10, 10]
+		
+		"and joining another table": newQuery
+			mod: -> @join "t2"
+			sql: "SELECT t1.*, t2.* FROM t1 INNER JOIN t2"
+
+			"switching to an unjoined table throws an Error": (q) ->
+				assert.throws((-> q.table("blah")), Error)
+
+			"and fields are added on the first table": newQuery
+				mod: -> @from("t1").fields "a", "b"
+				sql: "SELECT t1.a, t1.b, t2.* FROM t1 INNER JOIN t2"
+
+		"and joining another table using a clause": newQuery
+			mod: -> @join "t2", on: {x: 't1.y'}
+			sql: "SELECT t1.*, t2.* FROM t1 INNER JOIN t2 ON t2.x = t1.y"
+
+		"and joining another table using a clause with multiple conditions": newQuery
+			mod: -> @join "t2", on: {x: 't1.x', y: 't1.y'}
+			sql: "SELECT t1.*, t2.* FROM t1 INNER JOIN t2 ON (t2.x = t1.x AND t2.y = t1.y)"
+
+		"and doing a self-join": newQuery
+			mod: -> @join "t1", as: "parent"
+			sql: "SELECT t1.*, parent.* FROM t1 INNER JOIN t1 AS parent"
+
+		"and joining another table with a left outer join": newQuery
+			mod: -> @join "t2", type: 'left outer'
+			sql: "SELECT t1.*, t2.* FROM t1 LEFT OUTER JOIN t2"
+
+	"When performing a SELECT with fields": newQuery
+		topic: -> from 't1', ['col1', 'col2']
+		sql: "SELECT t1.col1, t1.col2 FROM t1"
+
+		"and joining another table": newQuery
+			mod: -> @join "t2"
+			sql: "SELECT t1.col1, t1.col2, t2.* FROM t1 INNER JOIN t2"
+
+			"and fields are added": newQuery
+				mod: -> @fields "col1", "col5"
+				sql:	"SELECT t1.col1, t1.col2, t2.col1, t2.col5 FROM t1 INNER JOIN t2"
+				msg: "new fields use last table"
+
+suite.export module

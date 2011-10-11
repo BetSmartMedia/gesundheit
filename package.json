@@ -10,6 +10,9 @@
 	"dependencies": {
 		"coffee-script": "~1.1.0",
 	},
+	"devDependencies": {
+		"vows": "~0.5.11"
+	}
 	"contributors": [
 		"Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)"
 	]

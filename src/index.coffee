@@ -101,11 +101,9 @@ exports.Select = class Select extends Query
 		opts ?= {}
 		type = @dialect.joinType(opts.type)
 
-		alias = table
-		if @includesTable(table)
-			unless opts.as?
-				throw new Error "You must provide an alias when self-joining"
-			alias = opts.as
+		alias = opts.as || table
+		if @includesTable(alias)
+			throw new Error "Table alias is not unique: #{alias}"
 
 		clause = opts.on
 		if clause?

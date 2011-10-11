@@ -1,19 +1,19 @@
 {
-	"name": "query",
+  "name": "gesundheit",
   "description": "Concise SQL generation in coffee-script",
-  "version": "0.0.0",
-	"private": true,
-	"main": "lib",
+  "version": "0.0.1",
+  "private": false,
+  "main": "src",
   "engines": {
     "node": "~0.4.12"
   },
-	"dependencies": {
-		"coffee-script": "~1.1.0"
-	},
-	"devDependencies": {
-		"vows": "~0.5.11"
-	},
-	"contributors": [
-		"Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)"
-	]
+  "dependencies": {
+    "coffee-script": "~1.1.0"
+  },
+  "devDependencies": {
+    "vows": "~0.5.11"
+  },
+  "contributors": [
+    "Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)"
+  ]
 }

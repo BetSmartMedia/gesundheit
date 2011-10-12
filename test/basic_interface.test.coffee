@@ -78,6 +78,11 @@ suite.addBatch
 			sql: "SELECT t1.* FROM t1 WHERE (t1.x < ? OR t1.y = ?)"
 			par: [10, 10]
 		
+		"and an 'IN' where clause is added": newQuery
+			mod: -> @where x: {in: [1,2,3]}
+			sql: "SELECT t1.* FROM t1 WHERE t1.x IN (?, ?, ?)"
+			par: [1, 2, 3]
+
 		"and joining another table": newQuery
 			mod: -> @join "t2"
 			sql: "SELECT t1.*, t2.* FROM t1 INNER JOIN t2"

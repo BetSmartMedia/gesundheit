@@ -53,7 +53,6 @@ But a pretty decent ORM could be built with it. Take a look at the resolve hooks
 ## TODO
 
 - Query types other than SELECT :P
-- Test IN clauses
 - Flesh out resolver interface
 
 ## License

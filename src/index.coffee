@@ -62,6 +62,8 @@ exports.Query = class Query
 			if clause.op == 'multi'
 				sys.puts "pushParam recursing" + clause.clauses
 				@pushParams(clause.clauses)
+			else if clause.op == 'IN'
+				@s.parameters.push clause.value...
 			else
 				@s.parameters.push clause.value
 

@@ -53,7 +53,12 @@ order = exports.order = (qs) ->
 # TODO - parseInt
 limit = (qs) -> if qs.limit? then " LIMIT #{qs.limit}" else ""
 
-exports.renderClause = renderClause = (input, renderValue = -> BOUND_PARAM) ->
+renderBoundParam = (v) ->
+	if v and v.constructor == Array then "(#{v.map(-> BOUND_PARAM).join ', '})"
+	else BOUND_PARAM
+
+exports.renderClause = renderClause = (input, renderValue) ->
+	renderValue ?= renderBoundParam
 	render = (clause) ->
 		if clause.constructor == Array
 			"#{clause.map(render).join(' AND ')}"

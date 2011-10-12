@@ -34,6 +34,7 @@ exports.Query = class Query
 			fields: {}
 			tableStack: []
 			where: []
+			order: []
 			parameters: []
 			raw_where: []
 
@@ -130,11 +131,14 @@ exports.Select = class Select extends Query
 	
 	limit: fluid (l) -> @s.limit = l
 	
-	or: fluid (clauses...) ->
-		tbl = @lastTable()
-		normalized = normalize.clauses clauses, tbl, @dialect.whereOp
-		@s.where.push op: 'multi', glue: ' OR ', clauses: normalized
-		@pushParams normalized
+	or: fluid (args...) ->
+		clauses = normalize.clauses args, @lastTable(), @dialect.whereOp
+		@s.where.push op: 'multi', glue: ' OR ', clauses: clauses
+		@pushParams clauses
+
+	orderBy: fluid (args...) ->
+		orderings = normalize.orderings args, @lastTable(), @dialect.order
+		@s.order.push orderings...
 
 exports.normalize = normalize =
 	clauses: (clauses, table, normalizeOp) ->
@@ -144,24 +148,48 @@ exports.normalize = normalize =
 				if 'object' == typeof constraint
 					for op, val of constraint
 						op = normalizeOp(op)
-						normalized.push normalize.field_and_table
+						normalized.push normalize.fieldAndTable
 							field: fld, op: op, value: val, table: table
 				else
-					normalized.push normalize.field_and_table
+					normalized.push normalize.fieldAndTable
 						field: fld, op: '=', value: constraint, table: table
 		return normalized
 
+	orderings: (orderings, table) ->
+		normalized = []
+		add = (field, direction) ->
+			direction = switch (direction || '').toLowerCase()
+				when 'asc',  'ascending'  then 'ASC'
+				when 'desc', 'descending' then 'DESC'
+				when '' then ''
+				else throw new Error "Unsupported ordering direction #{direction}"
+			normalized.push normalize.fieldAndTable
+				field: field, table: table, direction: direction
+
+		for ordering in orderings
+			if 'string' == typeof ordering
+				[field, direction] = ordering.split /\ +/ 
+				add field, direction
+			else for field, direction of ordering
+				add field, direction
+
+		return normalized
+
 	# Check for dotted field names
-	field_and_table: (normalized) ->
+	fieldAndTable: (normalized) ->
 		[table, field] = normalized.field.split '.'
 		if field?
 			normalized.table = table
 			normalized.field = field
 		normalized
 
-exports.from = (tbl, fields) -> 
+
+exports.from = (tbl, fields, opts) ->
 	if tbl.constructor == Select
 		throw new Error "Inner queries not supported yet"
-	select = new Select(tbl)
+	if not opts? and fields? and fields.constructor != Array
+		opts = fields
+		fields = null
+	select = new Select(tbl, opts)
 	select.fields(fields...) if fields?
 	return select

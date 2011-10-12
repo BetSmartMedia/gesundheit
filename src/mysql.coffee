@@ -41,9 +41,14 @@ joins = exports.joins = (qs) ->
 	ret
 
 where = exports.where = (qs) ->
-	if qs.where.length > 0 then " WHERE #{renderClause qs.where}" else ""
+	if qs.where.length then " WHERE #{renderClause qs.where}" else ""
 
-order = exports.order = (qs) -> ""
+order = exports.order = (qs) -> 
+	if qs.order.length
+		' ORDER BY ' + qs.order.map((o) -> 
+			o.table+'.'+o.field + if o.direction then ' '+o.direction else ''
+		).join ', '
+	else ""
 
 # TODO - parseInt
 limit = (qs) -> if qs.limit? then " LIMIT #{qs.limit}" else ""
@@ -61,7 +66,8 @@ exports.renderClause = renderClause = (input, renderValue = -> BOUND_PARAM) ->
 			throw new Error "Unexpected clause type, this is probably a bug"
 	render input
 
-exports.joinOp = (op) ->
+# TODO - check whether there is any difference in the supported comparison operators
+exports.joinOp = exports.whereOp = (op) ->
 	switch op.toLowerCase()
 		when 'ne', '!=', '<>' then '!='
 		when 'eq', '='   then '='
@@ -69,12 +75,8 @@ exports.joinOp = (op) ->
 		when 'gt', '>'   then '>'
 		when 'lte', '<=' then '<='
 		when 'gte', '>=' then '>='
+		when 'in' then 'IN'
 		else throw new Error("Unsupported comparison operator: #{op}")
-
-exports.whereOp = (op) ->
-	switch op.toLowerCase()
-		when 'in' then 'in'
-		else exports.joinOp op
 
 exports.joinType = (type) ->
 	return DEFAULT_JOIN unless type?

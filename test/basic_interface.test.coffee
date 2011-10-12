@@ -51,6 +51,18 @@ suite.addBatch
 			mod: -> @limit 100
 			sql: "SELECT t1.* FROM t1 LIMIT 100"
 
+		"and adding an ORDER BY": newQuery
+			mod: -> @orderBy size: 'ASC'
+			sql: "SELECT t1.* FROM t1 ORDER BY t1.size ASC"
+
+		"and adding a string ORDER BY": newQuery
+			mod: -> @orderBy 'size'
+			sql: "SELECT t1.* FROM t1 ORDER BY t1.size"
+
+		"and adding a string ORDER BY with a direction": newQuery
+			mod: -> @orderBy 'size descending'
+			sql: "SELECT t1.* FROM t1 ORDER BY t1.size DESC"
+
 		"and a where clause is added": newQuery
 			mod: -> @where x: 2
 			sql: "SELECT t1.* FROM t1 WHERE t1.x = ?",

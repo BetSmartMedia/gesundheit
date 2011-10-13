@@ -1,39 +1,12 @@
 vows = require 'vows'
 assert = require 'assert'
-
-asyncTopic = (f) ->
-	(args...) -> f.call(@, args); undefined
+newQuery = require('./macros').newQuery
 
 query = require '../lib'
-from = query.from
 
-suite = vows.describe('SQL generation')
-
-# A macro for building up sql tests. Each sub-context will clone the query
-newQuery = (subctx) ->
-	sql = subctx.sql
-	mod = subctx.mod
-	msg = subctx.msg || "SQL is correct \"#{sql}\""
-	par = subctx.par
-	delete subctx.sql
-	delete subctx.mod
-	delete subctx.msg
-	delete subctx.par
-
-	subctx.topic ?= if mod.length == 0
-		(q) -> q.clone().visit mod
-	else
-		(q) -> mod q.clone()
-	if sql?
-		subctx[msg] = (q) -> assert.equal q.toSql(), sql
-	if par?
-		subctx["Parameters correct: #{par}"] = (q) ->
-			assert.deepEqual(q.s.parameters, par)
-	subctx
-
-suite.addBatch
+suite = vows.describe('SQL generation').addBatch(
 	"When performing a SELECT": newQuery
-		topic: -> from 't1'
+		topic: -> query.from 't1'
 		sql: "SELECT t1.* FROM t1"
 
 		"self-joins require alias": (q) ->
@@ -111,7 +84,7 @@ suite.addBatch
 			sql: "SELECT t1.*, t2.* FROM t1 LEFT OUTER JOIN t2"
 
 	"When performing a SELECT with fields": newQuery
-		topic: -> from 't1', ['col1', 'col2']
+		topic: -> query.from 't1', ['col1', 'col2']
 		sql: "SELECT t1.col1, t1.col2 FROM t1"
 
 		"and doing a GROUP BY": newQuery
@@ -127,4 +100,4 @@ suite.addBatch
 				sql:	"SELECT t1.col1, t1.col2, t2.col1, t2.col5 FROM t1 INNER JOIN t2"
 				msg: "new fields use last table"
 
-suite.export module
+).export(module)

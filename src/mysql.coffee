@@ -15,22 +15,19 @@ BOUND_PARAM = '?'
 DEFAULT_JOIN = "INNER"
 
 exports.renderSelect = (qs) ->
-	ret = "SELECT #{fieldList(qs)} FROM "
-	ret += joins(qs)
-	ret += where(qs)
-	ret += group(qs)
-	ret += order(qs)
-	ret += limit(qs)
+	ret = "SELECT #{fields qs} FROM " + [
+		joins, where, group, order, limit
+	].map((f) -> f qs).join ''
 
-fieldList = (qs) ->
-	fields = []
+fields = (qs) ->
+	fs = []
 	for tbl, tbl_fields of qs.fields
 		if tbl_fields.length
 			tbl_fields.forEach (f) ->
-				fields.push "#{tbl}.#{f}"
+				fs.push "#{tbl}.#{f}"
 		else
-			fields.push "#{tbl}.*"
-	fields.join ', '
+			fs.push "#{tbl}.*"
+	fs.join ', '
 
 joins = exports.joins = (qs) ->
 	i = 0

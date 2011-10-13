@@ -22,7 +22,7 @@ dialects = exports.dialects =
 
 passthrough_resolver =
 	table: (n) -> n
-	field: (n) -> n
+	field: (t, n) -> n
 
 exports.Query = class Query
 	constructor: (opts) ->
@@ -49,9 +49,10 @@ exports.Query = class Query
 
 	aliasPair: (table) ->
 		if 'object' == typeof table and Object.keys(table).length == 1
-			([t, a] for a, t of table)[0]
+			([@resolve.table(t), a] for a, t of table)[0]
 		else
-			[table, table]
+			t = @resolve.table(table)
+			[t, t]
 
 	pushTable: (table, alias, type, clause) ->
 		if table == "t1t1" then throw new Error "here"
@@ -103,9 +104,19 @@ exports.Select = class Select extends Query
 			unknown 'table', table
 
 	fields: fluid (fields...) -> 
-		alias = @lastTable()
+		alias = unless fields[1] and fields[1].constructor == Array
+			@lastTable()
+		else
+			first = fields.shift()
+			unless @includesAlias first
+				first = @resolve.table first
+				unknown 'table', first unless @includesAlias first
+			first
+
 		for f in fields
-			@s.fields[alias].push f
+			n = normalize.fieldAndTable table: alias, field: f
+			field = @resolve.field n.table, n.field
+			@s.fields[n.table].push field
 
 	field: @fields
 
@@ -192,12 +203,12 @@ exports.normalize = normalize =
 		return normalized
 
 	# Check for dotted field names
-	fieldAndTable: (normalized) ->
-		[table, field] = normalized.field.split '.'
+	fieldAndTable: (tableField) ->
+		[table, field] = tableField.field.split '.'
 		if field?
-			normalized.table = table
-			normalized.field = field
-		normalized
+			tableField.table = table
+			tableField.field = field
+		tableField
 
 
 exports.from = (tbl, fields, opts) ->

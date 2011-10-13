@@ -50,9 +50,9 @@ Gesundheit generates SQL, it does this using a nice CoffeeScript friendly syntax
 
     # Table aliasing
     # SELECT ArtWTF.* FROM a_real_table_with_twenty_fields AS ArtWTF
-		q = query.from ArtWTF: "a_real_table_with_twenty_fields"
+    q = query.from ArtWTF: "a_real_table_with_twenty_fields"
     # Works with joins as well
-		q = q.join {so: 'some_other'}, on: {hard: 'ArtWTF.is_it'}
+    q = q.join {so: 'some_other'}, on: {hard: 'ArtWTF.is_it'}
 
 ## Gesundheit is not an ORM
 

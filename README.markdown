@@ -2,6 +2,10 @@
 
 Gesundheit generates SQL, it does this using a nice CoffeeScript friendly syntax.
 
+## Install
+
+    npm install gesundheit
+
 ## Examples
 
     query = require 'gesundheit'

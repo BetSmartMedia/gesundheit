@@ -102,8 +102,8 @@ suite.addBatch
 			mod: -> @join "t2", on: {x: 't1.x', y: 't1.y'}
 			sql: "SELECT t1.*, t2.* FROM t1 INNER JOIN t2 ON (t2.x = t1.x AND t2.y = t1.y)"
 
-		"and doing a self-join": newQuery
-			mod: -> @join "t1", as: "parent"
+		"and doing an aliased self-join": newQuery
+			mod: -> @join parent: "t1"
 			sql: "SELECT t1.*, parent.* FROM t1 INNER JOIN t1 AS parent"
 
 		"and joining another table with a left outer join": newQuery
@@ -113,6 +113,10 @@ suite.addBatch
 	"When performing a SELECT with fields": newQuery
 		topic: -> from 't1', ['col1', 'col2']
 		sql: "SELECT t1.col1, t1.col2 FROM t1"
+
+		"and doing a GROUP BY": newQuery
+			mod: -> @groupBy "col2"
+			sql: "SELECT t1.col1, t1.col2 FROM t1 GROUP BY t1.col2"
 
 		"and joining another table": newQuery
 			mod: -> @join "t2"

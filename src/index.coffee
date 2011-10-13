@@ -30,11 +30,12 @@ exports.Query = class Query
 		@resolve = opts.resolver || passthrough_resolver
 		@dialect = dialects[@dialect] if 'string' == typeof @dialect
 		@s =
-			includedTables: {}
+			includedAliases: {}
 			fields: {}
 			tableStack: []
 			where: []
 			order: []
+			groupings: []
 			parameters: []
 			raw_where: []
 
@@ -46,16 +47,23 @@ exports.Query = class Query
 		child.s = copy @s
 		child
 
+	aliasPair: (table) ->
+		if 'object' == typeof table and Object.keys(table).length == 1
+			([t, a] for a, t of table)[0]
+		else
+			[table, table]
+
 	pushTable: (table, alias, type, clause) ->
+		if table == "t1t1" then throw new Error "here"
 		if type != 'NOP'
-			@s.includedTables[alias] = 1
+			@s.includedAliases[alias] = table
 			@s.fields[alias] ?= []
 		@s.tableStack.push([table, alias, type, clause])
 
 	lastTable: -> 
 		@s.tableStack[@s.tableStack.length - 1][1]
 
-	includesTable: (t) -> @s.includedTables[t]
+	includesAlias: (a) -> @s.includedAliases[a]
 
 	pushParams: (clauses) ->
 		for clause in clauses
@@ -81,15 +89,16 @@ exports.Query = class Query
 			conn.query @toSql(), @s.parameters, cb
 
 exports.Select = class Select extends Query
-	constructor: (tbl, opts={}) ->
+	constructor: (table, opts={}) ->
 		super opts
 		@s.queryType = 'Select'
-		@pushTable(tbl, tbl)
+		[table, alias] = @aliasPair table
+		@pushTable(table, alias)
 
 	# Switch to another table
-	from: fluid (table) ->
-		if @includesTable(table)
-			@pushTable(table, table, 'NOP')
+	from: fluid (alias) ->
+		if table = @includesAlias(alias)
+			@pushTable(table, alias, 'NOP')
 		else
 			unknown 'table', table
 
@@ -100,13 +109,13 @@ exports.Select = class Select extends Query
 
 	field: @fields
 
-	join: fluid (table, opts) ->
-		opts ?= {}
-		type = @dialect.joinType(opts.type)
+	join: fluid (tbl, opts={}) ->
+		[table, alias] = @aliasPair tbl
 
-		alias = opts.as || table
-		if @includesTable(alias)
+		if @includesAlias(alias)
 			throw new Error "Table alias is not unique: #{alias}"
+
+		type = @dialect.joinType(opts.type)
 
 		clause = opts.on
 		if clause?
@@ -125,13 +134,11 @@ exports.Select = class Select extends Query
 			clause = tbl
 			tbl = @lastTable()
 
-		unknown('table', tbl) unless @includesTable(tbl)?
+		unknown('table', tbl) unless @includesAlias(tbl)?
 
 		normalized = normalize.clauses [clause], tbl, @dialect.whereOp
 		@s.where.push normalized...
 		@pushParams normalized
-	
-	limit: fluid (l) -> @s.limit = l
 	
 	or: fluid (args...) ->
 		clauses = normalize.clauses args, @lastTable(), @dialect.whereOp
@@ -142,6 +149,13 @@ exports.Select = class Select extends Query
 		orderings = normalize.orderings args, @lastTable(), @dialect.order
 		@s.order.push orderings...
 
+	groupBy: (fields...) ->
+		groupings = for field in fields
+			normalize.fieldAndTable table: @lastTable(), field: field
+		@s.groupings.push groupings...
+
+	limit: fluid (l) -> @s.limit = l
+	
 exports.normalize = normalize =
 	clauses: (clauses, table, normalizeOp) ->
 		normalized = []

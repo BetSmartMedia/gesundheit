@@ -15,7 +15,12 @@ BOUND_PARAM = '?'
 DEFAULT_JOIN = "INNER"
 
 exports.renderSelect = (qs) ->
-	"SELECT #{fieldList(qs)} FROM #{joins(qs)}#{where(qs)}#{order(qs)}#{limit(qs)}"
+	ret = "SELECT #{fieldList(qs)} FROM "
+	ret += joins(qs)
+	ret += where(qs)
+	ret += group(qs)
+	ret += order(qs)
+	ret += limit(qs)
 
 fieldList = (qs) ->
 	fields = []
@@ -28,20 +33,24 @@ fieldList = (qs) ->
 	fields.join ', '
 
 joins = exports.joins = (qs) ->
-	ret = qs.tableStack[0][0]
-	clauses = []
-	for [table, alias, type, clause] in qs.tableStack[1..-1]
+	i = 0
+	tables = for [table, alias, type, clause] in qs.tableStack
 		continue if type == 'NOP'
-		ret += " #{type.toUpperCase()} JOIN #{table}"
-		if table != alias
-			ret += " AS #{alias}"
-		clauses.push clause if clause?
 
-	if clauses.length then ret += " ON #{renderClause clauses, (v) -> v}"
-	ret
+		ret = if i++ then "#{type.toUpperCase()} JOIN #{table}" else table
+
+		if table != alias then ret += " AS #{alias}"
+		if clause? then ret += " ON #{renderClause clause, (v) -> v}"
+		ret
+	tables.join ' '
 
 where = exports.where = (qs) ->
 	if qs.where.length then " WHERE #{renderClause qs.where}" else ""
+
+group = exports.group = (qs) ->
+	if qs.groupings.length
+		" GROUP BY #{qs.groupings.map((g) -> g.table+'.'+g.field).join ', '}"
+	else ""
 
 order = exports.order = (qs) -> 
 	if qs.order.length
@@ -57,10 +66,9 @@ renderBoundParam = (v) ->
 	if v and v.constructor == Array then "(#{v.map(-> BOUND_PARAM).join ', '})"
 	else BOUND_PARAM
 
-exports.renderClause = renderClause = (input, renderValue) ->
-	renderValue ?= renderBoundParam
+exports.renderClause = renderClause = (input, renderValue=renderBoundParam) ->
 	render = (clause) ->
-		if clause.constructor == Array
+		if clause? and clause.constructor == Array
 			"#{clause.map(render).join(' AND ')}"
 		else if typeof clause == 'object'
 			if clause.op == 'multi'

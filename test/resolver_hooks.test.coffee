@@ -7,6 +7,7 @@ query = require '../lib'
 resolver =
 	table: (t) -> t.split('_').map((s) -> s[0].toUpperCase() + s[1..-1]).join ''
 	field: (table, field) -> field.toUpperCase()
+	test: true # Marks this for debugging in the test below
 
 suite = vows.describe('SQL generation').addBatch(
 	"When doing a SELECT with a custom resolver": newQuery

@@ -58,30 +58,35 @@ suite = vows.describe('SQL generation').addBatch(
 
 		"and joining another table": newQuery
 			mod: -> @join "t2"
-			sql: "SELECT t1.*, t2.* FROM t1 INNER JOIN t2"
+			sql: "SELECT t1.* FROM t1 INNER JOIN t2"
 
 			"switching to an unjoined table throws an Error": (q) ->
 				assert.throws((-> q.table("blah")), Error)
 
+			"and fields are added": newQuery
+				mod: -> @fields("b")
+				msg: "fields are added to the second table"
+				sql: "SELECT t1.*, t2.b FROM t1 INNER JOIN t2"
+
 			"and fields are added on the first table": newQuery
 				mod: -> @from("t1").fields "a", "b"
-				sql: "SELECT t1.a, t1.b, t2.* FROM t1 INNER JOIN t2"
+				sql: "SELECT t1.a, t1.b FROM t1 INNER JOIN t2"
 
 		"and joining another table using a clause": newQuery
 			mod: -> @join "t2", on: {x: 't1.y'}
-			sql: "SELECT t1.*, t2.* FROM t1 INNER JOIN t2 ON t2.x = t1.y"
+			sql: "SELECT t1.* FROM t1 INNER JOIN t2 ON t2.x = t1.y"
 
 		"and joining another table using a clause with multiple conditions": newQuery
 			mod: -> @join "t2", on: {x: 't1.x', y: 't1.y'}
-			sql: "SELECT t1.*, t2.* FROM t1 INNER JOIN t2 ON (t2.x = t1.x AND t2.y = t1.y)"
+			sql: "SELECT t1.* FROM t1 INNER JOIN t2 ON (t2.x = t1.x AND t2.y = t1.y)"
 
 		"and doing an aliased self-join": newQuery
 			mod: -> @join parent: "t1"
-			sql: "SELECT t1.*, parent.* FROM t1 INNER JOIN t1 AS parent"
+			sql: "SELECT t1.* FROM t1 INNER JOIN t1 AS parent"
 
 		"and joining another table with a left outer join": newQuery
 			mod: -> @join "t2", type: 'left outer'
-			sql: "SELECT t1.*, t2.* FROM t1 LEFT OUTER JOIN t2"
+			sql: "SELECT t1.* FROM t1 LEFT OUTER JOIN t2"
 
 	"When performing a SELECT with fields": newQuery
 		topic: -> query.from 't1', ['col1', 'col2']
@@ -93,7 +98,7 @@ suite = vows.describe('SQL generation').addBatch(
 
 		"and joining another table": newQuery
 			mod: -> @join "t2"
-			sql: "SELECT t1.col1, t1.col2, t2.* FROM t1 INNER JOIN t2"
+			sql: "SELECT t1.col1, t1.col2 FROM t1 INNER JOIN t2"
 
 			"and fields are added": newQuery
 				mod: -> @fields "col1", "col5"

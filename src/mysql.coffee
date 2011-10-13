@@ -22,6 +22,7 @@ exports.renderSelect = (qs) ->
 fields = (qs) ->
 	fs = []
 	for tbl, tbl_fields of qs.fields
+		continue unless tbl_fields?
 		if tbl_fields.length
 			tbl_fields.forEach (f) ->
 				fs.push "#{tbl}.#{f}"

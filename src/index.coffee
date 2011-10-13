@@ -58,7 +58,6 @@ exports.Query = class Query
 		if table == "t1t1" then throw new Error "here"
 		if type != 'NOP'
 			@s.includedAliases[alias] = table
-			@s.fields[alias] ?= []
 		@s.tableStack.push([table, alias, type, clause])
 
 	lastTable: -> 
@@ -95,6 +94,7 @@ exports.Select = class Select extends Query
 		@s.queryType = 'Select'
 		[table, alias] = @aliasPair table
 		@pushTable(table, alias)
+		@s.fields[alias] = []
 
 	# Switch to another table
 	from: fluid (alias) ->
@@ -103,7 +103,8 @@ exports.Select = class Select extends Query
 		else
 			unknown 'table', table
 
-	fields: fluid (fields...) -> 
+	fields: fluid (fields...) ->
+
 		alias = unless fields[1] and fields[1].constructor == Array
 			@lastTable()
 		else
@@ -113,9 +114,13 @@ exports.Select = class Select extends Query
 				unknown 'table', first unless @includesAlias first
 			first
 
+		if fields.length == 0
+			return @s.fields[alias] = null
+		
 		for f in fields
 			n = normalize.fieldAndTable table: alias, field: f
 			field = @resolve.field n.table, n.field
+			@s.fields[n.table] ?= []
 			@s.fields[n.table].push field
 
 	field: @fields
@@ -214,9 +219,12 @@ exports.normalize = normalize =
 exports.from = (tbl, fields, opts) ->
 	if tbl.constructor == Select
 		throw new Error "Inner queries not supported yet"
-	if not opts? and fields? and fields.constructor != Array
+	if fields? and fields.constructor not in [String, Array]
 		opts = fields
 		fields = null
 	select = new Select(tbl, opts)
-	select.fields(fields...) if fields?
+	if fields?
+		switch fields.constructor
+			when String then select.fields fields
+			when Array  then select.fields fields...
 	return select

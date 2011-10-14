@@ -2,11 +2,12 @@
 
 # Export dialects for easier extension and/or changing of the default
 exports.dialects = require './dialects'
+exports.DEFAULT = require('./dialects/common').DEFAULT
 
 # Monkey patch, so sue me
 String.prototype.ucfirst = -> this[0].toUpperCase() + this[1..-1]
 
 # Export each query type, with capitalization to please the tastes of most everybody
-for queryType in ['select'] # , update, insert, delete
+for queryType in ['select', 'insert'] # , update, delete
 	query = require "./#{queryType}"
 	exports[queryType] = exports[queryType.toUpperCase()] = exports[queryType.ucfirst()] = query

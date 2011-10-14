@@ -11,10 +11,10 @@ exports.newQuery = (subctx) ->
 	delete subctx.msg
 	delete subctx.par
 
-	subctx.topic ?= if mod.length == 0
-		(q) -> q.clone().visit mod
-	else
+	subctx.topic ?= if mod? and mod.length
 		(q) -> mod q.clone()
+	else if mod?
+		(q) -> q.clone().visit mod
 	if sql?
 		subctx[msg] = (q) -> assert.equal q.toSql(), sql
 	if par?

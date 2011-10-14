@@ -2,11 +2,11 @@ vows = require 'vows'
 assert = require 'assert'
 newQuery = require('./macros').newQuery
 
-query = require '../lib'
+select = require('../lib').Select
 
-suite = vows.describe('SQL generation').addBatch(
+suite = vows.describe('SELECT queries').addBatch(
 	"When performing a SELECT": newQuery
-		topic: -> query.from 't1'
+		topic: -> select.from 't1'
 		sql: "SELECT t1.* FROM t1"
 
 		"self-joins require alias": (q) ->
@@ -15,7 +15,10 @@ suite = vows.describe('SQL generation').addBatch(
 		"and executing it":
 			topic: (q) ->
 				fakeClient =
-					query: (sql, par, cb) -> cb null, "Sweet"
+					query: (sql, par, cb) ->
+						assert.equal sql, 'SELECT t1.* FROM t1'
+						assert.deepEqual par, []
+						cb null, "Sweet"
 				q.execute fakeClient, @callback
 
 			"the callback gets the result": (res) -> assert.equal("Sweet", res)
@@ -89,7 +92,7 @@ suite = vows.describe('SQL generation').addBatch(
 			sql: "SELECT t1.* FROM t1 LEFT OUTER JOIN t2"
 
 	"When performing a SELECT with fields": newQuery
-		topic: -> query.from 't1', ['col1', 'col2']
+		topic: -> select.from 't1', ['col1', 'col2']
 		sql: "SELECT t1.col1, t1.col2 FROM t1"
 
 		"and doing a GROUP BY": newQuery

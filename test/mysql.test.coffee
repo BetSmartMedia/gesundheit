@@ -1,7 +1,7 @@
 vows = require 'vows'
 assert = require 'assert'
 
-dialect = require '../lib/mysql'
+dialect = require '../lib/dialects/mysql'
 
 suite = vows.describe('MySQL Dialect')
 clauseTest = (condition, exp, clause) ->

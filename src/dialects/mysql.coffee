@@ -1,18 +1,9 @@
-sys = require 'sys'
+common = require './common'
+[AND, OR, JOIN_TYPES] = ['AND', 'OR', 'JOIN_TYPES'].map((k) -> common[k])
 
-AND = ' AND '
-OR = ' OR '
-JOIN_TYPES = [
-	'INNER', 'CROSS',       'FULL OUTER',
-	'LEFT',  'LEFT INNER',  'LEFT OUTER',
-	'RIGHT', 'RIGHT INNER', 'RIGHT OUTER',
-]
+PLACEHOLDER = '?'
+DEFAULT_JOIN = JOIN_TYPES.INNER
 
-QUOTED  = 'quoted'
-LITERAL = 'literal'
-BOUND_PARAM = '?'
-
-DEFAULT_JOIN = "INNER"
 
 exports.renderSelect = (qs) ->
 	ret = "SELECT #{fields qs} FROM " + [
@@ -61,8 +52,8 @@ order = exports.order = (qs) ->
 limit = (qs) -> if qs.limit? then " LIMIT #{qs.limit}" else ""
 
 renderBoundParam = (v) ->
-	if v and v.constructor == Array then "(#{v.map(-> BOUND_PARAM).join ', '})"
-	else BOUND_PARAM
+	if v and v.constructor == Array then "(#{v.map(-> PLACEHOLDER).join ', '})"
+	else PLACEHOLDER
 
 exports.renderClause = renderClause = (input, renderValue=renderBoundParam) ->
 	render = (clause) ->
@@ -90,8 +81,8 @@ exports.joinOp = exports.whereOp = (op) ->
 		else throw new Error("Unsupported comparison operator: #{op}")
 
 exports.joinType = (type) ->
-	return DEFAULT_JOIN unless type?
+	return 'INNER' unless type
 	type = type.toUpperCase()
-	return type if type in JOIN_TYPES
-	throw new Error "Unsupported join type: #{type}"
+	if type in JOIN_TYPES then type
+	else throw new Error "Unsupported JOIN type #{type}"
 

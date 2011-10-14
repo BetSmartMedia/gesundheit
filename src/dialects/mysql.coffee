@@ -1,15 +1,16 @@
 common = require './common'
-[AND, OR, JOIN_TYPES] = ['AND', 'OR', 'JOIN_TYPES'].map((k) -> common[k])
+[JOIN_TYPES, DEFAULT] = ['JOIN_TYPES', 'DEFAULT'].map((k) -> common[k])
 
 PLACEHOLDER = '?'
 DEFAULT_JOIN = JOIN_TYPES.INNER
 
 
 exports.renderSelect = (qs) ->
-	ret = "SELECT #{fields qs} FROM " + [
-		joins, where, group, order, limit
+	"SELECT " + [
+		fields, from, where, group, order, limit
 	].map((f) -> f qs).join ''
 
+# Returns the field list portion of a query
 fields = (qs) ->
 	fs = []
 	for tbl, tbl_fields of qs.fields
@@ -21,7 +22,8 @@ fields = (qs) ->
 			fs.push "#{tbl}.*"
 	fs.join ', '
 
-joins = exports.joins = (qs) ->
+# Returns the 'FROM' portion of a query
+from = exports.from = (qs) ->
 	i = 0
 	tables = for [table, alias, type, clause] in qs.tableStack
 		continue if type == 'NOP'
@@ -31,30 +33,37 @@ joins = exports.joins = (qs) ->
 		if table != alias then ret += " AS #{alias}"
 		if clause? then ret += " ON #{renderClause clause, (v) -> v}"
 		ret
-	tables.join ' '
+	' FROM ' + tables.join ' '
 
+# Returns the 'WHERE' portion of a query
 where = exports.where = (qs) ->
 	if qs.where.length then " WHERE #{renderClause qs.where}" else ""
 
+# Returns the 'GROUP BY' portion of a query
 group = exports.group = (qs) ->
 	if qs.groupings.length
 		" GROUP BY #{qs.groupings.map((g) -> g.table+'.'+g.field).join ', '}"
 	else ""
 
-order = exports.order = (qs) -> 
+# Returns the 'ORDER BY' portion of a query
+order = exports.order = (qs) ->
 	if qs.order.length
-		' ORDER BY ' + qs.order.map((o) -> 
+		" ORDER BY #{qs.order.map((o) ->
 			o.table+'.'+o.field + if o.direction then ' '+o.direction else ''
-		).join ', '
+		).join ', '}"
 	else ""
 
+# Returns the 'LIMIT' portion of a query
 # TODO - parseInt
 limit = (qs) -> if qs.limit? then " LIMIT #{qs.limit}" else ""
 
+# Given a query parameter, returns a `PLACEHOLDER`. Given an array as the parameter, renders
+# a list of `PLACEHOLDER` tokens equal in length to the array.
 renderBoundParam = (v) ->
 	if v and v.constructor == Array then "(#{v.map(-> PLACEHOLDER).join ', '})"
 	else PLACEHOLDER
 
+# Renders an individual query clause
 exports.renderClause = renderClause = (input, renderValue=renderBoundParam) ->
 	render = (clause) ->
 		if clause? and clause.constructor == Array
@@ -86,3 +95,13 @@ exports.joinType = (type) ->
 	if type in JOIN_TYPES then type
 	else throw new Error "Unsupported JOIN type #{type}"
 
+exports.renderInsert = (qs) ->
+	"INSERT INTO #{qs.table} (#{qs.fields.join ', '}) VALUES #{renderInsertParams qs}"
+
+renderInsertParams = (qs) ->
+	rows = for [1 .. qs.parameters.length / qs.fields.length]
+		renderBoundParam [1..qs.fields.length]
+	rows.join ", "
+
+exports.renderInsertSelect = (qs) ->
+	"INSERT INTO #{table} #{qs.fromQuery.toSql()}"

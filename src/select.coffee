@@ -5,7 +5,7 @@ normalize = require './normalize'
 # Our friend the SELECT query. Select adds ORDER BY and GROUP BY support to SUDQuery.
 module.exports = class Select extends SUDQuery
 	constructor: (table, opts={}) ->
-		super opts
+		super table, opts
 		@s.queryType = 'Select'
 		@s.order = []
 		@s.groupings = []

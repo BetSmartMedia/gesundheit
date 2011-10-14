@@ -13,9 +13,10 @@ module.exports = class SUDQuery extends Query
 		@s.tableStack = []
 		@s.where = []
 		@s.parameters = []
-		[table, alias] = @aliasPair table
-		@s.fields[alias] = []
-		@pushTable(table, alias)
+		if table?
+			[table, alias] = @aliasPair table
+			@s.fields[alias] = []
+			@pushTable(table, alias)
 
 # Adds one or more fields to the query. If the second argument is an array, the first argument
 # is treated as a table (in the same way that `join` understands tables) and the second argument

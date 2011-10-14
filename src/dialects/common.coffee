@@ -4,5 +4,4 @@ exports.JOIN_TYPES = [
 	'NATURAL'
 ]
 
-exports.AND = ' AND '
-exports.OR  = ' OR '
+exports.DEFAULT = "I'll be a UUID one day"

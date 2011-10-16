@@ -12,7 +12,7 @@ Gesundheit generates SQL, it does this using a nice CoffeeScript friendly syntax
 select = require('gesundheit').select
 
 # SELECT chairs.* FROM chairs
-q = select.from('chairs').visit -> # or g.Select.from, or g.SELECT.from   
+q = select.from('chairs').visit -> # or Select.from, or SELECT.from   
 	# SELECT chairs.type, chairs.size FROM chairs
 	@fields "type", "size"
 
@@ -20,7 +20,7 @@ q = select.from('chairs').visit -> # or g.Select.from, or g.SELECT.from
 	@where type: 'recliner', weight: {lt: 25}
 
 	# SELECT ..., people.* FROM chairs INNER JOIN people ON people.chair_id = chair.id WHERE ...
-	@join "people", on: {chair_id: 'chair.id'}
+	@join "people", on: {chair_id: 'chairs.id'}
 
 	# SELECT ..., people.name FROM ...
 	@fields "name"

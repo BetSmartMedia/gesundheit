@@ -108,4 +108,8 @@ suite = vows.describe('SELECT queries').addBatch(
 				sql:	"SELECT t1.col1, t1.col2, t2.col1, t2.col5 FROM t1 INNER JOIN t2"
 				msg: "new fields use last table"
 
+	"When performing a SELECT with all kinds of aliases": newQuery
+		topic: -> select.from {t1: 'LongTableName'}, [{short: 'long_field_name'}]
+		sql: "SELECT t1.long_field_name AS 'short' FROM LongTableName AS t1"
+
 ).export(module)

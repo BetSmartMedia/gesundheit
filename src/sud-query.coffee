@@ -25,8 +25,6 @@ module.exports = class SUDQuery extends Query
 #
 # If the second argument is not an array, then each argument is treated as an individual field of
 # the last table added to the query.
-#
-# In any case, fields are always normalized via `normalize.fieldAndTable`
 
 	fields: fluid (fields...) ->
 		alias = unless fields[1] and fields[1].constructor == Array
@@ -38,14 +36,22 @@ module.exports = class SUDQuery extends Query
 		if fields.length == 0
 			return @s.fields[alias] = null
 		
+# The fields support aliasing in the same way that tables do, an object with one key will be 
+# treated as an alias -> fieldName pair. The fieldName will be resolved via the resolver, and 
+# normalized via `normalize.fieldAndTable` before being pushed onto the list of fields
 		for f in fields
-			n = normalize.fieldAndTable table: alias, field: f
-			field = @resolve.field n.table, n.field
+			aliased = typeof f == 'object' and Object.keys(f).length == 1
+			[fieldName, fieldAlias] = if not aliased then [f, f]
+			else ([fn, fa] for fa, fn of f)[0]
+
+			n = normalize.fieldAndTable table: alias, field: fieldName
+			fieldName = @resolve.field n.table, n.field
+			fieldAlias = fieldName if not aliased
 			@s.fields[n.table] ?= []
-			@s.fields[n.table].push field
+			@s.fields[n.table].push [fieldName, fieldAlias]
 
 # A nice shorthand for adding a single field
-	field: @fields
+	field: (f...) -> @fields f...
 
 # Join takes a table and an object of options:
 #

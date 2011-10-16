@@ -16,8 +16,8 @@ fields = (qs) ->
 	for tbl, tbl_fields of qs.fields
 		continue unless tbl_fields?
 		if tbl_fields.length
-			tbl_fields.forEach (f) ->
-				fs.push "#{tbl}.#{f}"
+			for f in tbl_fields
+				fs.push if f[0] == f[1] then "#{tbl}.#{f[0]}" else "#{tbl}.#{f[0]} AS '#{f[1]}'"
 		else
 			fs.push "#{tbl}.*"
 	fs.join ', '
@@ -86,6 +86,7 @@ exports.joinOp = exports.whereOp = (op) ->
 		when 'gt', '>'   then '>'
 		when 'lte', '<=' then '<='
 		when 'gte', '>=' then '>='
+		when 'like' then 'LIKE'
 		when 'in' then 'IN'
 		else throw new Error("Unsupported comparison operator: #{op}")
 

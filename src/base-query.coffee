@@ -11,6 +11,17 @@ module.exports = class Query
 	constructor: (opts) ->
 		@dialect = opts.dialect || dialects.default
 		@resolve = opts.resolver || passthrough_resolver
+		if @dialect.pre?
+			for method, checks of @dialect.pre
+				for description, condition of checks
+					#continue
+					continue unless orig = @[method]
+					do (method, description, orig, condition) =>
+						@[method] = ->
+							if condition.apply @s, arguments
+								orig.apply @, arguments
+							else
+								throw new Error description
 		@s = {}
 
 # Instantiate a new query with a copy of the state that this one has. Useful for

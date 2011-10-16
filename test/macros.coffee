@@ -22,3 +22,9 @@ exports.newQuery = (subctx) ->
 			assert.deepEqual(q.s.parameters, par)
 	subctx
 
+exports.clauseTestFF = (dialect) ->
+	(test) ->
+		{output, render, clause} = test
+		obj = topic: dialect.renderClause clause, render
+		obj["it should be render to #{output}"] = (got) -> assert.equal got, output
+		obj

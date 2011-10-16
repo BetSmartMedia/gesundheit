@@ -2,16 +2,18 @@
 # dealing with joins, table aliases, and WHERE clauses.
 fluid = require './fluid'
 Query = require './base-query'
+Select = require './select'
 normalize = require './normalize'
 
 # It is organized into two major groups of methods. The first group makes up the more "public" interface to the query. These methods mostly correspond to their SQL analogs; i.e. join(...) joins another table. The second group is made up of helper methods for safely managing the stateful data structures added to the @s member in the constructor.
-module.exports = class SUDQuery extends Query
+exports.SUDQuery = class SUDQuery extends Query
 	constructor: (table, opts) ->
 		super opts
 		@s.fields = {}
 		@s.includedAliases = {}
 		@s.tableStack = []
 		@s.where = []
+		@s.order = []
 		@s.parameters = []
 		if table?
 			[table, alias] = @aliasPair table
@@ -60,8 +62,7 @@ module.exports = class SUDQuery extends Query
 #   valid comparison operator (see `where` for more). Passing an array will cause the
 #   conditions to be AND'ed together
 #
-# - `fields`: A list of fields that will be selected/updated from this table. (Optional, you can
-#   always add fields with `fields`)
+# - `fields`: A list of fields that will be selected/updated from this table.
 #
 # The table parameter can be any object that
 # your resolver can turn into a string table name. However, there is a special case for objects
@@ -86,6 +87,7 @@ module.exports = class SUDQuery extends Query
 				clause = clause[0]
 
 		@pushTable(table, alias, type, clause)
+
 		if opts.fields?
 			@fields(opts.fields...)
 	
@@ -121,6 +123,18 @@ module.exports = class SUDQuery extends Query
 		@s.where.push op: 'multi', glue: ' OR ', clauses: clauses
 		@pushParams clauses
 
+# Add an ORDER BY to the query. Currently this *always* uses the last table added to the query.
+#
+# Each ordering can either be a string, in which case it must be a valid-ish SQL snippet 
+# like 'some_field DESC', (the field name and direction will still be normalized) or an object, 
+# in which case each key will be treated as a field and each value as a direction.
+	orderBy: fluid (args...) ->
+		orderings = normalize.orderings args, @lastTable(), @dialect.order
+		@s.order.push orderings...
+
+# You can guess what this does ;)
+	limit: fluid (l) -> @s.limit = l
+
 # This group of methods is concerned with managing the stateful data structures
 # created by the constructor. There should rarely be a need to call these from outside the Query
 # objects themselves.
@@ -154,3 +168,16 @@ module.exports = class SUDQuery extends Query
 
 # A helper for throwing Errors
 unknown = (type, val) -> throw new Error "Unknown #{type}: #{val}"
+
+# A more sugary way of constructing new SUD queries
+exports.makeFrom = (queryType) ->
+	(tbl, fields, opts) ->
+		if 'object' == typeof tbl and tbl.constructor == Select
+			throw new Error "Inner queries not supported yet"
+		if fields? and fields.constructor not in [String, Array]
+			opts = fields
+			fields = null
+		query = new queryType(tbl, opts)
+		if fields?
+			query.fields fields...
+		return query

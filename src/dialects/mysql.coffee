@@ -5,11 +5,46 @@ PLACEHOLDER = '?'
 DEFAULT_JOIN = JOIN_TYPES.INNER
 
 
+exports.pre =
+	orderBy:
+		"ORDER BY with multiple tables is only allowed for SELECT": ->
+			@queryType == 'Select' or @tableStack.length == 1
+
+	limit:
+		"LIMIT with multiple tables is only allowed for SELECT": ->
+			@queryType == 'Select' or @tableStack.length == 1
+			
+	join:
+		"JOIN with ORDER BY or LIMIT is only allowed for SELECT": ->
+			@queryType == 'Select' or (@order.length == 0 and not @limit)
+
+
 exports.renderSelect = (qs) ->
-	"SELECT " + [
-		fields, from, where, group, order, limit
+	"SELECT #{fields(qs)} FROM " + [
+		tables, where, group, order, limit
 	].map((f) -> f qs).join ''
 
+exports.renderUpdate = (qs) ->
+	parts = if qs.tableStack.length == 1
+		[tables, set, where, order, limit]
+	else
+		[tables, set, where]
+
+	"UPDATE " + parts.map((f) -> f(qs)).join ''
+
+exports.renderInsert = (qs) ->
+	"INSERT INTO #{qs.table} (#{qs.fields.join ', '}) VALUES #{renderInsertParams qs}"
+
+exports.renderInsertSelect = (qs) ->
+	"INSERT INTO #{table} #{qs.fromQuery.toSql()}"
+
+exports.renderDelete = (qs) ->
+	parts = if qs.tableStack.length == 1
+		[tables, where, order, limit]
+	else
+		[tables, where]
+
+	"DELETE FROM " + parts.map((f) -> f(qs)).join ''
 # Returns the field list portion of a query
 fields = (qs) ->
 	fs = []
@@ -23,9 +58,9 @@ fields = (qs) ->
 	fs.join ', '
 
 # Returns the 'FROM' portion of a query
-from = exports.from = (qs) ->
+tables = exports.tables = (qs) ->
 	i = 0
-	tables = for [table, alias, type, clause] in qs.tableStack
+	ts = for [table, alias, type, clause] in qs.tableStack
 		continue if type == 'NOP'
 
 		ret = if i++ then "#{type.toUpperCase()} JOIN #{table}" else table
@@ -33,7 +68,7 @@ from = exports.from = (qs) ->
 		if table != alias then ret += " AS #{alias}"
 		if clause? then ret += " ON #{renderClause clause, (v) -> v}"
 		ret
-	' FROM ' + tables.join ' '
+	ts.join ' '
 
 # Returns the 'WHERE' portion of a query
 where = exports.where = (qs) ->
@@ -96,13 +131,7 @@ exports.joinType = (type) ->
 	if type in JOIN_TYPES then type
 	else throw new Error "Unsupported JOIN type #{type}"
 
-exports.renderInsert = (qs) ->
-	"INSERT INTO #{qs.table} (#{qs.fields.join ', '}) VALUES #{renderInsertParams qs}"
-
 renderInsertParams = (qs) ->
 	rows = for [1 .. qs.parameters.length / qs.fields.length]
 		renderBoundParam [1..qs.fields.length]
 	rows.join ", "
-
-exports.renderInsertSelect = (qs) ->
-	"INSERT INTO #{table} #{qs.fromQuery.toSql()}"

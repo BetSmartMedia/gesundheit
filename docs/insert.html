@@ -1,0 +1,54 @@
+<!DOCTYPE html>  <html> <head>   <title>insert.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="base-query.html">                 base-query.coffee               </a>                                           <a class="source" href="fluid.html">                 fluid.js               </a>                                           <a class="source" href="index.html">                 index.coffee               </a>                                           <a class="source" href="insert.html">                 insert.coffee               </a>                                           <a class="source" href="normalize.html">                 normalize.coffee               </a>                                           <a class="source" href="select.html">                 select.coffee               </a>                                           <a class="source" href="sud-query.html">                 sud-query.coffee               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               insert.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="nv">fluid = </span><span class="nx">require</span> <span class="s1">&#39;./fluid&#39;</span>
+
+<span class="nv">Query = </span><span class="nx">require</span> <span class="s1">&#39;./base-query&#39;</span>
+
+<span class="nv">DEFAULT = </span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./dialects/common&#39;</span><span class="p">).</span><span class="nx">DEFAULT</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Inserts are much simpler than most query types, in that they cannot 
+join multiple tables.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">module.exports = </span><span class="k">class</span> <span class="nx">Insert</span> <span class="k">extends</span> <span class="nx">Query</span>
+	<span class="nv">reset = </span><span class="nf">(fn) -&gt;</span>
+		<span class="nf">(args...) -&gt;</span>
+			<span class="vi">@s.fields = </span><span class="p">[]</span>
+			<span class="vi">@s.parameters = </span><span class="p">[]</span>
+			<span class="nx">fn</span> <span class="nx">args</span><span class="p">...</span>
+
+	<span class="nv">constructor: </span><span class="nf">(table, opts={}) -&gt;</span>
+		<span class="k">super</span> <span class="nx">opts</span>
+		<span class="vi">@s.queryType = </span><span class="s1">&#39;Insert&#39;</span>
+		<span class="vi">@s.table = </span><span class="nx">@resolve</span><span class="p">.</span><span class="nx">table</span> <span class="nx">table</span>
+		<span class="vi">@s.fields = </span><span class="p">[]</span>
+		<span class="vi">@s.parameters = </span><span class="p">[]</span>
+
+	<span class="nv">fields: </span><span class="nx">fluid</span> <span class="nf">(fields...) -&gt;</span>
+		<span class="vi">@s.fields = </span><span class="nx">fields</span>
+
+	<span class="nv">addRows: </span><span class="nx">fluid</span> <span class="nf">(rows...) -&gt;</span>
+		<span class="k">for</span> <span class="nx">row</span> <span class="k">in</span> <span class="nx">rows</span>
+			<span class="k">if</span> <span class="nx">row</span><span class="p">.</span><span class="nx">constructor</span> <span class="o">==</span> <span class="nb">Array</span> <span class="k">then</span> <span class="nx">@addRowArray</span> <span class="nx">row</span>
+			<span class="k">else</span> <span class="nx">@addRowObject</span> <span class="nx">row</span>
+
+	<span class="nv">addRow: </span><span class="nf">(row) -&gt;</span> <span class="nx">@addRows</span> <span class="nx">row</span>
+
+	<span class="nv">addRowArray: </span><span class="nf">(row) -&gt;</span>
+		<span class="nv">count = </span><span class="nx">@s</span><span class="p">.</span><span class="nx">fields</span><span class="p">.</span><span class="nx">length</span> <span class="k">if</span> <span class="nx">@s</span><span class="p">.</span><span class="nx">fields</span><span class="o">?</span>
+		<span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s2">&quot;Cannot insert from array without first setting fields&quot;</span> <span class="nx">unless</span> <span class="nx">count</span>
+		<span class="k">if</span> <span class="nx">row</span><span class="p">.</span><span class="nx">length</span> <span class="o">!=</span> <span class="nx">count</span>
+			<span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s2">&quot;Wrong number of values in array, expected #{@s.fields}&quot;</span>
+		<span class="nx">@s</span><span class="p">.</span><span class="nx">parameters</span><span class="p">.</span><span class="nx">push</span> <span class="nx">row</span><span class="p">...</span>
+
+	<span class="nv">checkFields: </span><span class="nf">(cb) -&gt;</span>
+
+	<span class="nv">addRowObject: </span><span class="nf">(row) -&gt;</span>
+		<span class="k">if</span> <span class="o">not</span> <span class="nx">@s</span><span class="p">.</span><span class="nx">fields</span> <span class="o">or</span> <span class="nx">@s</span><span class="p">.</span><span class="nx">fields</span><span class="p">.</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span>
+			<span class="vi">@s.fields = </span><span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span> <span class="nx">row</span>
+
+		<span class="nv">array = </span><span class="k">for</span> <span class="nx">f</span> <span class="k">in</span> <span class="nx">@s</span><span class="p">.</span><span class="nx">fields</span>
+			<span class="k">if</span> <span class="nx">row</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span><span class="o">?</span> <span class="o">or</span> <span class="nx">row</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">==</span> <span class="kc">null</span> <span class="k">then</span> <span class="nx">row</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="k">else</span> <span class="nx">DEFAULT</span>
+		<span class="nx">@s</span><span class="p">.</span><span class="nx">parameters</span><span class="p">.</span><span class="nx">push</span> <span class="nx">array</span><span class="p">...</span>
+
+
+	<span class="nv">fromQuery: </span><span class="nx">fluid</span> <span class="nf">(query) -&gt;</span>
+		<span class="vi">@s.queryType = </span><span class="s1">&#39;InsertSelect&#39;</span>
+		<span class="vi">@s.fromQuery = </span><span class="nx">query</span>
+
+<span class="nv">Insert.into = </span><span class="nf">(tbl, opts) -&gt;</span> <span class="k">new</span> <span class="nx">Insert</span><span class="p">(</span><span class="nx">tbl</span><span class="p">,</span> <span class="nx">opts</span><span class="p">)</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

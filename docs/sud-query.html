@@ -1,0 +1,129 @@
+<!DOCTYPE html>  <html> <head>   <title>sud-query.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="base-query.html">                 base-query.coffee               </a>                                           <a class="source" href="fluid.html">                 fluid.js               </a>                                           <a class="source" href="index.html">                 index.coffee               </a>                                           <a class="source" href="insert.html">                 insert.coffee               </a>                                           <a class="source" href="normalize.html">                 normalize.coffee               </a>                                           <a class="source" href="select.html">                 select.coffee               </a>                                           <a class="source" href="sud-query.html">                 sud-query.coffee               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               sud-query.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <p>SUDQuery is the base class for SELECT, UPDATE, and DELETE queries. It adds logic to <code>Query</code> for
+dealing with joins, table aliases, and WHERE clauses.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">fluid = </span><span class="nx">require</span> <span class="s1">&#39;./fluid&#39;</span>
+<span class="nv">Query = </span><span class="nx">require</span> <span class="s1">&#39;./base-query&#39;</span>
+<span class="nv">normalize = </span><span class="nx">require</span> <span class="s1">&#39;./normalize&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>It is organized into two major groups of methods. The first group makes up the more "public" interface to the query. These methods mostly correspond to their SQL analogs; i.e. join(...) joins another table. The second group is made up of helper methods for safely managing the stateful data structures added to the @s member in the constructor.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">module.exports = </span><span class="k">class</span> <span class="nx">SUDQuery</span> <span class="k">extends</span> <span class="nx">Query</span>
+	<span class="nv">constructor: </span><span class="nf">(table, opts) -&gt;</span>
+		<span class="k">super</span> <span class="nx">opts</span>
+		<span class="vi">@s.fields = </span><span class="p">{}</span>
+		<span class="vi">@s.includedAliases = </span><span class="p">{}</span>
+		<span class="vi">@s.tableStack = </span><span class="p">[]</span>
+		<span class="vi">@s.where = </span><span class="p">[]</span>
+		<span class="vi">@s.parameters = </span><span class="p">[]</span>
+		<span class="k">if</span> <span class="nx">table</span><span class="o">?</span>
+			<span class="p">[</span><span class="nx">table</span><span class="p">,</span> <span class="nx">alias</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@aliasPair</span> <span class="nx">table</span>
+			<span class="nx">@s</span><span class="p">.</span><span class="nx">fields</span><span class="p">[</span><span class="nx">alias</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="nx">@pushTable</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">alias</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Adds one or more fields to the query. If the second argument is an array, the first argument
+is treated as a table (in the same way that <code>join</code> understands tables) and the second argument
+as the list of fields to select/update from that table. The table must already be joined for 
+this to work.</p>
+
+<p>If the second argument is not an array, then each argument is treated as an individual field of
+the last table added to the query.</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">fields: </span><span class="nx">fluid</span> <span class="nf">(fields...) -&gt;</span>
+		<span class="nv">alias = </span><span class="nx">unless</span> <span class="nx">fields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">and</span> <span class="nx">fields</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">constructor</span> <span class="o">==</span> <span class="nb">Array</span>
+			<span class="nx">@lastTable</span><span class="p">()</span>
+		<span class="k">else</span>
+			<span class="p">[</span><span class="nx">table</span><span class="p">,</span> <span class="nx">al</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@aliasPair</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span>
+			<span class="nx">unknown</span> <span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="nx">table</span> <span class="nx">unless</span> <span class="nx">@includesAlias</span> <span class="nx">al</span>
+
+		<span class="k">if</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span>
+			<span class="k">return</span> <span class="nx">@s</span><span class="p">.</span><span class="nx">fields</span><span class="p">[</span><span class="nx">alias</span><span class="p">]</span> <span class="o">=</span> <span class="kc">null</span>
+		</pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>The fields support aliasing in the same way that tables do, an object with one key will be 
+treated as an alias -> fieldName pair. The fieldName will be resolved via the resolver, and 
+normalized via <code>normalize.fieldAndTable</code> before being pushed onto the list of fields</p>             </td>             <td class="code">               <div class="highlight"><pre>		<span class="k">for</span> <span class="nx">f</span> <span class="k">in</span> <span class="nx">fields</span>
+			<span class="nv">aliased = </span><span class="k">typeof</span> <span class="nx">f</span> <span class="o">==</span> <span class="s1">&#39;object&#39;</span> <span class="o">and</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">f</span><span class="p">).</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">1</span>
+			<span class="p">[</span><span class="nx">fieldName</span><span class="p">,</span> <span class="nx">fieldAlias</span><span class="p">]</span> <span class="o">=</span> <span class="k">if</span> <span class="o">not</span> <span class="nx">aliased</span> <span class="k">then</span> <span class="p">[</span><span class="nx">f</span><span class="p">,</span> <span class="nx">f</span><span class="p">]</span>
+			<span class="k">else</span> <span class="p">([</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">fa</span><span class="p">]</span> <span class="k">for</span> <span class="nx">fa</span><span class="p">,</span> <span class="nx">fn</span> <span class="k">of</span> <span class="nx">f</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+			<span class="nv">n = </span><span class="nx">normalize</span><span class="p">.</span><span class="nx">fieldAndTable</span> <span class="nv">table: </span><span class="nx">alias</span><span class="p">,</span> <span class="nv">field: </span><span class="nx">fieldName</span>
+			<span class="nv">fieldName = </span><span class="nx">@resolve</span><span class="p">.</span><span class="nx">field</span> <span class="nx">n</span><span class="p">.</span><span class="nx">table</span><span class="p">,</span> <span class="nx">n</span><span class="p">.</span><span class="nx">field</span>
+			<span class="nv">fieldAlias = </span><span class="nx">fieldName</span> <span class="k">if</span> <span class="o">not</span> <span class="nx">aliased</span>
+			<span class="nx">@s</span><span class="p">.</span><span class="nx">fields</span><span class="p">[</span><span class="nx">n</span><span class="p">.</span><span class="nx">table</span><span class="p">]</span> <span class="o">?=</span> <span class="p">[]</span>
+			<span class="nx">@s</span><span class="p">.</span><span class="nx">fields</span><span class="p">[</span><span class="nx">n</span><span class="p">.</span><span class="nx">table</span><span class="p">].</span><span class="nx">push</span> <span class="p">[</span><span class="nx">fieldName</span><span class="p">,</span> <span class="nx">fieldAlias</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>A nice shorthand for adding a single field</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">field: </span><span class="nf">(f...) -&gt;</span> <span class="nx">@fields</span> <span class="nx">f</span><span class="p">...</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>Join takes a table and an object of options:</p>
+
+<ul>
+<li><p><code>on</code>: An object or array of objects describing the ON ... part of the join clause.
+Each key is treated as a field name of the table being joined, while each value is any
+valid comparison operator (see <code>where</code> for more). Passing an array will cause the
+conditions to be AND'ed together</p></li>
+<li><p><code>fields</code>: A list of fields that will be selected/updated from this table. (Optional, you can
+always add fields with <code>fields</code>)</p></li>
+</ul>
+
+<p>The table parameter can be any object that
+your resolver can turn into a string table name. However, there is a special case for objects
+with a single key: the key is treated as an alias, and the value is passed to the resolver to
+determine the table name.</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">join: </span><span class="nx">fluid</span> <span class="nf">(tbl, opts={}) -&gt;</span>
+		<span class="p">[</span><span class="nx">table</span><span class="p">,</span> <span class="nx">alias</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@aliasPair</span> <span class="nx">tbl</span>
+
+		<span class="k">if</span> <span class="nx">@includesAlias</span><span class="p">(</span><span class="nx">alias</span><span class="p">)</span>
+			<span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s2">&quot;Table alias is not unique: #{alias}&quot;</span>
+
+		<span class="nv">type = </span><span class="nx">@dialect</span><span class="p">.</span><span class="nx">joinType</span><span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">type</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="p">(</span><span class="nv">clause = </span><span class="nx">opts</span><span class="p">.</span><span class="kc">on</span><span class="p">)</span><span class="o">?</span>
+			<span class="nv">clause = </span><span class="p">[</span><span class="nx">clause</span><span class="p">]</span> <span class="k">if</span> <span class="nx">clause</span><span class="p">.</span><span class="nx">constructor</span> <span class="o">!=</span> <span class="nb">Array</span>
+			<span class="nv">clause = </span><span class="nx">normalize</span><span class="p">.</span><span class="nx">clauses</span> <span class="nx">clause</span><span class="p">,</span> <span class="nx">alias</span><span class="p">,</span> <span class="nx">@dialect</span><span class="p">.</span><span class="nx">joinOp</span>
+
+			<span class="k">if</span> <span class="nx">clause</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">1</span>
+				<span class="nv">clause = op: </span><span class="s1">&#39;multi&#39;</span><span class="p">,</span> <span class="nv">glue: </span><span class="s1">&#39; AND &#39;</span><span class="p">,</span> <span class="nv">clauses: </span><span class="nx">clause</span>
+			<span class="k">else</span>
+				<span class="nv">clause = </span><span class="nx">clause</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+		<span class="nx">@pushTable</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">alias</span><span class="p">,</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">clause</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">fields</span><span class="o">?</span>
+			<span class="nx">@fields</span><span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">fields</span><span class="p">...)</span>
+	</pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>Make a different table "active", this will use that table as the default for fields/where</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">from: </span><span class="nx">fluid</span> <span class="nf">(alias) -&gt;</span>
+		<span class="k">if</span> <span class="nv">table = </span><span class="nx">@includesAlias</span><span class="p">(</span><span class="nx">alias</span><span class="p">)</span>
+			<span class="nx">@pushTable</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">alias</span><span class="p">,</span> <span class="s1">&#39;NOP&#39;</span><span class="p">)</span>
+		<span class="k">else</span>
+			<span class="nx">unknown</span> <span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="nx">table</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>Add a WHERE clause to the query. Can optionally take a table/alias name as the first
+parameter, otherwise the clause is added using the last table added to the query.</p>
+
+<p>The where clause itself is an object where each key is treated as field name and each value is
+treated as a constraint. Constraints can be literal values or objects, in which case each key of the constraint is treated as an operator, and each value must be a literal value. Supported
+operators are determined by the dialect of the query. See dialect/mysql.coffee for an example.</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">where: </span><span class="nx">fluid</span> <span class="nf">(alias, clause) -&gt;</span>
+		<span class="k">if</span> <span class="o">not</span> <span class="nx">clause</span><span class="o">?</span>
+			<span class="nv">clause = </span><span class="nx">alias</span>
+			<span class="nv">alias = </span><span class="nx">@lastTable</span><span class="p">()</span>
+		<span class="k">else</span>
+			<span class="p">[</span><span class="nx">table</span><span class="p">,</span> <span class="nx">alias</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@aliasPair</span> <span class="nx">alias</span>
+
+		<span class="nx">unknown</span><span class="p">(</span><span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="nx">tbl</span><span class="p">)</span> <span class="nx">unless</span> <span class="nx">@includesAlias</span><span class="p">(</span><span class="nx">alias</span><span class="p">)</span><span class="o">?</span>
+
+		<span class="nv">normalized = </span><span class="nx">normalize</span><span class="p">.</span><span class="nx">clauses</span> <span class="p">[</span><span class="nx">clause</span><span class="p">],</span> <span class="nx">alias</span><span class="p">,</span> <span class="nx">@dialect</span><span class="p">.</span><span class="nx">whereOp</span>
+		<span class="nx">@s</span><span class="p">.</span><span class="nx">where</span><span class="p">.</span><span class="nx">push</span> <span class="nx">normalized</span><span class="p">...</span>
+		<span class="nx">@pushParams</span> <span class="nx">normalized</span>
+	</pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p>Add one or more WHERE clauses, all joined by the OR operator</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="o">or:</span> <span class="nx">fluid</span> <span class="nf">(args...) -&gt;</span>
+		<span class="nv">clauses = </span><span class="nx">normalize</span><span class="p">.</span><span class="nx">clauses</span> <span class="nx">args</span><span class="p">,</span> <span class="nx">@lastTable</span><span class="p">(),</span> <span class="nx">@dialect</span><span class="p">.</span><span class="nx">whereOp</span>
+		<span class="nx">@s</span><span class="p">.</span><span class="nx">where</span><span class="p">.</span><span class="nx">push</span> <span class="nv">op: </span><span class="s1">&#39;multi&#39;</span><span class="p">,</span> <span class="nv">glue: </span><span class="s1">&#39; OR &#39;</span><span class="p">,</span> <span class="nv">clauses: </span><span class="nx">clauses</span>
+		<span class="nx">@pushParams</span> <span class="nx">clauses</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p>This group of methods is concerned with managing the stateful data structures
+created by the constructor. There should rarely be a need to call these from outside the Query
+objects themselves.</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">aliasPair: </span><span class="nf">(table) -&gt;</span>
+		<span class="k">if</span> <span class="s1">&#39;object&#39;</span> <span class="o">==</span> <span class="k">typeof</span> <span class="nx">table</span> <span class="o">and</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">table</span><span class="p">).</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">1</span>
+			<span class="p">([</span><span class="nx">@resolve</span><span class="p">.</span><span class="nx">table</span><span class="p">(</span><span class="nx">t</span><span class="p">),</span> <span class="nx">a</span><span class="p">]</span> <span class="k">for</span> <span class="nx">a</span><span class="p">,</span> <span class="nx">t</span> <span class="k">of</span> <span class="nx">table</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+		<span class="k">else</span>
+			<span class="nv">t = </span><span class="nx">@resolve</span><span class="p">.</span><span class="nx">table</span><span class="p">(</span><span class="nx">table</span><span class="p">)</span>
+			<span class="p">[</span><span class="nx">t</span><span class="p">,</span> <span class="nx">t</span><span class="p">]</span>
+
+	<span class="nv">pushTable: </span><span class="nf">(table, alias, type, clause) -&gt;</span>
+		<span class="k">if</span> <span class="nx">table</span> <span class="o">==</span> <span class="s2">&quot;t1t1&quot;</span> <span class="k">then</span> <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s2">&quot;here&quot;</span>
+		<span class="k">if</span> <span class="nx">type</span> <span class="o">!=</span> <span class="s1">&#39;NOP&#39;</span>
+			<span class="nx">@s</span><span class="p">.</span><span class="nx">includedAliases</span><span class="p">[</span><span class="nx">alias</span><span class="p">]</span> <span class="o">=</span> <span class="nx">table</span>
+		<span class="nx">@s</span><span class="p">.</span><span class="nx">tableStack</span><span class="p">.</span><span class="nx">push</span><span class="p">([</span><span class="nx">table</span><span class="p">,</span> <span class="nx">alias</span><span class="p">,</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">clause</span><span class="p">])</span>
+
+	<span class="nv">pushParams: </span><span class="nf">(clauses) -&gt;</span>
+		<span class="k">for</span> <span class="nx">clause</span> <span class="k">in</span> <span class="nx">clauses</span>
+			<span class="k">if</span> <span class="nx">clause</span><span class="p">.</span><span class="nx">op</span> <span class="o">==</span> <span class="s1">&#39;multi&#39;</span>
+				<span class="nx">sys</span><span class="p">.</span><span class="nx">puts</span> <span class="s2">&quot;pushParam recursing&quot;</span> <span class="o">+</span> <span class="nx">clause</span><span class="p">.</span><span class="nx">clauses</span>
+				<span class="nx">@pushParams</span><span class="p">(</span><span class="nx">clause</span><span class="p">.</span><span class="nx">clauses</span><span class="p">)</span>
+			<span class="k">else</span> <span class="k">if</span> <span class="nx">clause</span><span class="p">.</span><span class="nx">op</span> <span class="o">==</span> <span class="s1">&#39;IN&#39;</span>
+				<span class="nx">@s</span><span class="p">.</span><span class="nx">parameters</span><span class="p">.</span><span class="nx">push</span> <span class="nx">clause</span><span class="p">.</span><span class="nx">value</span><span class="p">...</span>
+			<span class="k">else</span>
+				<span class="nx">@s</span><span class="p">.</span><span class="nx">parameters</span><span class="p">.</span><span class="nx">push</span> <span class="nx">clause</span><span class="p">.</span><span class="nx">value</span>
+
+	<span class="nv">lastTable: </span><span class="o">-&gt;</span>
+		<span class="nx">@s</span><span class="p">.</span><span class="nx">tableStack</span><span class="p">[</span><span class="nx">@s</span><span class="p">.</span><span class="nx">tableStack</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+	<span class="nv">includesAlias: </span><span class="nf">(a) -&gt;</span> <span class="nx">@s</span><span class="p">.</span><span class="nx">includedAliases</span><span class="p">[</span><span class="nx">a</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>A helper for throwing Errors</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">unknown = </span><span class="nf">(type, val) -&gt;</span> <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s2">&quot;Unknown #{type}: #{val}&quot;</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

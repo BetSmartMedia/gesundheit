@@ -18,7 +18,7 @@ module.exports = class Update extends SUDQuery
 
 	setRaw: fluid (data) ->
 		for field, value of data
-			@s.fields.push field+'='+data
+			@s.fields.push field+' = '+value
 
 	toSql: ->
 		throw new Error "Cannot render UPDATE without setting columns" unless @s.fields.length

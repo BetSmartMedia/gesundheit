@@ -9,6 +9,9 @@ suite = vows.describe('SELECT queries').addBatch(
 		topic: -> select.from 't1'
 		sql: "SELECT t1.* FROM t1"
 
+		"stringification is correct": (q) ->
+			assert.equal q, '[Select "SELECT t1.* FROM t1"]'
+
 		"self-joins require alias": (q) ->
 			assert.throws((-> q.join("t1")), Error)
 		
@@ -21,7 +24,19 @@ suite = vows.describe('SELECT queries').addBatch(
 						cb null, "Sweet"
 				q.execute fakeClient, @callback
 
-			"the callback gets the result": (res) -> assert.equal("Sweet", res)
+			"the callback gets the result": (res) -> assert.equal(res, "Sweet")
+
+		"and executing it with a pool":
+			topic: (q) ->
+				fakeClient =
+					query: (sql, par, cb) ->
+						assert.strictEqual sql, 'SELECT t1.* FROM t1'
+						assert.deepEqual par, []
+						cb null, "Sweet"
+				pool = acquire: (cb) -> cb fakeClient
+				q.execute pool, @callback
+
+			"the callback gets the result": (res) -> assert.equal(res, "Sweet")
 
 		"and setting a limit": newQuery
 			mod: -> @limit 100

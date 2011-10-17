@@ -32,4 +32,10 @@ vows.describe('UPDATE queries').addBatch(
 				"and adding an order": newQuery
 					mod: -> @orderBy age: 'DESC'
 					sql: "UPDATE t1 SET x= ? ORDER BY t1.age DESC LIMIT 10"
+
+		"and setting a column to a raw value": newQuery
+			mod: -> @setRaw x: "x+1"
+			sql: "UPDATE t1 SET x = x+1"
+			par: []
+
 ).export(module)

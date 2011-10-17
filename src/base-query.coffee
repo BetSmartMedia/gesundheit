@@ -60,7 +60,7 @@ module.exports = class Query
 		else
 			conn.query @toSql(), @s.parameters, cb
 
-	toString: -> "[Query \"#{@toSql().substring(0,20)}\"]"
+	toString: -> '['+@s.queryType+' "'+@toSql().substring(0,20)+'"]'
 
 # The fallback resolver simply passes objects through untouched. Implement these
 # these methods in your own resolver object to allow passing of arbitrary objects

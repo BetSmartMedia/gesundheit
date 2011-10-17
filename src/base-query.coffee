@@ -56,7 +56,11 @@ module.exports = class Query
 # callback.
 	execute: (conn, cb) ->
 		if conn['acquire']? # Cheap hack to check for connection pools
-			conn.acquire (c) => @execute c, cb
+			conn.acquire (c) => 
+				@execute c, (err, res) ->
+					conn.release c
+					return cb err if err?
+					cb null, res
 		else
 			conn.query @toSql(), @s.parameters, cb
 

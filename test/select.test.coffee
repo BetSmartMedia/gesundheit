@@ -33,7 +33,9 @@ suite = vows.describe('SELECT queries').addBatch(
 						assert.strictEqual sql, 'SELECT t1.* FROM t1'
 						assert.deepEqual par, []
 						cb null, "Sweet"
-				pool = acquire: (cb) -> cb fakeClient
+				pool = 
+					acquire: (cb) -> cb fakeClient
+					release: ->
 				q.execute pool, @callback
 
 			"the callback gets the result": (res) -> assert.equal(res, "Sweet")

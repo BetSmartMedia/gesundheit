@@ -43,7 +43,9 @@ q.execute client, (err, res) ->
 	# do something with result
 
 # Execute the query with a connection pool (must have an 'acquire' method)
-pool = acquire: (cb) -> cb client
+pool = 
+	acquire: (cb) -> cb client
+	release: ->
 
 q.execute pool, (err, res) ->
 	throw err if err?

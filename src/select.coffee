@@ -44,9 +44,6 @@ module.exports = class Select extends SUDQuery
 			@s.fields[alias] ?= []
 			@s.fields[alias].push [fieldName, fieldAlias]
 
-# A nice shorthand for adding a single field
-	field: (f...) -> @fields f...
-
 # Add a GROUP BY to the query. Currently this *always* uses the last table added to the query.
 	groupBy: (fields...) ->
 		alias = @lastAlias()
@@ -54,6 +51,8 @@ module.exports = class Select extends SUDQuery
 			{table: alias, field: field}
 
 		@s.groupings.push groupings...
+
+Select::field = Select::fields
 
 Select.from = (tbl, fields, opts) ->
 	if tbl instanceof Select

@@ -13,7 +13,7 @@ suite = vows.describe('SELECT queries').addBatch(
 			assert.equal q, '[Select "SELECT t1.* FROM t1"]'
 
 		"self-joins require alias": (q) ->
-			assert.throws((-> q.join("t1")), Error)
+			assert.throws (-> q.join "t1"), Error
 		
 		"and executing it":
 			topic: (q) ->
@@ -54,6 +54,9 @@ suite = vows.describe('SELECT queries').addBatch(
 			mod: -> @orderBy 'size descending'
 			sql: "SELECT t1.* FROM t1 ORDER BY t1.size DESC"
 
+		"invalid ORDER BY direction throws an error": (q) ->
+			assert.throws (-> q.orderBy x: "LEFTWISE"), Error
+
 		"and a where clause is added": newQuery
 			mod: -> @where x: 2
 			sql: "SELECT t1.* FROM t1 WHERE t1.x = ?",
@@ -79,12 +82,16 @@ suite = vows.describe('SELECT queries').addBatch(
 			sql: "SELECT t1.* FROM t1 INNER JOIN t2"
 
 			"switching to an unjoined table throws an Error": (q) ->
-				assert.throws((-> q.table("blah")), Error)
+				assert.throws (-> q.table "blah"), Error
 
 			"and fields are added": newQuery
 				mod: -> @fields("b")
 				msg: "fields are added to the second table"
 				sql: "SELECT t1.*, t2.b FROM t1 INNER JOIN t2"
+
+				"and fields are cleared": newQuery
+					mod: -> @fields()
+					sql: "SELECT t1.* FROM t1 INNER JOIN t2"
 
 			"and fields are added on the first table": newQuery
 				mod: -> @from("t1").fields "a", "b"
@@ -105,6 +112,9 @@ suite = vows.describe('SELECT queries').addBatch(
 		"and joining another table with a left outer join": newQuery
 			mod: -> @join "t2", type: 'left outer'
 			sql: "SELECT t1.* FROM t1 LEFT OUTER JOIN t2"
+
+		"joining with an invalid join type fails": (q) ->
+			assert.throws (-> q.join "t2", type: "DOVETAIL"), Error
 
 	"When performing a SELECT with fields": newQuery
 		topic: -> select.from 't1', ['col1', 'col2']

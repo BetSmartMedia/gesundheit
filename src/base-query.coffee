@@ -66,8 +66,9 @@ module.exports = class Query
 # these methods in your own resolver object to allow passing of arbitrary objects
 # for table and field names.
 passthrough_resolver =
-	table: (n) -> n
-	field: (t, n) -> n
+	table: (t) -> t
+	field: (t, f) -> f
+	value: (t, f, v) -> v
 
 # A deep-copy helper
 copy = (thing) ->

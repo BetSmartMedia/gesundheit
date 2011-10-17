@@ -14,10 +14,15 @@ module.exports = class Update extends SUDQuery
 			field = @resolve.field table, field
 			value = @resolve.value table, field, value
 			@s.fields.push field
-			@s.parameters.push field
+			@s.parameters.push value
 
 	setRaw: fluid (data) ->
 		for field, value of data
 			@s.fields.push field+'='+data
+
+	toSql: ->
+		throw new Error "Cannot render UPDATE without setting columns" unless @s.fields.length
+		super()
+
 
 Update.table = -> new Update arguments...

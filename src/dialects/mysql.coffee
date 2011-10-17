@@ -32,6 +32,9 @@ exports.renderUpdate = (qs) ->
 
 	"UPDATE " + parts.map((f) -> f(qs)).join ''
 
+set = (qs) ->
+	qs.fields.map((f) -> if f.match /\=/ then f else f + '=?').join ', '
+
 exports.renderInsert = (qs) ->
 	"INSERT INTO #{qs.table} (#{qs.fields.join ', '}) VALUES #{renderInsertParams qs}"
 

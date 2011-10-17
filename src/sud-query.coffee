@@ -9,7 +9,6 @@ normalize = require './normalize'
 exports.SUDQuery = class SUDQuery extends Query
 	constructor: (table, opts) ->
 		super opts
-		@s.fields = {}
 		@s.includedAliases = {}
 		@s.tableStack = []
 		@s.where = []
@@ -17,43 +16,7 @@ exports.SUDQuery = class SUDQuery extends Query
 		@s.parameters = []
 		if table?
 			[table, alias] = @aliasPair table
-			@s.fields[alias] = []
 			@pushTable(table, alias)
-
-# Adds one or more fields to the query. If the second argument is an array, the first argument
-# is treated as a table (in the same way that `join` understands tables) and the second argument
-# as the list of fields to select/update from that table. The table must already be joined for 
-# this to work.
-#
-# If the second argument is not an array, then each argument is treated as an individual field of
-# the last table added to the query.
-
-	fields: fluid (fields...) ->
-		alias = unless fields[1] and fields[1].constructor == Array
-			@lastTable()
-		else
-			[table, al] = @aliasPair fields.shift()
-			unknown 'table', table unless @includesAlias al
-
-		if fields.length == 0
-			return @s.fields[alias] = null
-		
-# The fields support aliasing in the same way that tables do, an object with one key will be 
-# treated as an alias -> fieldName pair. The fieldName will be resolved via the resolver, and 
-# normalized via `normalize.fieldAndTable` before being pushed onto the list of fields
-		for f in fields
-			aliased = typeof f == 'object' and Object.keys(f).length == 1
-			[fieldName, fieldAlias] = if not aliased then [f, f]
-			else ([fn, fa] for fa, fn of f)[0]
-
-			n = normalize.fieldAndTable table: alias, field: fieldName
-			fieldName = @resolve.field n.table, n.field
-			fieldAlias = fieldName if not aliased
-			@s.fields[n.table] ?= []
-			@s.fields[n.table].push [fieldName, fieldAlias]
-
-# A nice shorthand for adding a single field
-	field: (f...) -> @fields f...
 
 # Join takes a table and an object of options:
 #
@@ -168,16 +131,3 @@ exports.SUDQuery = class SUDQuery extends Query
 
 # A helper for throwing Errors
 unknown = (type, val) -> throw new Error "Unknown #{type}: #{val}"
-
-# A more sugary way of constructing new SUD queries
-exports.makeFrom = (queryType) ->
-	(tbl, fields, opts) ->
-		if 'object' == typeof tbl and tbl.constructor == Select
-			throw new Error "Inner queries not supported yet"
-		if fields? and fields.constructor not in [String, Array]
-			opts = fields
-			fields = null
-		query = new queryType(tbl, opts)
-		if fields?
-			query.fields fields...
-		return query

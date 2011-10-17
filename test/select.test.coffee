@@ -16,7 +16,7 @@ suite = vows.describe('SELECT queries').addBatch(
 			topic: (q) ->
 				fakeClient =
 					query: (sql, par, cb) ->
-						assert.equal sql, 'SELECT t1.* FROM t1'
+						assert.strictEqual sql, 'SELECT t1.* FROM t1'
 						assert.deepEqual par, []
 						cb null, "Sweet"
 				q.execute fakeClient, @callback

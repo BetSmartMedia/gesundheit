@@ -16,7 +16,7 @@ exports.newQuery = (subctx) ->
 	else if mod?
 		(q) -> q.clone().visit mod
 	if sql?
-		subctx[msg] = (q) -> assert.equal q.toSql(), sql
+		subctx[msg] = (q) -> assert.strictEqual q.toSql(), sql
 	if par?
 		subctx["Parameters correct: #{par}"] = (q) ->
 			assert.deepEqual(q.s.parameters, par)

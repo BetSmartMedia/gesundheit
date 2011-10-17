@@ -5,4 +5,4 @@ module.exports = class Delete extends SUDQuery
 		super table, opts
 		@s.queryType = 'Delete'
 
-Delete.from = makeFrom(Delete)
+Delete.from = -> new Delete arguments...

@@ -23,7 +23,7 @@ module.exports = class Select extends SUDQuery
 
 	fields: fluid (fields...) ->
 		alias = unless fields[1] and fields[1].constructor == Array
-			@lastTable()
+			@lastAlias()
 		else
 			[table, al] = @aliasPair fields.shift()
 			unknown 'table', table unless @includesAlias al
@@ -31,27 +31,28 @@ module.exports = class Select extends SUDQuery
 		if fields.length == 0
 			return @s.fields[alias] = null
 
-# The fields support aliasing in the same way that tables do, an object with one key will be
-# treated as an alias -> fieldName pair. The fieldName will be resolved via the resolver, and
-# normalized via `normalize.fieldAndTable` before being pushed onto the list of fields
+# The fields support aliasing in the same way that tables do, an object with 
+# one key will be treated as an alias -> fieldName pair. The fieldName will be
+# resolved via the resolver before being pushed onto the list of fields
 		for f in fields
 			aliased = typeof f == 'object' and Object.keys(f).length == 1
 			[fieldName, fieldAlias] = if not aliased then [f, f]
 			else ([fn, fa] for fa, fn of f)[0]
 
-			n = normalize.fieldAndTable table: alias, field: fieldName
-			fieldName = @resolve.field n.table, n.field
+			fieldName = @resolve.field alias, fieldName
 			fieldAlias = fieldName if not aliased
-			@s.fields[n.table] ?= []
-			@s.fields[n.table].push [fieldName, fieldAlias]
+			@s.fields[alias] ?= []
+			@s.fields[alias].push [fieldName, fieldAlias]
 
 # A nice shorthand for adding a single field
 	field: (f...) -> @fields f...
 
 # Add a GROUP BY to the query. Currently this *always* uses the last table added to the query.
 	groupBy: (fields...) ->
+		alias = @lastAlias()
 		groupings = for field in fields
-			normalize.fieldAndTable table: @lastTable(), field: field
+			{table: alias, field: field}
+
 		@s.groupings.push groupings...
 
 Select.from = (tbl, fields, opts) ->

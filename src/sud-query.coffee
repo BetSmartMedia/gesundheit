@@ -70,7 +70,7 @@ exports.SUDQuery = class SUDQuery extends Query
 	where: fluid (alias, clause) ->
 		if not clause?
 			clause = alias
-			alias = @lastTable()
+			alias = @lastAlias()
 		else
 			[table, alias] = @aliasPair alias
 
@@ -82,7 +82,7 @@ exports.SUDQuery = class SUDQuery extends Query
 	
 # Add one or more WHERE clauses, all joined by the OR operator
 	or: fluid (args...) ->
-		clauses = normalize.clauses args, @lastTable(), @dialect.whereOp
+		clauses = normalize.clauses args, @lastAlias(), @dialect.whereOp
 		@s.where.push op: 'multi', glue: ' OR ', clauses: clauses
 		@pushParams clauses
 
@@ -92,7 +92,7 @@ exports.SUDQuery = class SUDQuery extends Query
 # like 'some_field DESC', (the field name and direction will still be normalized) or an object, 
 # in which case each key will be treated as a field and each value as a direction.
 	orderBy: fluid (args...) ->
-		orderings = normalize.orderings args, @lastTable(), @dialect.order
+		orderings = normalize.orderings args, @lastAlias(), @dialect.order
 		@s.order.push orderings...
 
 # You can guess what this does ;)
@@ -124,7 +124,7 @@ exports.SUDQuery = class SUDQuery extends Query
 			else
 				@s.parameters.push clause.value
 
-	lastTable: ->
+	lastAlias: ->
 		@s.tableStack[@s.tableStack.length - 1][1]
 
 	includesAlias: (a) -> @s.includedAliases[a]

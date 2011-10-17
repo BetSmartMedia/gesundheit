@@ -4,4 +4,4 @@ exports.JOIN_TYPES = [
 	'NATURAL'
 ]
 
-exports.DEFAULT = "I'll be a UUID one day"
+exports.DEFAULT = require('node-uuid')()

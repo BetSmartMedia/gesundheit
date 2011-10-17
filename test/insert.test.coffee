@@ -11,6 +11,9 @@ suite = vows.describe('INSERT queries').addBatch(
 	"A new INSERT":
 		topic: -> insert.into 't1'
 
+		"errors when adding rows without any fields": (q) ->
+			assert.throws (-> q.addRow [1, 2, 3]), Error
+			
 		"with a single row": newQuery
 			mod: -> @addRow blah: 2, nah: 50
 			sql: "INSERT INTO t1 (blah, nah) VALUES (?, ?)"
@@ -28,13 +31,13 @@ suite = vows.describe('INSERT queries').addBatch(
 				fail = -> q.addRow [1, 2]
 				assert.throws(fail, Error)
 
-			"extracts the subset of rows that are in an object": newQuery
+			"extracts the correct fields from an object": newQuery
 				mod: -> @addRow a: 1, c: 3, d: 99
+				sql: "INSERT INTO t1 (a, b, c) VALUES (?, DEFAULT, ?)"
 				par: [1, DEFAULT, 3]
 				
-		"without any fields": newQuery
-			
-			"errors when adding rows": (q) ->
-			assert.throws((-> q.addRow(1,2,3)), Error)
-			
+		"from a SELECT query": newQuery
+			mod: -> @fromQuery select.from('t2', ['x', 'y']).where(x: {gt: 50})
+			sql: "INSERT INTO t1 SELECT t2.x, t2.y FROM t2 WHERE t2.x > ?"
+			par: [50]
 ).export(module)

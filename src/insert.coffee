@@ -7,12 +7,6 @@ DEFAULT = require('./dialects/common').DEFAULT
 # Inserts are much simpler than most query types, in that they cannot 
 # join multiple tables.
 module.exports = class Insert extends Query
-	reset = (fn) ->
-		(args...) ->
-			@s.fields = []
-			@s.parameters = []
-			fn args...
-
 	constructor: (table, opts={}) ->
 		super opts
 		@s.queryType = 'Insert'
@@ -51,5 +45,6 @@ module.exports = class Insert extends Query
 	fromQuery: fluid (query) ->
 		@s.queryType = 'InsertSelect'
 		@s.fromQuery = query
+		@s.parameters = query.s.parameters
 
 Insert.into = (tbl, opts) -> new Insert(tbl, opts)

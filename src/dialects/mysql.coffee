@@ -39,7 +39,7 @@ exports.renderInsert = (qs) ->
 	"INSERT INTO #{qs.table} (#{qs.fields.join ', '}) VALUES #{renderInsertParams qs}"
 
 exports.renderInsertSelect = (qs) ->
-	"INSERT INTO #{table} #{qs.fromQuery.toSql()}"
+	"INSERT INTO #{qs.table} #{qs.fromQuery.toSql()}"
 
 exports.renderDelete = (qs) ->
 	parts = if qs.tableStack.length == 1
@@ -135,6 +135,12 @@ exports.joinType = (type) ->
 	else throw new Error "Unsupported JOIN type #{type}"
 
 renderInsertParams = (qs) ->
-	rows = for [1 .. qs.parameters.length / qs.fields.length]
-		renderBoundParam [1..qs.fields.length]
+	offset = 0
+	rowLength = qs.fields.length
+	paramLength = qs.parameters.length
+	rows = while offset < paramLength
+		params = for p in qs.parameters[offset ... (offset+rowLength)]
+			if p == DEFAULT then 'DEFAULT' else PLACEHOLDER
+		offset += rowLength
+		"(#{params.join ', '})"
 	rows.join ", "

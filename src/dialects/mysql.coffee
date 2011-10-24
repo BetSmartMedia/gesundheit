@@ -1,5 +1,4 @@
-common = require './common'
-[JOIN_TYPES, DEFAULT] = ['JOIN_TYPES', 'DEFAULT'].map((k) -> common[k])
+{JOIN_TYPES, DEFAULT, NOT_NULL, NULL} = require './common'
 
 PLACEHOLDER = '?'
 DEFAULT_JOIN = JOIN_TYPES.INNER
@@ -55,7 +54,11 @@ fields = (qs) ->
 		continue unless tbl_fields?
 		if tbl_fields.length
 			for f in tbl_fields
-				fs.push if f[0] == f[1] then "#{tbl}.#{f[0]}" else "#{tbl}.#{f[0]} AS '#{f[1]}'"
+				ret = tbl+'.'+f[0]
+				if f[2]?
+					ret = "#{f[2]}(#{ret})"
+				if f[0] != f[1] then ret += " AS '#{f[1]}'"
+				fs.push ret
 		else
 			fs.push "#{tbl}.*"
 	fs.join ', '
@@ -98,8 +101,12 @@ limit = (qs) -> if qs.limit? then " LIMIT #{qs.limit}" else ""
 # Given a query parameter, returns a `PLACEHOLDER`. Given an array as the parameter, renders
 # a list of `PLACEHOLDER` tokens equal in length to the array.
 renderBoundParam = (v) ->
-	if v and v.constructor == Array then "(#{v.map(-> PLACEHOLDER).join ', '})"
-	else PLACEHOLDER
+	if Array.isArray(v) then "(#{v.map(renderBoundParam).join ', '})"
+	else switch v
+		when NULL then 'NULL'
+		when NOT_NULL then 'NOT NULL'
+		when DEFAULT then 'DEFAULT'
+		else PLACEHOLDER
 
 # Renders an individual query clause
 exports.renderClause = renderClause = (input, renderValue=renderBoundParam) ->
@@ -126,6 +133,7 @@ exports.joinOp = exports.whereOp = (op) ->
 		when 'gte', '>=' then '>='
 		when 'like' then 'LIKE'
 		when 'in' then 'IN'
+		when 'is' then 'IS'
 		else throw new Error("Unsupported comparison operator: #{op}")
 
 exports.joinType = (type) ->
@@ -139,8 +147,5 @@ renderInsertParams = (qs) ->
 	rowLength = qs.fields.length
 	paramLength = qs.parameters.length
 	rows = while offset < paramLength
-		params = for p in qs.parameters[offset ... (offset+rowLength)]
-			if p == DEFAULT then 'DEFAULT' else PLACEHOLDER
-		offset += rowLength
-		"(#{params.join ', '})"
+		renderBoundParam qs.parameters[offset ... (offset+=rowLength)]
 	rows.join ", "

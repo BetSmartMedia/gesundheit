@@ -1,7 +1,11 @@
+uuid = require 'node-uuid'
+
 exports.JOIN_TYPES = [
-	'INNER', 'LEFT INNER', 'RIGHT INNER'
-	'OUTER', 'LEFT OUTER', 'RIGHT OUTER', 'FULL OUTER'
-	'NATURAL'
+	'LEFT', 'RIGHT', 'INNER',
+	'LEFT OUTER', 'RIGHT OUTER', 'FULL OUTER'
+	'NATURAL', 'CROSS'
 ]
 
-exports.DEFAULT = require('node-uuid')()
+exports.DEFAULT  = uuid()
+exports.NOT_NULL = uuid()
+exports.NULL     = uuid()

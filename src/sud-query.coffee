@@ -4,6 +4,7 @@ fluid = require './fluid'
 Query = require './base-query'
 Select = require './select'
 normalize = require './normalize'
+{NULL, NOT_NULL, DEFAULT} = require './dialects/common'
 
 # It is organized into two major groups of methods. The first group makes up the more "public" interface to the query. These methods mostly correspond to their SQL analogs; i.e. join(...) joins another table. The second group is made up of helper methods for safely managing the stateful data structures added to the @s member in the constructor.
 exports.SUDQuery = class SUDQuery extends Query
@@ -117,11 +118,10 @@ exports.SUDQuery = class SUDQuery extends Query
 	pushParams: (clauses) ->
 		for clause in clauses
 			if clause.op == 'multi'
-				sys.puts "pushParam recursing" + clause.clauses
 				@pushParams(clause.clauses)
 			else if clause.op == 'IN'
 				@s.parameters.push clause.value...
-			else
+			else if clause.value not in [NULL, NOT_NULL, DEFAULT]
 				@s.parameters.push clause.value
 
 	lastAlias: ->

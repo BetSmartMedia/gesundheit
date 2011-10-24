@@ -2,7 +2,11 @@
 
 # Export dialects for easier extension and/or changing of the default
 exports.dialects = require './dialects'
-exports.DEFAULT = require('./dialects/common').DEFAULT
+
+common = require './dialects/common'
+exports.DEFAULT  = common.DEFAULT
+exports.NOT_NULL = common.NOT_NULL
+exports.NULL     = common.NULL
 
 # Monkey patch, so sue me
 String.prototype.ucfirst = -> this[0].toUpperCase() + this[1..-1]

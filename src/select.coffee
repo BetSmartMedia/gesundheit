@@ -22,27 +22,39 @@ module.exports = class Select extends SUDQuery
 # the last table added to the query.
 
 	fields: fluid (fields...) ->
-		alias = unless fields[1] and fields[1].constructor == Array
-			@lastAlias()
+		alias = if fields[1] and Array.isArray fields[1]
+			oldfields = fields
+			fields = fields[1]
+			unknown 'table', table unless @includesAlias oldfields[0] 
+			oldfields[0]
 		else
-			[table, al] = @aliasPair fields.shift()
-			unknown 'table', table unless @includesAlias al
+			@lastAlias()
 
-		if fields.length == 0
-			return @s.fields[alias] = null
+		if fields.length == 0 then return @s.fields[alias] = null
 
-# The fields support aliasing in the same way that tables do, an object with 
+		@_fields(alias, fields)
+
+# Adds one or more aggregated fields to the query
+	agg: fluid (fun, fields...) ->
+		alias = @lastAlias()
+		fields = @_fields(alias, fields, fun)
+
+
+# Fields support aliasing in the same way that tables do, an object with 
 # one key will be treated as an alias -> fieldName pair. The fieldName will be
 # resolved via the resolver before being pushed onto the list of fields
+	_fields: (alias, fields, agg) ->
+		@s.fields[alias] ?= []
 		for f in fields
 			aliased = typeof f == 'object' and Object.keys(f).length == 1
-			[fieldName, fieldAlias] = if not aliased then [f, f]
-			else ([fn, fa] for fa, fn of f)[0]
+			[fieldName, fieldAlias] = if aliased
+				([fn, fa] for fa, fn of f)[0]
+			else
+				[f, f]
 
 			fieldName = @resolve.field alias, fieldName
 			fieldAlias = fieldName if not aliased
-			@s.fields[alias] ?= []
-			@s.fields[alias].push [fieldName, fieldAlias]
+			@s.fields[alias].push [fieldName, fieldAlias, agg]
 
 # Add a GROUP BY to the query. Currently this *always* uses the last table added to the query.
 	groupBy: (fields...) ->

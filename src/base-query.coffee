@@ -62,6 +62,8 @@ module.exports = class Query
 					return cb err if err?
 					cb null, res
 		else
+			#require('sys').puts @toSql()
+			#console.dir @s.parameters
 			conn.query @toSql(), @s.parameters, cb
 
 	toString: -> '['+@s.queryType+' "'+@toSql().substring(0,20)+'"]'

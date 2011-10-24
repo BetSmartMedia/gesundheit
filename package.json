@@ -12,7 +12,8 @@
     "node-uuid": "~1.2.0"
   },
   "devDependencies": {
-    "vows": "~0.5.11"
+    "vows": "~0.5.11",
+    "expresso": ""
   },
   "contributors": [
     "Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)"

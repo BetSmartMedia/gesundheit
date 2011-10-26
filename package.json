@@ -15,7 +15,5 @@
     "vows": "~0.5.11",
     "expresso": ""
   },
-  "contributors": [
-    "Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)"
-  ]
+  "author": "Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)"
 }

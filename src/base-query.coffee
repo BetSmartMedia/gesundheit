@@ -55,7 +55,7 @@ module.exports = class Query
 # of the query, the parameter values contained in the query, and the passed in 
 # callback.
 	execute: (conn, cb) ->
-		if conn['acquire']? # Cheap hack to check for connection pools
+		if typeof conn.acquire == 'function' # Cheap hack to check for connection pools
 			conn.acquire (c) => 
 				@execute c, (err, res) ->
 					conn.release c

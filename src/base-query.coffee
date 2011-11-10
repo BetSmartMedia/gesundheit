@@ -9,6 +9,7 @@ module.exports = class Query
 # contains all of the state specific to this query. It is what gets passed to 
 # the render methods of the dialect, and what get's copied when .clone() is called.
 	constructor: (opts) ->
+		@doEcho = false
 		@dialect = opts.dialect || dialects.default
 		@resolve = opts.resolver || passthrough_resolver
 		if @dialect.pre?
@@ -45,8 +46,15 @@ module.exports = class Query
 	visit: fluid (fn) ->
 		fn.call @, @ if fn?
 
+# If called before .execute(), then resulting SQL will be sent to stdout
+# via console.log()
+	echo: fluid -> @doEcho = true
+
 # Pass the current query state to the appropriate render function of the dialect
-	toSql: -> @dialect["render#{@s.queryType}"](@s)
+	toSql: ->
+		sql = @dialect["render#{@s.queryType}"](@s)
+		console.log sql if @doEcho
+		sql
 
 # Given an object that exposes an `acquire` method, call the acquire method and 
 # then continue with the result.

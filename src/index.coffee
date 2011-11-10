@@ -9,6 +9,7 @@ exports.NOT_NULL = common.NOT_NULL
 exports.NULL     = common.NULL
 
 # Monkey patch, so sue me
+#   Better lawyer up: http://imgur.com/Qv8kt
 String.prototype.ucfirst = -> this[0].toUpperCase() + this[1..-1]
 
 # Export each query type, with capitalization to please the tastes of most everybody

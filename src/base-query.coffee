@@ -54,6 +54,7 @@ module.exports = class Query
 	toSql: ->
 		sql = @dialect["render#{@s.queryType}"](@s)
 		console.log sql if @doEcho
+		console.dir @s.parameters if @doEcho
 		sql
 
 # Given an object that exposes an `acquire` method, call the acquire method and 

@@ -57,7 +57,7 @@ module.exports = class Select extends SUDQuery
 			@s.fields[alias].push [fieldName, fieldAlias, agg]
 
 # Add a GROUP BY to the query. Currently this *always* uses the last table added to the query.
-	groupBy: (fields...) ->
+	groupBy: fluid (fields...) ->
 		alias = @lastAlias()
 		groupings = for field in fields
 			{table: alias, field: field}

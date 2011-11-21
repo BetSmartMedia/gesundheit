@@ -78,12 +78,14 @@ exports.SUDQuery = class SUDQuery extends Query
 		unknown('table', tbl) unless @includesAlias(alias)?
 
 		normalized = normalize.clauses [clause], alias, @dialect.whereOp
+		return unless normalized.length > 0
 		@s.where.push normalized...
 		@pushParams normalized
 	
 # Add one or more WHERE clauses, all joined by the OR operator
 	or: fluid (args...) ->
 		clauses = normalize.clauses args, @lastAlias(), @dialect.whereOp
+		return unless clauses.length > 0
 		@s.where.push op: 'multi', glue: ' OR ', clauses: clauses
 		@pushParams clauses
 

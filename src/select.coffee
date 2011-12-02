@@ -2,7 +2,7 @@ fluid = require './fluid'
 normalize = require './normalize'
 {SUDQuery, makeFrom} = require './sud-query'
 
-# Our friend the SELECT query. Select adds ORDER BY and GROUP BY support to SUDQuery.
+# Our friend the SELECT query. Select adds ORDER BY and GROUP BY support.
 module.exports = class Select extends SUDQuery
 	constructor: (table, opts={}) ->
 		super table, opts
@@ -13,19 +13,20 @@ module.exports = class Select extends SUDQuery
 			[table, alias] = @aliasPair table
 			@s.fields[alias] = []
 
-# Adds one or more fields to the query. If the second argument is an array, the first argument
-# is treated as a table (in the same way that `join` understands tables) and the second argument
-# as the list of fields to select/update from that table. The table must already be joined for
-# this to work.
-#
-# If the second argument is not an array, then each argument is treated as an individual field of
-# the last table added to the query.
+# Adds one or more fields to the query. If the second argument is an array, 
+# the first argument is treated as a table (in the same way that `join` 
+# understands tables) and the second argument as the list of fields to 
+# select/update from that table. The table must already be joined for this to 
+# work.
+
+# If the second argument is not an array, then each argument is treated as an 
+# individual field of the last table added to the query.
 
 	fields: fluid (fields...) ->
 		alias = if fields[1] and Array.isArray fields[1]
 			oldfields = fields
 			fields = fields[1]
-			unknown 'table', table unless @includesAlias oldfields[0] 
+			unknown 'table', table unless @includesAlias oldfields[0]
 			oldfields[0]
 		else
 			@lastAlias()
@@ -56,7 +57,8 @@ module.exports = class Select extends SUDQuery
 			fieldAlias = fieldName if not aliased
 			@s.fields[alias].push [fieldName, fieldAlias, agg]
 
-# Add a GROUP BY to the query. Currently this *always* uses the last table added to the query.
+# Add a GROUP BY to the query. Currently this *always* uses the last table 
+# added to the query.
 	groupBy: fluid (fields...) ->
 		alias = @lastAlias()
 		groupings = for field in fields

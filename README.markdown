@@ -20,7 +20,7 @@ q = select.from('chairs').visit -> # or Select.from, or SELECT.from
 	@where type: 'recliner', weight: {lt: 25}
 
 	# SELECT ..., people.* FROM chairs INNER JOIN people ON people.chair_id = chair.id WHERE ...
-	@join "people", on: {chair_id: 'chairs.id'}
+	@join "people", on: {chair_id: @rel('chairs').field('id')}
 
 	# SELECT ..., people.name FROM ...
 	@fields "name"
@@ -30,7 +30,7 @@ q = select.from('chairs').visit -> # or Select.from, or SELECT.from
 
 # More concisely:
 q = select.from('chairs', ['type', 'size']).where(type: 'recliner', weight: {lt: 25})
-	.join("people", on: {chair_id: 'chairs.id'}).fields("name").where(gender: 'M')
+q.join("people", on: {chair_id: q.rel('chairs').field('id')}).fields("name").where(gender: 'M')
 
 # Generate the SQL
 q.toSql() # SELECT chairs.type, chairs.size, people.name FROM chairs INNER JOIN people ...
@@ -56,7 +56,7 @@ q.execute pool, (err, res) ->
 q = select.from ArtWTF: "a_real_table_with_twenty_fields"
 
 # Works with joins as well
-q = q.join {so: 'some_other'}, on: {hard: 'ArtWTF.is_it'}
+q = q.join {so: 'some_other'}, on: {hard: q.rels('ArtWTF').field('is_it')}
 
 # Field aliasing
 # SELECT t.really_long_field AS 'rlf' FROM long_table AS t
@@ -65,12 +65,14 @@ q = select.from(t: 'long_table').field(rlf: 'really_long_field')
 
 ## Gesundheit is not an ORM
 
-But a pretty decent ORM could be built with it. Take a look at the resolve hooks in the source
+But a pretty decent ORM could be built with it. The recommended approach is to
+provide a dialect (or extend an existing one) with render methods that
+understand your model and field types.
 
 ## TODO
 
 - More testing
-- Other DBMS dialects
+- DBMS specific dialects
 
 ## License
 

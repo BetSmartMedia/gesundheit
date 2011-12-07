@@ -1,18 +1,20 @@
-# The main entry point into gesundheit. Exports the most commonly used pieces directly.
+# The main module just re-exports the most commonly used pieces
 
-# Export dialects for easier extension and/or changing of the default
+# Dialects for easier extension and/or changing of the default
 exports.dialects = require './dialects'
 
-common = require './dialects/common'
-exports.DEFAULT  = common.DEFAULT
-exports.NOT_NULL = common.NOT_NULL
-exports.NULL     = common.NULL
+# Common pre-defined value nodes (e.g. IS_NULL, LEFT_OUTER)
+nodes = require './nodes'
+for name in nodes.CONST_NODES
+	exports[name] = nodes[name]
 
-# Monkey patch, so sue me
-#   Better lawyer up: http://imgur.com/Qv8kt
-String.prototype.ucfirst = -> this[0].toUpperCase() + this[1..-1]
+for name in nodes.JOIN_TYPES
+	exports[name] = nodes[name]
 
-# Export each query type, with capitalization to please the tastes of most everybody
+# Each query with capitalization to satisfy all tastes
+uc			= (str) -> str.toUpperCase()
+ucfirst = (str) -> str[0].toUpperCase() + str.substring 1
 for queryType in ['select', 'update', 'insert', 'delete']
 	query = require "./#{queryType}"
-	exports[queryType] = exports[queryType.toUpperCase()] = exports[queryType.ucfirst()] = query
+	for name in [queryType, uc(queryType), ucfirst(queryType)]
+		exports[name] = query

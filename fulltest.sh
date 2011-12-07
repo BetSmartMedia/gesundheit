@@ -6,5 +6,5 @@ coffee -o lib-tmp/ -c src/ &&
 cp src/fluid.js lib-tmp/
 rm -fr lib && 
 node-jscoverage lib-tmp/ lib/ &&
-vows --cover-html $ARGS && 
+vows --debug-brk --cover-html $ARGS && 
 rm -fr lib && mv lib-tmp/ lib/

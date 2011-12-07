@@ -1,28 +1,20 @@
 fluid = require './fluid'
-{SUDQuery, makeFrom} = require './sud-query'
+SUDQuery = require './sud-query'
+{Update, Binary, Parameter} = require './nodes'
 
-module.exports = class Update extends SUDQuery
-	constructor: (table, opts={}) ->
-		super table, opts
-		@s.table = table
-		@s.queryType = 'Update'
-		@s.fields = []
-
+module.exports = class UpdateQuery extends SUDQuery
 	set: fluid (data) ->
-		table = @s.table
 		for field, value of data
-			field = @resolve.field table, field
-			value = @resolve.value table, field, value
-			@s.fields.push field
-			@s.parameters.push value
+			@q.updates.addNode new Binary field, '=', new Parameter value
+
+	setNodes: fluid (nodes...) -> @q.updates.push nodes...
 
 	setRaw: fluid (data) ->
 		for field, value of data
-			@s.fields.push field+' = '+value
+			@q.fields.push field+' = '+value
 
-	toSql: ->
-		throw new Error "Cannot render UPDATE without setting columns" unless @s.fields.length
-		super()
+	defaultRel: -> @q.relation
 
-
-Update.table = -> new Update arguments...
+UpdateQuery.table = (table, opts={}) ->
+	opts.table = table
+	new UpdateQuery Update, opts

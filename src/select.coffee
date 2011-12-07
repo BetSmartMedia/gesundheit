@@ -1,17 +1,11 @@
 fluid = require './fluid'
-normalize = require './normalize'
-{SUDQuery, makeFrom} = require './sud-query'
+SUDQuery = require './sud-query'
+{Alias, Select, And, Join, toRelation, sqlFunction, INNER} = require './nodes'
 
 # Our friend the SELECT query. Select adds ORDER BY and GROUP BY support.
-module.exports = class Select extends SUDQuery
-	constructor: (table, opts={}) ->
-		super table, opts
-		@s.queryType = 'Select'
-		@s.fields = {}
-		@s.groupings = []
-		if table?
-			[table, alias] = @aliasPair table
-			@s.fields[alias] = []
+module.exports = class SelectQuery extends SUDQuery
+  constructor: (opts={}) ->
+    super Select, opts
 
 # Adds one or more fields to the query. If the second argument is an array, 
 # the first argument is treated as a table (in the same way that `join` 
@@ -21,61 +15,70 @@ module.exports = class Select extends SUDQuery
 
 # If the second argument is not an array, then each argument is treated as an 
 # individual field of the last table added to the query.
+  fields: fluid (fields...) ->
+    if fields[1] and Array.isArray fields[1]
+      rel = @q.relations.get fields[0]
+      unknown 'table', fields[0] unless rel?
+      fields = fields[1]
+    else
+      rel = @q.relations.active
 
-	fields: fluid (fields...) ->
-		alias = if fields[1] and Array.isArray fields[1]
-			oldfields = fields
-			fields = fields[1]
-			unknown 'table', table unless @includesAlias oldfields[0]
-			oldfields[0]
-		else
-			@lastAlias()
+    if fields.length == 0
+      @q.projections.prune((p) -> p.source == rel)
+      return
 
-		if fields.length == 0 then return @s.fields[alias] = null
-
-		@_fields(alias, fields)
+    for f in fields
+      if alias = Alias.getAlias f
+        f = f[alias]
+        @q.projections.addNode new Alias rel.project(f), alias
+      else
+        @q.projections.addNode rel.project f
 
 # Adds one or more aggregated fields to the query
-	agg: fluid (fun, fields...) ->
-		alias = @lastAlias()
-		fields = @_fields(alias, fields, fun)
+  agg: fluid (fun, fields...) ->
+    @q.projections.addNode sqlFunction fun, fields
+
+  join: fluid (tbl, opts={}) ->
+    rel = toRelation tbl
+    if @q.relations.get rel.ref(), false
+      throw new Error "Table/alias #{rel.ref()} is not unique!"
+
+    type = opts.type || INNER
+    if type not instanceof INNER.constructor
+      throw new Error "Invalid join type #{type}, try the constant types exported in the base module (e.g. INNER)."
+    joinClause = opts.on && new And(@makeClauses rel, opts.on)
+    @q.relations.addNode new Join type, rel, joinClause
+    @q.relations.registerName rel
+    @q.relations.switch rel
+    if opts.fields?
+      @fields(opts.fields...)
+
+# A shorthand way to get a relation by name
+  rel: (alias) -> @q.relations.get alias
+
+# Make a different table "active", this will use that table as the default for 
+# the ``fields``, ``orderBy`` and ``where`` methods
+  from: fluid (alias) -> @q.relations.switch alias
 
 
-# Fields support aliasing in the same way that tables do, an object with 
-# one key will be treated as an alias -> fieldName pair. The fieldName will be
-# resolved via the resolver before being pushed onto the list of fields
-	_fields: (alias, fields, agg) ->
-		@s.fields[alias] ?= []
-		for f in fields
-			aliased = typeof f == 'object' and Object.keys(f).length == 1
-			[fieldName, fieldAlias] = if aliased
-				([fn, fa] for fa, fn of f)[0]
-			else
-				[f, f]
+# Add a GROUP BY to the query.
+  groupBy: fluid (fields...) ->
+    rel = @q.relations.active
+    for field in fields
+      if field.constructor == String
+        @q.groupBy.addNode rel.project field
+      else if field instanceof Projection
+        @q.groupBy.addNode field
 
-			fieldName = @resolve.field alias, fieldName
-			fieldAlias = fieldName if not aliased
-			@s.fields[alias].push [fieldName, fieldAlias, agg]
+SelectQuery::field = SelectQuery::fields
 
-# Add a GROUP BY to the query. Currently this *always* uses the last table 
-# added to the query.
-	groupBy: fluid (fields...) ->
-		alias = @lastAlias()
-		groupings = for field in fields
-			{table: alias, field: field}
-
-		@s.groupings.push groupings...
-
-Select::field = Select::fields
-
-Select.from = (tbl, fields, opts) ->
-	if tbl instanceof Select
-		throw new Error "Inner queries not supported yet"
-	if fields? and fields.constructor != Array
-		opts = fields
-		fields = null
-	query = new Select(tbl, opts)
-	if fields?
-		query.fields fields...
-	return query
+SelectQuery.from = (tbl, fields, opts={}) ->
+  if fields? and fields.constructor != Array
+    opts = fields
+    fields = null
+  opts.table = tbl
+  query = new SelectQuery opts
+  if fields?
+    query.fields fields...
+  return query
 

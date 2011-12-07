@@ -1,8 +1,8 @@
-{SUDQuery, makeFrom} = require './sud-query'
+SUDQuery = require './sud-query'
+{Delete} = require './nodes'
 
-module.exports = class Delete extends SUDQuery
-	constructor: (table, opts={}) ->
-		super table, opts
-		@s.queryType = 'Delete'
+module.exports = class DeleteQuery extends SUDQuery
 
-Delete.from = -> new Delete arguments...
+DeleteQuery.from = (table, opts={}) ->
+  opts.table = table
+  new DeleteQuery Delete, opts

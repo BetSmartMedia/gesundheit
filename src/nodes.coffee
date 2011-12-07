@@ -74,6 +74,7 @@ exports.Alias = class Alias extends Node
   constructor: (@obj, @alias) ->
   copy: -> new @constructor copy(@obj), @alias
   project: (name) -> new Projection @, name
+  field: -> @project arguments
   ref: -> @alias
 
 Alias.getAlias = (o) ->

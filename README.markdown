@@ -56,7 +56,7 @@ q.execute pool, (err, res) ->
 q = select.from ArtWTF: "a_real_table_with_twenty_fields"
 
 # Works with joins as well
-q = q.join {so: 'some_other'}, on: {hard: q.rels('ArtWTF').field('is_it')}
+q = q.join {so: 'some_other'}, on: {hard: q.rel('ArtWTF').field('is_it')}
 
 # Field aliasing
 # SELECT t.really_long_field AS 'rlf' FROM long_table AS t

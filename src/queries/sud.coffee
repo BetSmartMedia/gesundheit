@@ -1,6 +1,6 @@
-fluid = require './fluid'
-BaseQuery = require './base-query'
-{Or, OrderBy} = require './nodes'
+fluid = require '../fluid'
+BaseQuery = require './base'
+{Or, OrderBy} = require '../nodes'
 
 # SUDQuery is the base class for SELECT, UPDATE, and DELETE queries. It adds
 # logic to `BaseQuery` for dealing with WHERE clauses and ordering.

@@ -19,7 +19,6 @@ suite = vows.describe('SELECT queries').addBatch(
 			topic: (q) ->
 				fakeClient =
 					query: (sql, par, cb) ->
-						console.log sql, par
 						assert.strictEqual sql, 'SELECT * FROM t1'
 						assert.deepEqual par, []
 						cb null, "Sweet"

@@ -1,5 +1,3 @@
-fluid = require './fluid'
-
 class Node
 
 exports.ValueNode = class ValueNode extends Node

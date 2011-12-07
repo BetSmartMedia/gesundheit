@@ -1,8 +1,8 @@
-fluid = require './fluid'
+fluid = require '../fluid'
 
-BaseQuery = require './base-query'
+BaseQuery = require './base'
 SelectQuery = require './select'
-{Insert, Tuple} = require './nodes'
+{Insert, Tuple} = require '../nodes'
 
 # Insert queries are much simpler than most query types, in that they cannot
 # join multiple tables.

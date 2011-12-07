@@ -1,6 +1,6 @@
-fluid = require './fluid'
-SUDQuery = require './sud-query'
-{Alias, Select, And, Join, toRelation, sqlFunction, INNER} = require './nodes'
+fluid = require '../fluid'
+SUDQuery = require './sud'
+{Alias, Select, And, Join, toRelation, sqlFunction, INNER} = require '../nodes'
 
 # Our friend the SELECT query. Select adds ORDER BY and GROUP BY support.
 module.exports = class SelectQuery extends SUDQuery

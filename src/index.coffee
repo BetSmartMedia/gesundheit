@@ -15,6 +15,6 @@ for name in nodes.JOIN_TYPES
 uc      = (str) -> str.toUpperCase()
 ucfirst = (str) -> str[0].toUpperCase() + str.substring 1
 for queryType in ['select', 'update', 'insert', 'delete']
-  query = require "./#{queryType}"
+  query = require "./queries/#{queryType}"
   for name in [queryType, uc(queryType), ucfirst(queryType)]
     exports[name] = query

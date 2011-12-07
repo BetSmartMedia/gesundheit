@@ -1,6 +1,6 @@
-fluid = require './fluid'
-dialects = require './dialects'
-{toRelation} = require './nodes'
+fluid = require '../fluid'
+dialects = require '../dialects'
+{toRelation} = require '../nodes'
 
 # The base class for all queries, not very useful on it's own. The constructor
 # takes a root node constructor corresponding to the query type and an options

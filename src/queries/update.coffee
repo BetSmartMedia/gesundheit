@@ -1,6 +1,6 @@
-fluid = require './fluid'
-SUDQuery = require './sud-query'
-{Update, Binary, Parameter} = require './nodes'
+fluid = require '../fluid'
+SUDQuery = require './sud'
+{Update, Binary, Parameter} = require '../nodes'
 
 module.exports = class UpdateQuery extends SUDQuery
   set: fluid (data) ->

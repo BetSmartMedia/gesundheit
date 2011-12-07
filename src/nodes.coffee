@@ -18,9 +18,9 @@ DEFAULT = exports.DEFAULT
 class JoinType extends ValueNode
 
 exports.JOIN_TYPES = [
-	'LEFT', 'RIGHT', 'INNER',
-	'LEFT_OUTER', 'RIGHT_OUTER', 'FULL_OUTER'
-	'NATURAL', 'CROSS'
+  'LEFT', 'RIGHT', 'INNER',
+  'LEFT_OUTER', 'RIGHT_OUTER', 'FULL_OUTER'
+  'NATURAL', 'CROSS'
 ]
 
 for name in exports.JOIN_TYPES

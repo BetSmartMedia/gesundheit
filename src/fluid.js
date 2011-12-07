@@ -1,6 +1,6 @@
 module.exports = function (fn) { 
-	return function() { 
-		fn.apply(this, arguments)
-		return this
-	}
+  return function() { 
+    fn.apply(this, arguments)
+    return this
+  }
 }

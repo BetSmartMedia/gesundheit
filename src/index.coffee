@@ -11,6 +11,9 @@ for name in nodes.CONST_NODES
 for name in nodes.JOIN_TYPES
   exports[name] = nodes[name]
 
+# Re-export all nodes
+exports.nodes = nodes
+
 # Each query with capitalization to satisfy all tastes
 uc      = (str) -> str.toUpperCase()
 ucfirst = (str) -> str[0].toUpperCase() + str.substring 1

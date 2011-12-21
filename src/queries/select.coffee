@@ -1,6 +1,6 @@
 fluid = require '../fluid'
 SUDQuery = require './sud'
-{Alias, Select, And, Join, toRelation, sqlFunction, INNER} = require '../nodes'
+{Alias, Select, And, Join, toRelation, sqlFunction, INNER, Projection} = require '../nodes'
 
 # Our friend the SELECT query. Select adds ORDER BY and GROUP BY support.
 module.exports = class SelectQuery extends SUDQuery
@@ -36,7 +36,14 @@ module.exports = class SelectQuery extends SUDQuery
 
 # Adds one or more aggregated fields to the query
   agg: fluid (fun, fields...) ->
-    @q.projections.addNode sqlFunction fun, fields
+    if alias = Alias.getAlias fun
+      fun = fun[alias]
+    funcNode = sqlFunction fun, fields
+    if alias
+      @q.projections.addNode new Alias funcNode, alias
+    else
+      @q.projections.addNode funcNode
+
 
   join: fluid (tbl, opts={}) ->
     rel = toRelation tbl
@@ -55,11 +62,11 @@ module.exports = class SelectQuery extends SUDQuery
 
 # A shorthand way to get a relation by name
   rel: (alias) -> @q.relations.get alias
+  project: (alias, field) -> @q.relations.get(alias).project(field)
 
 # Make a different table "active", this will use that table as the default for 
 # the ``fields``, ``orderBy`` and ``where`` methods
   from: fluid (alias) -> @q.relations.switch alias
-
 
 # Add a GROUP BY to the query.
   groupBy: fluid (fields...) ->

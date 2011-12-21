@@ -46,7 +46,6 @@ exports.BaseDialect = exports.default = class BaseDialect
 
   renderParameter: (node) -> '?'
 
-
   renderSelect: prefixIfNotEmpty 'SELECT '
   renderUpdate: prefixIfNotEmpty 'UPDATE '
   renderInsert: prefixIfNotEmpty 'INSERT INTO '
@@ -77,3 +76,21 @@ exports.BaseDialect = exports.default = class BaseDialect
       when 'in' then 'IN'
       when 'is' then 'IS'
       else throw new Error("Unsupported comparison operator: #{op}")
+
+exports.PostgresDialect = class PostgresDialect extends BaseDialect
+
+  {Select, Update, Delete} = require '../nodes'
+
+  render: (node) ->
+    if node.constructor in [Select, Update, Delete]
+      @paramCount = 1
+    super node
+
+  renderParameter: (node) -> "$#{@paramCount++}"
+
+  renderOp: (op) ->
+    switch op.toLowerCase()
+      when 'hasKey' then '?'
+      when '->' then '->'
+      else super op
+

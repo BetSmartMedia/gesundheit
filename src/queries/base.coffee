@@ -55,11 +55,11 @@ module.exports = class BaseQuery
   visit: fluid (fn) ->
     fn.call @, @ if fn?
 
-# If called before .execute(), then resulting SQL will be sent to stdout
+# If called before .toSql(), then resulting SQL will be sent to stdout
 # via console.log()
   echo: fluid -> @doEcho = true
 
-# Pass the current query state to the appropriate render function of the dialect
+# Render the query to SQL using it's particular dialect
   toSql: ->
     sql = @dialect.render @q
     console.log sql if @doEcho

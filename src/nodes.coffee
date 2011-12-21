@@ -60,7 +60,7 @@ exports.FixedNamedNodeSet = class FixedNamedNodeSet extends FixedNodeSet
       c[k] = c.nodes[i]
     return c
     
-### End of generic base classes ###
+# End of generic base classes
 
 exports.SqlFunction = class SqlFunction extends Node
   constructor: (@name, @arglist) ->
@@ -266,7 +266,9 @@ for k, v of ComparableMixin::
   SqlFunction::[k] = v
 
 exports.toParam = toParam = (it) ->
-  if it instanceof Node then it
+  SelectQuery = require './queries/select'
+  if it.constructor is SelectQuery then new Tuple([it.q])
+  else if it instanceof Node then it
   else if Array.isArray it then new Tuple(it.map toParam)
   else new Parameter it
 

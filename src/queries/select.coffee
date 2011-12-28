@@ -63,7 +63,7 @@ module.exports = class SelectQuery extends SUDQuery
 
 # A shorthand way to get a relation by name
   rel: (alias) -> @q.relations.get alias
-  project: (alias, field) -> @q.relations.get(alias).project(field)
+  project: (alias, field) -> @q.relations.get(alias, true).project(field)
 
 # Make a different table "active", this will use that table as the default for 
 # the ``fields``, ``orderBy`` and ``where`` methods

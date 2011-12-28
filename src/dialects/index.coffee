@@ -73,6 +73,7 @@ exports.BaseDialect = exports.default = class BaseDialect
       when 'lte', '<=' then '<='
       when 'gte', '>=' then '>='
       when 'like' then 'LIKE'
+      when 'ilike' then 'ILIKE'
       when 'in' then 'IN'
       when 'is' then 'IS'
       else throw new Error("Unsupported comparison operator: #{op}")

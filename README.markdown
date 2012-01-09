@@ -9,8 +9,6 @@ Gesundheit generates SQL, it does this using a nice CoffeeScript friendly syntax
 ## Examples
 
 ```coffee
-select = require('gesundheit').select
-
 # SELECT chairs.* FROM chairs
 q = select.from('chairs').visit -> # or Select.from, or SELECT.from   
 	# SELECT chairs.type, chairs.size FROM chairs

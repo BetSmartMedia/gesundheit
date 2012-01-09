@@ -11,7 +11,7 @@ vows.describe("README test").addBatch(
 			readme = fs.readFileSync(__dirname+'/../README.markdown', 'ascii')
 
 			examples = []
-			currentsource = []
+			currentsource = ["{select} = require '../lib'"]
 			issource = false
 			for line in readme.split '\n'
 				if line.match /```coffee/
@@ -19,7 +19,7 @@ vows.describe("README test").addBatch(
 				else if issource and line.match /```/
 					issource=false
 					examples.push currentsource.join '\n'
-					currentsource = []
+					currentsource = ["{select} = require '../lib'"]
 				else if issource
 					currentsource.push line
 

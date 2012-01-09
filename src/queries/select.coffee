@@ -61,6 +61,11 @@ module.exports = class SelectQuery extends SUDQuery
     if opts.fields?
       @fields(opts.fields...)
 
+  ensureJoin: fluid (tbl, opts={}) ->
+    rel = toRelation tbl
+    if not @q.relations.get rel.ref(), false
+      @join tbl, opts
+
 # A shorthand way to get a relation by name
   rel: (alias) -> @q.relations.get alias
   project: (alias, field) -> @q.relations.get(alias, true).project(field)

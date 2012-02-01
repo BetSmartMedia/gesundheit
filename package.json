@@ -1,7 +1,7 @@
 {
   "name": "gesundheit",
   "description": "Concise SQL generation in coffee-script",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "private": false,
   "main": "src",
   "engines": {
@@ -14,5 +14,6 @@
     "vows": "~0.5.11",
     "expresso": ""
   },
-  "author": "Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)"
+  "author": "Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)",
+  "optionalDependencies": {}
 }

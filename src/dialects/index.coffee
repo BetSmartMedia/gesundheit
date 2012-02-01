@@ -61,6 +61,9 @@ exports.BaseDialect = exports.default = class BaseDialect
   renderLimit: (node) ->
     if node.value then "LIMIT " + node.value else ""
 
+  renderOffset: (node) ->
+    if node.value then "OFFSET " + node.value else ""
+
   renderBinary: (node) ->
     @render(node.left) + ' ' + @renderOp(node.op) + ' ' + @render(node.right)
 

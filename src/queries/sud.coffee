@@ -78,6 +78,7 @@ module.exports = class SUDQuery extends BaseQuery
       @q.orderBy.addNode new OrderBy(rel.project(field), direction)
 
   limit: fluid (l) -> @q.limit.value = l
+  offset: fluid (l) -> @q.offset.value = l
 
   defaultRel: -> @q.relations.active
 

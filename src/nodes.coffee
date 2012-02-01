@@ -89,7 +89,8 @@ exports.Relation = class Relation extends ValueNode
   field: (field) -> @project field
   copy: -> new @constructor @value
 
-exports.Limit = class Limit extends ValueNode
+exports.Limit  = class Limit extends ValueNode
+exports.Offset = class Offset extends ValueNode
 
 exports.Binary = class Binary extends FixedNodeSet
   constructor: (@left, @op, @right) -> super [@left, @op, @right], ' '
@@ -189,6 +190,7 @@ exports.Select = class Select extends FixedNamedNodeSet
     ['groupBy',     GroupBy]
     ['orderBy',     OrderBySet]
     ['limit',       Limit]
+    ['offset',      Offset]
   ]
 
   constructor: (rel) -> super(); @relations.start rel if rel

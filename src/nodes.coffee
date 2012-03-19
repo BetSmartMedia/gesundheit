@@ -257,6 +257,7 @@ exports.Delete = class Delete extends FixedNamedNodeSet
 
 class ComparableMixin
   eq:  (other) -> new Binary @, '=',  toParam other
+  ne:  (other) -> new Binary @, '<>', toParam other
   gt:  (other) -> new Binary @, '>',  toParam other
   lt:  (other) -> new Binary @, '<',  toParam other
   lte: (other) -> new Binary @, '<=', toParam other

@@ -3,7 +3,7 @@
   "description": "Concise SQL generation in coffee-script",
   "version": "0.2.5",
   "private": false,
-  "main": "src",
+  "main": "lib",
   "engines": {
     "node": ">=0.4.0"
   },
@@ -15,5 +15,8 @@
     "expresso": ""
   },
   "author": "Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)",
-  "optionalDependencies": {}
+  "optionalDependencies": {},
+  "scripts": {
+    "install": "make"
+  }
 }

@@ -21,3 +21,5 @@ for queryType in ['select', 'update', 'insert', 'delete']
   query = require "./queries/#{queryType}"
   for name in [queryType, uc(queryType), ucfirst(queryType)]
     exports[name] = query
+
+exports.BaseQuery = require './queries/base'

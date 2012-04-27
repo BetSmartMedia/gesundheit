@@ -27,27 +27,33 @@ q = select.from('chairs').visit -> # or Select.from, or SELECT.from
 	@where gender: 'M'
 
 # More concisely:
+{select, BaseQuery} = require '../lib'
 q = select.from('chairs', ['type', 'size']).where(type: 'recliner', weight: {lt: 25})
 q.join("people", on: {chair_id: q.rel('chairs').field('id')}).fields("name").where(gender: 'M')
 
 # Generate the SQL
 q.toSql() # SELECT chairs.type, chairs.size, people.name FROM chairs INNER JOIN people ...
 
-# Execute the query with a client (must have a `query` method)
-client = query: (sql, params, cb) -> cb null, [{col1: "Cool beans"}]
-
-q.execute client, (err, res) ->
+# Execute the query with an engine (must implement the following interface)
+engine =
+  connect: (cb) ->
+    err = null
+    conn = query: (sql, params, query_cb) ->
+      query_cb null, [{col1: "Cool beans"}]
+    cb err, conn
+  release: (conn) -> # Take back a connection
+  dialect:
+    render: (rootASTNode) ->
+      return "SELECT blah blah"
+  
+q.bind(engine)
+q.execute (err, res) ->
 	throw err if err?
 	# do something with result
 
-# Execute the query with a connection pool (must have an 'acquire' method)
-pool = 
-	acquire: (cb) -> cb client
-	release: ->
+# Or set the engine globally:
+# BaseQuery.engine = engine
 
-q.execute pool, (err, res) ->
-	throw err if err?
-	# do something with result
 
 # Table aliasing
 # SELECT ArtWTF.* FROM a_real_table_with_twenty_fields AS ArtWTF

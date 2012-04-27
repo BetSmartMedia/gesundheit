@@ -1,5 +1,15 @@
 assert = require 'assert'
 
+g = require '../'
+g.BaseQuery.engine =
+  dialect: new g.dialects.BaseDialect
+  release: (conn) ->
+  connect: (cb) ->
+    cb null, query: (sql, par, cb) ->
+      assert.strictEqual sql, 'SELECT * FROM t1'
+      assert.deepEqual par, []
+      cb null, "Sweet"
+
 # A macro for building up sql tests. Each sub-context will copy the query
 exports.newQuery = (subctx) ->
 	sql = subctx.sql

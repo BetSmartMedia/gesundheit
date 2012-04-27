@@ -9,34 +9,15 @@ suite = vows.describe('SELECT queries').addBatch(
 		topic: -> select.from 't1'
 		sql: "SELECT * FROM t1"
 
-		"stringification is correct": (q) ->
-			assert.equal q.toString(), '[Select "SELECT * FROM t1"]'
+		"stringification does not bind": (q) ->
+			assert.equal q.toString(), '[Unbound Select]'
 
 		"self-joins require alias": (q) ->
 			assert.throws (-> q.join "t1"), Error
 		
 		"and executing it":
 			topic: (q) ->
-				fakeClient =
-					query: (sql, par, cb) ->
-						assert.strictEqual sql, 'SELECT * FROM t1'
-						assert.deepEqual par, []
-						cb null, "Sweet"
-				q.execute fakeClient, @callback
-
-			"the callback gets the result": (res) -> assert.equal(res, "Sweet")
-
-		"and executing it with a pool":
-			topic: (q) ->
-				fakeClient =
-					query: (sql, par, cb) ->
-						assert.strictEqual sql, 'SELECT * FROM t1'
-						assert.deepEqual par, []
-						cb null, "Sweet"
-				pool =
-					acquire: (cb) -> cb fakeClient
-					release: ->
-				q.execute pool, @callback
+				q.execute @callback
 
 			"the callback gets the result": (res) -> assert.equal(res, "Sweet")
 

@@ -59,14 +59,24 @@ module.exports = class BaseQuery
 # via console.log()
   echo: fluid -> @doEcho = true
 
-# Render the query to SQL using it's particular dialect
+# Render the query to SQL using a dialect
   toSql: ->
-    sql = @dialect.render @q
+    unless @engine
+      @bind(BaseQuery.engine)
+
+    throw new Error "Cannot render unbound query" unless @engine?.dialect
+
+    sql = @engine.dialect.render @q
     console.log sql if @doEcho
-    console.dir @q.params() if @doEcho
+    console.log @q.params() if @doEcho
     sql
 
   params: -> @q.params()
+
+# Bind this query object to a specific engine instance
+  bind: (@engine) ->
+
+  @engine = null
 
 # Given an object that exposes an `acquire` method, call the acquire method and 
 # then continue with the result.
@@ -74,14 +84,25 @@ module.exports = class BaseQuery
 # Otherwise, call the `query` method of the object, passing it the SQL rendering
 # of the query, the parameter values contained in the query, and the passed in 
 # callback.
-  execute: (conn, cb) ->
-    if typeof conn.acquire == 'function'
-      conn.acquire (c) =>
-        @execute c, (err, res) ->
-          conn.release c
-          return cb err if err?
-          cb null, res
-    else
-      conn.query @toSql(), @params(), cb
+  execute: (cb) ->
+    try
+      sql = @toSql()
+      params = @params()
+    catch err
+      return cb err
 
-  toString: -> '['+@q.constructor.name+' "'+@toSql().substring(0,20)+'"]'
+    unless @engine.connect
+      cb new Error "Engine cannot provide a connection!"
+
+    @engine.connect (err, conn) =>
+      return cb err if err
+      conn.query sql, params, (err, res) =>
+        @engine.release conn if @engine.release
+        return cb err if err
+        cb null, res
+
+  toString: ->
+    if not @engine
+      '[Unbound '+@q.constructor.name+']'
+    else
+      '['+@q.constructor.name+' "'+@toSql().substring(0,20)+'"]'

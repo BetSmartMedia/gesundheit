@@ -16,6 +16,7 @@
   "author": "Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)",
   "optionalDependencies": {},
   "scripts": {
-    "install": "make"
+    "install": "make",
+		"test": "make test"
   }
 }

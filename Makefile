@@ -8,18 +8,18 @@ all: $(LIB_DIR)
 
 .PHONY: test
 test: $(LIB_DIR)
-	vows $(VOWS_OPTS) $(TEST)
+	@vows $(VOWS_OPTS) $(TEST)
 
 .PHONY: fulltest
 fulltest: coverage
-	vows $(VOWS_OPTS) $(TEST)
+	@vows $(VOWS_OPTS) $(TEST)
 
 # TODO: put instrumented code somewhere other than ./lib
 .PHONY: coverage
 coverage: $(LIB_DIR)
-	rm -rf lib-tmp
-	mv $< lib-tmp
-	node-jscoverage lib-tmp $<
+	@rm -rf lib-tmp
+	@mv $< lib-tmp
+	@node-jscoverage lib-tmp $<
 
 .PHONY: clean
 clean:
@@ -27,4 +27,4 @@ clean:
 	rm -rf lib-tmp
 
 $(LIB_DIR): $(SRC_DIR)
-	coffee -o $@ -c $<
+	@coffee -o $@ -c $<

@@ -3,7 +3,7 @@ prefixIfNotEmpty = (prefix) ->
     children = @renderNodeSet node
     if children then prefix + children else ''
 
-exports.BaseDialect = exports.default = class BaseDialect
+exports.BaseDialect = class BaseDialect
 
   render: (node) ->
     type = node.__proto__

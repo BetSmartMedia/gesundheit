@@ -2,6 +2,7 @@
 
 # Dialects for easier extension and/or changing of the default
 exports.dialects = require './dialects'
+exports.defaultEngine = null
 
 # Common pre-defined value nodes (e.g. IS_NULL, LEFT_OUTER)
 nodes = require './nodes'
@@ -21,5 +22,3 @@ for queryType in ['select', 'update', 'insert', 'delete']
   query = require "./queries/#{queryType}"
   for name in [queryType, uc(queryType), ucfirst(queryType)]
     exports[name] = query
-
-exports.BaseQuery = require './queries/base'

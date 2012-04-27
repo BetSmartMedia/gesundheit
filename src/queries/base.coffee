@@ -1,5 +1,4 @@
 fluid = require '../fluid'
-dialects = require '../dialects'
 {toRelation} = require '../nodes'
 
 # The base class for all queries, not very useful on it's own. The constructor
@@ -10,37 +9,21 @@ dialects = require '../dialects'
 #   table - a ``String`` or ``Relation`` or ``Alias``, or an object literal with
 #     a single key and value which will be interpreted as an alias name and
 #     table, respectively.
-#   dialect - an object that will be used to render the AST to a SQL string.
+#   engine - an engine that will be used to render and execute this query.
+#     Defaults can be via ``query.bind(engine)``
 module.exports = class BaseQuery
   constructor: (rootNodeType, opts={}) ->
-    @doEcho = false
-    dialectType = opts.dialect || dialects.default
-    @dialect = new dialectType
+    @doEcho  = false
+    @engine  = opt.engine if opts.engine?
     if (table = opts.table)?
       table = toRelation table
-
     @q = new rootNodeType table
-
-# Dialects can specify pre-conditions that must be met before certain methods 
-# can be called, these will be called in the context of the root query node with
-# the original arguments
-    if @dialect.pre?
-      for method, checks of @dialect.pre
-        for description, condition of checks
-          #continue
-          continue unless orig = @[method]
-          do (method, description, orig, condition) =>
-            @[method] = ->
-              if condition.apply @q, arguments
-                orig.apply @, arguments
-              else
-                throw new Error description
 
 # Instantiate a new query with a deep copy of AST
   copy: ->
     c = new @constructor ->
-    c.dialect = new @dialect.constructor
     c.q = @q.copy()
+    c.engine = @engine
     return c
 
 # Call the given function in the context of this query. Makes for a sort-of DSL
@@ -62,7 +45,7 @@ module.exports = class BaseQuery
 # Render the query to SQL using a dialect
   toSql: ->
     unless @engine
-      @bind(BaseQuery.engine)
+      @bind(require('../').defaultEngine)
 
     throw new Error "Cannot render unbound query" unless @engine?.dialect
 
@@ -75,8 +58,6 @@ module.exports = class BaseQuery
 
 # Bind this query object to a specific engine instance
   bind: (@engine) ->
-
-  @engine = null
 
 # Given an object that exposes an `acquire` method, call the acquire method and 
 # then continue with the result.

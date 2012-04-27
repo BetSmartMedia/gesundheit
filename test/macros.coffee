@@ -1,7 +1,7 @@
 assert = require 'assert'
 
 g = require '../'
-g.BaseQuery.engine =
+g.defaultEngine =
   dialect: new g.dialects.BaseDialect
   release: (conn) ->
   connect: (cb) ->

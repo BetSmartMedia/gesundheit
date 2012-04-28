@@ -9,9 +9,6 @@ suite = vows.describe('SELECT queries').addBatch(
 		topic: -> select.from 't1'
 		sql: "SELECT * FROM t1"
 
-		"stringification does not bind": (q) ->
-			assert.equal q.toString(), '[Unbound Select]'
-
 		"self-joins require alias": (q) ->
 			assert.throws (-> q.join "t1"), Error
 		
@@ -19,7 +16,10 @@ suite = vows.describe('SELECT queries').addBatch(
 			topic: (q) ->
 				q.execute @callback
 
-			"the callback gets the result": (res) -> assert.equal(res, "Sweet")
+			"the callback gets the result": (res) ->
+        [sql, params] = res
+        assert.equal(sql, "SELECT * FROM t1")
+        assert.deepEqual(params, [])
 
 		"and setting a limit": newQuery
 			mod: -> @limit 100

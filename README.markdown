@@ -9,7 +9,10 @@ Gesundheit generates SQL, it does this using a nice CoffeeScript friendly syntax
 ## Examples
 
 ```coffee
+gesundheit = require('../lib')
+
 # SELECT chairs.* FROM chairs
+
 q = select.from('chairs').visit -> # or Select.from, or SELECT.from   
 	# SELECT chairs.type, chairs.size FROM chairs
 	@fields "type", "size"
@@ -27,32 +30,33 @@ q = select.from('chairs').visit -> # or Select.from, or SELECT.from
 	@where gender: 'M'
 
 # More concisely:
-{select, BaseQuery} = require '../lib'
 q = select.from('chairs', ['type', 'size']).where(type: 'recliner', weight: {lt: 25})
 q.join("people", on: {chair_id: q.rel('chairs').field('id')}).fields("name").where(gender: 'M')
 
 # Generate the SQL
-q.toSql() # SELECT chairs.type, chairs.size, people.name FROM chairs INNER JOIN people ...
+q.render() # SELECT chairs.type, chairs.size, people.name FROM chairs INNER JOIN people ...
 
-# Execute the query with an engine (must implement the following interface)
-engine =
-  connect: (cb) ->
-    err = null
-    conn = query: (sql, params, query_cb) ->
-      query_cb null, [{col1: "Cool beans"}]
-    cb err, conn
-  release: (conn) -> # Take back a connection
-  dialect:
-    render: (rootASTNode) ->
-      return "SELECT blah blah"
+# Execute the query with an engine
+# (MySQL and Postgres included, SQLite planned)
+engine = gesundheit.engines.fakeEngine
   
 q.bind(engine)
 q.execute (err, res) ->
 	throw err if err?
 	# do something with result
 
-# Or set the engine globally:
-# BaseQuery.engine = engine
+# Or set the default engine globally:
+gesundheit.defaultEngine = engine
+
+# You can also bind to a client for transaction support
+engine.connect (err, client) ->
+	client.query('BEGIN')
+	# An arbitrary number of queries here
+	gesundheit.update.table('chairs', binding: client)
+#		.set(size: 'large')
+#    .where(weight: gt: 50)
+#    .execute (err, res) ->
+#			client.query(if err then 'ROLLBACK' else 'COMMIT')
 
 
 # Table aliasing

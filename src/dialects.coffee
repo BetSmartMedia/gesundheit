@@ -83,7 +83,7 @@ exports.BaseDialect = class BaseDialect
 
 exports.PostgresDialect = class PostgresDialect extends BaseDialect
 
-  {Select, Update, Delete} = require '../nodes'
+  {Select, Update, Delete} = require './nodes'
 
   render: (node) ->
     if node.constructor in [Select, Update, Delete]
@@ -98,3 +98,8 @@ exports.PostgresDialect = class PostgresDialect extends BaseDialect
       when '->' then '->'
       else super op
 
+exports.MySQLDialect = class MySQLDialect extends BaseDialect
+  ###
+  Specialization of BaseDialect for MySQL
+  ###
+  renderParameter: (node) -> '?'

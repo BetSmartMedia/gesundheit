@@ -7,15 +7,17 @@ module.exports = class SelectQuery extends SUDQuery
   constructor: (opts={}) ->
     super Select, opts
 
-# Adds one or more fields to the query. If the second argument is an array, 
-# the first argument is treated as a table (in the same way that `join` 
-# understands tables) and the second argument as the list of fields to 
-# select/update from that table. The table must already be joined for this to 
-# work.
-
-# If the second argument is not an array, then each argument is treated as an 
-# individual field of the last table added to the query.
   fields: fluid (fields...) ->
+    ###
+    Adds one or more fields to the query. If the second argument is an array, 
+    the first argument is treated as a table (in the same way that :meth:`join` 
+    understands tables) and the second argument as the list of fields to 
+    select/update from that table. The table **must** already be joined for this
+    to work.
+
+    If the second argument is not an array, then each argument is treated as an 
+    individual field to be projected from the last table added to the query.
+    ###
     if fields[1] and Array.isArray fields[1]
       rel = @q.relations.get fields[0]
       unknown 'table', fields[0] unless rel?
@@ -35,8 +37,19 @@ module.exports = class SelectQuery extends SUDQuery
       else
         @q.projections.addNode toNode(f)
 
-# Adds one or more aggregated fields to the query
   agg: fluid (fun, fields...) ->
+    ###
+    Adds one or more aggregated fields to the query
+
+    :param fun: name of SQL aggregation function.
+    :param fields: Fields to be projected from the current table and passed
+      as arguments to ``fun``
+
+    Example::
+
+      select.from('t1').agg('count', 'id') # SELECT count(id) FROM t1
+    
+    ###
     if alias = Alias.getAlias fun
       fun = fun[alias]
     funcNode = sqlFunction fun, fields
@@ -47,6 +60,14 @@ module.exports = class SelectQuery extends SUDQuery
 
 
   join: fluid (tbl, opts={}) ->
+    ###
+    Join another table to the query.
+
+    :param tbl: A string tablename, will be processed by :func:`nodes::toRelation`
+    :param opts.on: An object literal expressing join conditions. See :func:`where`
+    :param opts.type: A join type constant (e.g. INNER, OUTER)
+    :param opts.fields: A list of fields to be projected from the newly joined table.
+    ###
     rel = toRelation tbl
     if @q.relations.get rel.ref(), false
       throw new Error "Table/alias #{rel.ref()} is not unique!"
@@ -62,34 +83,54 @@ module.exports = class SelectQuery extends SUDQuery
       @fields(opts.fields...)
 
   ensureJoin: fluid (tbl, opts={}) ->
+    ###
+    The same as :meth:`join`, but will only join ``tbl`` if it is **not**
+    joined already.
+    ###
     rel = toRelation tbl
     if not @q.relations.get rel.ref(), false
       @join tbl, opts
 
-# A shorthand way to get a relation by name
-  rel: (alias) -> @q.relations.get alias
-  project: (alias, field) -> @q.relations.get(alias, true).project(field)
+  rel: (alias) ->
+    ### A shorthand way to get a relation by name ###
+    @q.relations.get alias
+  project: (alias, field) ->
+    ###
+    Return an AST node representing ``<alias>.<field>``.
+    See :class:`nodes::Projection` for methods supported by the returned node.
+    ###
+    @q.relations.get(alias, true).project(field)
 
-# Make a different table "active", this will use that table as the default for 
-# the ``fields``, ``orderBy`` and ``where`` methods
-  from: fluid (alias) -> @q.relations.switch alias
+  from: fluid (alias) ->
+    ###
+    Make a different table "active", this will use that table as the default for 
+    the ``fields``, ``orderBy`` and ``where`` methods
+    ###
+    @q.relations.switch alias
 
-# Add a GROUP BY to the query.
   groupBy: fluid (fields...) ->
+    ### Add a GROUP BY to the query. ###
     rel = @q.relations.active
     for field in fields
       if field.constructor == String
         @q.groupBy.addNode rel.project field
-      else if field instanceof Projection
+      else
         @q.groupBy.addNode field
 
 SelectQuery::field = SelectQuery::fields
 
-SelectQuery.from = (tbl, fields, opts={}) ->
+SelectQuery.from = (table, fields, opts={}) ->
+  ###
+  Factory function for new SelectQuery instances
+
+  :param table: Table name to select rows from.
+  :param fields: (Optional) Fields to select from ``table``.
+  :param opts: Additional options for :meth:`queries/base::BaseQuery.constructor`
+  ###
   if fields? and fields.constructor != Array
     opts = fields
     fields = null
-  opts.table = tbl
+  opts.table = table
   query = new SelectQuery opts
   if fields?
     query.fields fields...

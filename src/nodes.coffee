@@ -119,6 +119,8 @@ class SelectProjectionSet extends ProjectionSet
         if not pred node.obj then @nodes.push node
   
 exports.Projection = class Projection extends FixedNodeSet
+  ###
+  ###
   constructor: (@source, @field) -> super [@source, @field], '.'
   copy: -> new @constructor copy(@source), @field
 

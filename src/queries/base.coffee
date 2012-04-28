@@ -1,89 +1,127 @@
 fluid = require '../fluid'
 {toRelation} = require '../nodes'
+assert = require 'assert'
 
-# The base class for all queries, not very useful on it's own. The constructor
-# takes a root node constructor corresponding to the query type and an options
-# object. 
-#
-# Options:
-#   table - a ``String`` or ``Relation`` or ``Alias``, or an object literal with
-#     a single key and value which will be interpreted as an alias name and
-#     table, respectively.
-#   engine - an engine that will be used to render and execute this query.
-#     Defaults can be via ``query.bind(engine)``
+withBinding = (original) ->
+  ###
+  Decorate a method so that it can accept a bindable object as it's first
+  argument, and will always call @bind() before the method.
+  ###
+  (bindable, args...) ->
+    unless bindable?.execute or bindable?.connect
+      # First argument is not a bindable object
+      args.unshift bindable
+      bindable = null
+    original.apply @bind(bindable), args
+
+
 module.exports = class BaseQuery
+  ###
+  The base class for all queries, this is not exported publically or expected
+  to be used directly.
+  ###
   constructor: (rootNodeType, opts={}) ->
+    ###
+    :param rootNodeCtor:  Constructor for the root AST Node (e.g. Select)
+    :param opts.table: a ``String``, ``Relation``, ``Alias``, or an object
+      literal with a single key and value which will be interpreted as an alias
+      name and table, respectively.
+    :param opts.bind: an :mod:`engine` or connection that the query will be
+      bound to. The engine is used to render and/or execute the query. Unbound
+      query objects fall back to using ``gesundheit.defaultEngine`` when methods
+      that require an engine are called. Also see: :meth:`bind`.
+    ###
     @doEcho  = false
-    @engine  = opt.engine if opts.engine?
+    unless opts.autobind is false
+      @bind(opts.binding)
     if (table = opts.table)?
       table = toRelation table
     @q = new rootNodeType table
 
-# Instantiate a new query with a deep copy of AST
   copy: ->
+    ### Instantiate a new query with a deep copy of this ones AST ###
     c = new @constructor ->
     c.q = @q.copy()
     c.engine = @engine
     return c
 
-# Call the given function in the context of this query. Makes for a sort-of DSL
-# where you can do things like:
-#     
-#     somequery.visit ->
-#       @where x: val
-#       @orderBy x: 'ASC'
-# 
-# The current query is also given as the first parameter to the query, in case
-# you need it.
   visit: fluid (fn) ->
+    ###
+    Call the given function in the context of this query. This is mostly useful
+    in coffeescript where you can use it as a sort-of-DSL::
+        
+        queryObject.visit ->
+          @where x: val
+          @orderBy x: 'ASC'
+    
+    The current query is also given as the first parameter to the query, in
+    case you need it.
+    ###
     fn.call @, @ if fn?
 
-# If called before .toSql(), then resulting SQL will be sent to stdout
-# via console.log()
-  echo: fluid -> @doEcho = true
+  echo: fluid ->
+    ###
+    If called before .toSql(), then resulting SQL will be sent to stdout
+    via console.log()
+    ###
+    @doEcho = true
 
-# Render the query to SQL using a dialect
-  toSql: ->
-    unless @engine
-      @bind(require('../').defaultEngine)
+  bind: fluid (bindable=null) ->
+    ###
+    Bind this query object to a `bindable` object (engine or connection).
+    If ``bindable == null`` the query will be bound to the default engine.
+    ###
+    oldEngine = @engine
 
-    throw new Error "Cannot render unbound query" unless @engine?.dialect
+    # We are binding to a specific client object
+    if bindable?.engine
+      @client = bindable
+      @engine = bindable.engine
+    else if bindable
+      @engine = bindable
+    else if not @engine
+      # Bind to the defaultEngine
+      @engine = require('../').defaultEngine
+    if @engine isnt oldEngine
+      oldEngine.unextend(@) if oldEngine?.unextend
+      @engine.extend(@) if @engine.extend
 
-    sql = @engine.dialect.render @q
+    assert @engine?.connect
+    assert @engine?.render
+
+  render: withBinding ->
+    ### Render the query to SQL. ###
+    sql = @engine.render @q
     console.log sql if @doEcho
     console.log @q.params() if @doEcho
     sql
 
-  params: -> @q.params()
+  compile: withBinding ->
+    ###
+    Compile this query object, returning a SQL string and parameter array.
+    :param bindable: (optional)
+      The query will *temporarily* be bound to this object using :meth:`bind`
+    ###
+    [@engine.render(@q), @q.params()]
 
-# Bind this query object to a specific engine instance
-  bind: (@engine) ->
+  execute: withBinding (cb) ->
+    ###
+    Execute the query and buffer all results.
 
-# Given an object that exposes an `acquire` method, call the acquire method and 
-# then continue with the result.
-#
-# Otherwise, call the `query` method of the object, passing it the SQL rendering
-# of the query, the parameter values contained in the query, and the passed in 
-# callback.
-  execute: (cb) ->
-    try
-      sql = @toSql()
-      params = @params()
-    catch err
-      return cb err
+    :param bindable: (optional)
+      If present, the query will be bound to this object using :meth:`bind`
+    :param cb: Result callback of the form ``(err, res) -> undefined``
+    ###
+    @engine.execute @, cb
 
-    unless @engine.connect
-      cb new Error "Engine cannot provide a connection!"
+  stream: withBinding (cb) ->
+    ###
+    Execute the query and stream the results.
+    
+    :param bindable: (optional)
+      If present, the query will be bound to this object using :meth:`bind`
+    :param cb: Per-row callback of the form ``(err, row) -> undefined``
+    ###
+    @engine.stream @, cb
 
-    @engine.connect (err, conn) =>
-      return cb err if err
-      conn.query sql, params, (err, res) =>
-        @engine.release conn if @engine.release
-        return cb err if err
-        cb null, res
-
-  toString: ->
-    if not @engine
-      '[Unbound '+@q.constructor.name+']'
-    else
-      '['+@q.constructor.name+' "'+@toSql().substring(0,20)+'"]'
+  toString: -> @render()

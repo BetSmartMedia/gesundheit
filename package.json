@@ -1,7 +1,7 @@
 {
   "name": "gesundheit",
   "description": "Concise SQL generation in coffee-script",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": false,
   "main": "lib",
   "engines": {

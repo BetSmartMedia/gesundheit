@@ -28,6 +28,14 @@ exports.BaseDialect = class BaseDialect
 
   maybeParens: (it) -> if /\s/.exec it then "(#{it})" else it
 
+  renderDistinct: (set) ->
+    if not set.enable
+      ''
+    else if set.nodes.length
+      "DISTINCT(#{@renderNodeSet set})"
+    else
+      'DISTINCT'
+
   renderSelectProjectionSet: (set) ->
     if not set.nodes.length
       '*'

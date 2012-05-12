@@ -59,6 +59,9 @@ module.exports = class SelectQuery extends SUDQuery
       @q.projections.addNode funcNode
 
 
+  distinct: fluid (bool) ->
+    @q.distinct.enable = bool
+
   join: fluid (tbl, opts={}) ->
     ###
     Join another table to the query.
@@ -94,6 +97,7 @@ module.exports = class SelectQuery extends SUDQuery
   rel: (alias) ->
     ### A shorthand way to get a relation by name ###
     @q.relations.get alias
+
   project: (alias, field) ->
     ###
     Return an AST node representing ``<alias>.<field>``.

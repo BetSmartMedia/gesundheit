@@ -110,6 +110,10 @@ suite = vows.describe('SELECT queries').addBatch(
 			mod: -> @groupBy "col2"
 			sql: "SELECT t1.col1, t1.col2 FROM t1 GROUP BY t1.col2"
 
+		"and DISTINCT is enabled": newQuery
+			mod: -> @distinct true
+			sql: "SELECT DISTINCT t1.col1, t1.col2 FROM t1"
+
 		"and joining another table": newQuery
 			mod: -> @join "t2"
 			sql: "SELECT t1.col1, t1.col2 FROM t1 INNER JOIN t2"

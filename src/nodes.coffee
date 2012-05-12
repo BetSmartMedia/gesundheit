@@ -106,7 +106,11 @@ class ProjectionSet extends NodeSet
 
 class Returning extends ProjectionSet
 
+class Distinct extends ProjectionSet
+  constructor: (@enable=false) -> super
+
 class SelectProjectionSet extends ProjectionSet
+
 # Recurse over child nodes, removing all Projection nodes that match the
 # predicate
   prune: (pred) ->
@@ -186,6 +190,7 @@ exports.UpdateSet = class UpdateSet extends NodeSet
 
 exports.Select = class Select extends FixedNamedNodeSet
   structure: [
+    ['distinct',    Distinct]
     ['projections', SelectProjectionSet]
     ['relations',   RelationSet]
     ['where',       Where]

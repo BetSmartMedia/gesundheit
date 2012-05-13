@@ -77,7 +77,7 @@ suite = vows.describe('SELECT queries').addBatch(
 					sql: "SELECT * FROM t1 INNER JOIN t2"
 
 			"and fields are added on the first table": newQuery
-				mod: -> @from("t1").fields "a", "b"
+				mod: -> @focus("t1").fields "a", "b"
 				sql: "SELECT t1.a, t1.b FROM t1 INNER JOIN t2"
 
 		"and joining another table using a clause": newQuery

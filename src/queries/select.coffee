@@ -132,7 +132,8 @@ module.exports = class SelectQuery extends SUDQuery
       else
         @q.groupBy.addNode field
 
-fluidize SelectQuery, 'distinct', 'fields', 'agg', 'join', 'ensureJoin', 'from', 'groupBy'
+fluidize SelectQuery,
+  'distinct', 'fields', 'agg', 'join', 'ensureJoin', 'focus', 'groupBy'
 
 SelectQuery::field = SelectQuery::fields
 

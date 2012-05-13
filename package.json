@@ -9,7 +9,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "coffee-script": "~1.1.0",
+    "coffee-script": "~1.3.0",
     "vows": "~0.5.11",
     "expresso": ""
   },

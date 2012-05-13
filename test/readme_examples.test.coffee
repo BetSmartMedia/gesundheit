@@ -20,7 +20,6 @@ vows.describe("README test").addBatch(
       code.join '\n'
 
     "the examples run": (code) ->
-      console.log code
       eval code
 
 ).export(module)

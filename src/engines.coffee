@@ -1,106 +1,118 @@
-###
-Factory functions to create engines for various databases.
-
-This module attempts to require the ``'pg'`` and ``'mysql'`` modules and
-fails silently if they are not found.
-###
 
 dialects = require('./dialects')
+
+postgres = (dsn) ->
+  ###
+  Create a new Postgres engine using a DSN compatible with
+  ``require('pg').connect(dsn)``. This generally has the from:
+
+  ``<scheme>://<user>@<host>[:<port>]/<database>``
+
+  This will ``require('pg')`` and attempt to use the 'native' interface if it's
+  available, so that module must be installed for this to work.
+  ###
+  pg = require('pg')
+  if pg.native
+    pg = pg.native
+
+  dialect = new dialects.Postgres
+
+  engine =
+    render: dialect.render.bind(dialect)
+    connect: (cb) ->
+      pg.connect dsn, (err, client) ->
+        client.engine = engine if client
+        cb err, client
+
+    stream: withClient (client, query, cb) ->
+      [sql, params] = query.compile()
+      client.query(sql, params)
+        .on('row', cb.bind(null, null))
+        .on('error', cb)
+
+    execute: withClient (client, query, cb) ->
+      [sql, params] = query.compile()
+      client.query(sql, params, cb)
+    
+mysql = (opts) ->
+  ###
+  Create a new MySQL engine using an object that is compatible with
+  ``require('node-mysql').createClient(opts)``, 
+
+  Additionally, you can specify extra options for ``generic-pool`` by
+  including them as an object in ``opts.pool``. The ``create`` and
+  ``destroy`` pool functions will be created for you.
+  
+  This will ``require('mysql')`` and ``require('generic-pool')`` so those
+  modules must be installed and loadable for this function to work.
+  ###
+  mysql = require('mysql')
+  {Pool} = require('generic-pool')
+  dialect = new dialects.MySQL
+  poolOpts = opts.pool or {}
+  poolOpts.name or= opts.user+opts.host+opts.port+opts.database
+  poolOpts.create = mysql.createClient.bind(null, opts)
+  poolOpts.destroy = (client) -> client.end()
+  pool = Pool poolOpts
+  engine =
+    render: dialect.render.bind(dialect)
+    connect: pool.acquire.bind(pool)
+    stream: withClient (client, query, cb) ->
+      [sql, params] = query.compile()
+      client.query(sql, params)
+        .on('row', cb.bind(null, null))
+        .on('end', (res) ->
+          pool.release client unless client is query.client
+          if res then cb null, null, res
+        )
+        .on('error', cb)
+
+    execute: withClient (client, query, cb) ->
+      [sql, params] = query.compile()
+      client.query sql, params, (err, res) ->
+        pool.release client unless client is query.client
+        cb err, res
+
+
+fakeEngine = ->
+  ###
+  Create a no-op engine that simply returns the compiled SQL and parameter
+  array to the result callback. This will be the default until you over-ride
+  with ``gesundheit.defaultEngine = myAppEngine``.
+  ###
+  bd = new dialects.BaseDialect
+  engine =
+    render: bd.render.bind(bd)
+    connect: (cb) -> cb null, passthroughClient
+    stream: withClient (client, query, cb) ->
+      [sql, params] = query.compile()
+      client.query sql, params, cb
+    execute: withClient (client, query, cb) ->
+      [sql, params] = query.compile()
+      client.query sql, params, cb
+
+  passthroughClient =
+    engine: engine
+    query: (sql, params, cb) ->
+      if cb
+        process.nextTick cb.bind(null, null, [sql, params])
+
+  return engine
 
 withClient = (original) ->
   ###
   Decorate a method so that it will be called with a connected client prepended
-  to the argument list. The method **must** receive a bound query as it's first
-  argument.
+  to the argument list. The method **must** receive an object bound to an engine
+  as it's first argument.
   ###
-  (query, args...) ->
-    if client = query.connection
-      args = [client, query].concat(args)
+  (obj, args...) ->
+    if client = obj.connection
+      args = [client, obj].concat(args)
       original.apply @, args
     else
-      query.engine.connect (err, client) ->
+      obj.engine.connect (err, client) ->
         return cb err if err
-        args = [client, query].concat(args)
+        args = [client, obj].concat(args)
         original.apply @, args
 
-try
-  pg = require('pg').native
-catch e then try
-  pg = require('pg')
-
-
-# Postgres
-if pg
-  exports.postgres = (dsn) ->
-    dialect = new dialects.PostgresDialect
-
-    engine =
-      render: dialect.render.bind(dialect)
-      connect: (cb) ->
-        pg.connect dsn, (err, client) ->
-          client.engine = engine if client
-          cb err, client
-
-      stream: withClient (client, query, cb) ->
-        [sql, params] = query.compile()
-        client.query(sql, params)
-          .on('row', cb.bind(null, null))
-          .on('error', cb)
-
-      execute: withClient (client, query, cb) ->
-        [sql, params] = query.compile()
-        client.query(sql, params, cb)
-    
-# MySQL
-try
-  mysql = require('mysql')
-  {Pool} = require('generic-pool')
-
-if mysql and Pool
-  exports.mysql = (opts) ->
-    # Default no-pooling case, connect for every query (slow!)
-    dialect = new dialects.MySQLDialect
-    poolOpts = opts.pool or {}
-    poolOpts.name or= opts.user+opts.host+opts.port+opts.database
-    poolOpts.create = mysql.createClient.bind(null, opts)
-    poolOpts.destroy = (client) -> client.end()
-    pool = Pool poolOpts
-    engine =
-      render: dialect.render.bind(dialect)
-      connect: pool.acquire.bind(pool)
-      stream: withClient (client, query, cb) ->
-        [sql, params] = query.compile()
-        client.query(sql, params)
-          .on('row', cb.bind(null, null))
-          .on('end', (res) ->
-            engine.release()
-            if res then cb null, null, res
-          )
-          .on('error', cb)
-
-      execute: withClient (client, query, cb) ->
-        [sql, params] = query.compile()
-        client.query sql, params, (err, res) ->
-          pool.release client unless client is query.client
-          cb err, res
-
-# Default pass-through engine
-
-bd = new dialects.BaseDialect
-exports.fakeEngine =
-  render: bd.render.bind(bd)
-  connect: (cb) -> cb null, passthroughClient
-  release: ->
-  stream: withClient (client, query, cb) ->
-    [sql, params] = query.compile()
-    client.query sql, params, cb
-  execute: withClient (client, query, cb) ->
-    [sql, params] = query.compile()
-    client.query sql, params, cb
-
-passthroughClient =
-  engine: exports.fakeEngine
-  query: (sql, params, cb) ->
-    if cb
-      process.nextTick cb.bind(null, null, [sql, params])
-
+module.exports = {mysql, postgres, fakeEngine, withClient}

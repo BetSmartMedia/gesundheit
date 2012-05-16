@@ -88,4 +88,4 @@ MIT
 
 ## Author
 
-Stephen Sugden <stephen@betsmarmedia.com>
+Stephen Sugden <stephen@betsmartmedia.com>

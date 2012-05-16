@@ -1,13 +1,17 @@
-fluid = require '../fluid'
+fluidize = require '../fluid'
 SUDQuery = require './sud'
 {Alias, getAlias, Select, And, Join, toRelation, sqlFunction, JOIN_TYPES} = require '../nodes'
 
-# Our friend the SELECT query. Select adds ORDER BY and GROUP BY support.
 module.exports = class SelectQuery extends SUDQuery
-  constructor: (opts={}) ->
-    super Select, opts
+  ###
+  Our friend the ``SELECT`` query. Select adds :meth:`orderBy` and
+  :meth:`groupBy` methods to :class:`queries/sud::SUDQuery`.
 
-  fields: fluid (fields...) ->
+  It is idiomatic to create new ``SelectQuery`` instances using
+  :func:`queries/select::SelectQuery.from`
+  ###
+
+  fields: (fields...) ->
     ###
     Adds one or more fields to the query. If the second argument is an array, 
     the first argument is treated as a table (in the same way that :meth:`join` 
@@ -29,15 +33,16 @@ module.exports = class SelectQuery extends SUDQuery
       @q.projections.prune((p) -> p.source == rel)
       return
 
-    toNode = (f) -> if typeof f is 'object' then f else rel.project(f)
-    for f in fields
-      if alias = Alias.getAlias f
-        f = f[alias]
-        @q.projections.addNode new Alias toNode(f), alias
-      else
-        @q.projections.addNode toNode(f)
+    project = (f) -> if typeof f is 'object' then f else rel.project(f)
 
-  agg: fluid (fun, fields...) ->
+    for f in fields
+      if alias = getAlias f
+        f = f[alias]
+        @q.projections.addNode new Alias project(f), alias
+      else
+        @q.projections.addNode project(f)
+
+  agg: (fun, fields...) ->
     ###
     Adds one or more aggregated fields to the query
 
@@ -50,7 +55,7 @@ module.exports = class SelectQuery extends SUDQuery
       select.from('t1').agg('count', 'id') # SELECT count(id) FROM t1
     
     ###
-    if alias = Alias.getAlias fun
+    if alias = getAlias fun
       fun = fun[alias]
     funcNode = sqlFunction fun, fields
     if alias
@@ -59,10 +64,13 @@ module.exports = class SelectQuery extends SUDQuery
       @q.projections.addNode funcNode
 
 
-  distinct: fluid (bool) ->
+  distinct: (bool) ->
+    ###
+    Make this query DISTINCT on *all* fields.
+    ###
     @q.distinct.enable = bool
 
-  join: fluid (tbl, opts={}) ->
+  join: (tbl, opts={}) ->
     ###
     Join another table to the query.
 
@@ -85,7 +93,7 @@ module.exports = class SelectQuery extends SUDQuery
     if opts.fields?
       @fields(opts.fields...)
 
-  ensureJoin: fluid (tbl, opts={}) ->
+  ensureJoin: (tbl, opts={}) ->
     ###
     The same as :meth:`join`, but will only join ``tbl`` if it is **not**
     joined already.
@@ -105,14 +113,17 @@ module.exports = class SelectQuery extends SUDQuery
     ###
     @q.relations.get(alias, true).project(field)
 
-  from: fluid (alias) ->
+  focus: (alias) ->
     ###
     Make a different table "active", this will use that table as the default for 
     the ``fields``, ``orderBy`` and ``where`` methods
+
+    :param alias: The table/alias name to focus. If the table or alias is not
+      already part of the query an Error will be thrown.
     ###
     @q.relations.switch alias
 
-  groupBy: fluid (fields...) ->
+  groupBy: (fields...) ->
     ### Add a GROUP BY to the query. ###
     rel = @q.relations.active
     for field in fields
@@ -120,6 +131,8 @@ module.exports = class SelectQuery extends SUDQuery
         @q.groupBy.addNode rel.project field
       else
         @q.groupBy.addNode field
+
+fluidize SelectQuery, 'distinct', 'fields', 'agg', 'join', 'ensureJoin', 'from', 'groupBy'
 
 SelectQuery::field = SelectQuery::fields
 
@@ -135,8 +148,9 @@ SelectQuery.from = (table, fields, opts={}) ->
     opts = fields
     fields = null
   opts.table = table
-  query = new SelectQuery opts
+  query = new SelectQuery Select, opts
   if fields?
     query.fields fields...
   return query
+
 

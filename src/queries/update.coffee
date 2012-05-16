@@ -1,20 +1,34 @@
-fluid = require '../fluid'
+fluidize = require '../fluid'
 SUDQuery = require './sud'
-{Update, Binary, Parameter} = require '../nodes'
+{Update, binaryOp, toParam} = require '../nodes'
 
 module.exports = class UpdateQuery extends SUDQuery
-  set: fluid (data) ->
-    for field, value of data
-      @q.updates.addNode new Binary field, '=', new Parameter value
+  ###
+  The update query is a little underpowered right now, and can only handle
+  simple updates of a single table.
+  ###
 
-  setNodes: fluid (nodes...) -> @q.updates.push nodes...
+  set: (data) ->
+    ###
+    Add fields to the SET portion of this query.
 
-  setRaw: fluid (data) ->
+    :param data: An object mapping fields to values. The values will be passed to
+      :func:`nodes::toParam` to be converted into bound paramaeters.
+    
+    ###
     for field, value of data
-      @q.fields.push field+' = '+value
+      @q.updates.addNode binaryOp field, '=', toParam value
+
+  setNodes: (nodes...) ->
+    ### Directly push one or more nodes into the SET portion of this query ###
+    @q.updates.push nodes...
 
   defaultRel: -> @q.relation
 
+fluidize UpdateQuery, 'set', 'setNodes'
+
 UpdateQuery.table = (table, opts={}) ->
-  opts.table = table
-  new UpdateQuery Update, opts
+    ### Create a new ``UpdateQuery`` that will update ``table`` ###
+    opts.table = table
+    new UpdateQuery Update, opts
+

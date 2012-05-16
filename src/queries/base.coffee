@@ -1,42 +1,29 @@
-fluid = require '../fluid'
 {toRelation} = require '../nodes'
 assert = require 'assert'
-
-withBinding = (original) ->
-  ###
-  Decorate a method so that it can accept a bindable object as it's first
-  argument, and will always call @bind() before the method.
-  ###
-  (bindable, args...) ->
-    unless bindable?.execute or bindable?.connect
-      # First argument is not a bindable object
-      args.unshift bindable
-      bindable = null
-    original.apply @bind(bindable), args
+fluidize = require '../fluid'
 
 
 module.exports = class BaseQuery
   ###
-  The base class for all queries, this is not exported publically or expected
-  to be used directly.
+  The base class for all queries. While this class itself is not part of
+  gesundheits public API, the methods defined on it are.
   ###
-  constructor: (rootNodeType, opts={}) ->
+
+  constructor: (rootNodeCtor, opts={}) ->
     ###
     :param rootNodeCtor:  Constructor for the root AST Node (e.g. Select)
     :param opts.table: a ``String``, ``Relation``, ``Alias``, or an object
       literal with a single key and value which will be interpreted as an alias
       name and table, respectively.
-    :param opts.bind: an :mod:`engine` or connection that the query will be
-      bound to. The engine is used to render and/or execute the query. Unbound
-      query objects fall back to using ``gesundheit.defaultEngine`` when methods
-      that require an engine are called. Also see: :meth:`bind`.
+    :param opts.bind: (optional) an :mod:`engine` or connection that the
+      query will be bound to. The engine is used to render and/or execute the
+      query. If not given ``gesundheit.defaultEngine`` will be used.
     ###
     @doEcho  = false
-    unless opts.autobind is false
-      @bind(opts.binding)
+    @bind(opts.binding)
     if (table = opts.table)?
       table = toRelation table
-    @q = new rootNodeType table
+    @q = new rootNodeCtor table
 
   copy: ->
     ### Instantiate a new query with a deep copy of this ones AST ###
@@ -45,7 +32,7 @@ module.exports = class BaseQuery
     c.engine = @engine
     return c
 
-  visit: fluid (fn) ->
+  visit: (fn) ->
     ###
     Call the given function in the context of this query. This is mostly useful
     in coffeescript where you can use it as a sort-of-DSL::
@@ -54,22 +41,22 @@ module.exports = class BaseQuery
           @where x: val
           @orderBy x: 'ASC'
     
-    The current query is also given as the first parameter to the query, in
+    The current query is also given as the first parameter to the query in
     case you need it.
     ###
     fn.call @, @ if fn?
 
-  echo: fluid ->
+  echo: ->
     ###
-    If called before .toSql(), then resulting SQL will be sent to stdout
+    If called before .render(), then resulting SQL will be sent to stdout
     via console.log()
     ###
     @doEcho = true
 
-  bind: fluid (bindable=null) ->
+  bind: (bindable=null) ->
     ###
-    Bind this query object to a `bindable` object (engine or connection).
-    If ``bindable == null`` the query will be bound to the default engine.
+    Bind this query object to a `bindable` object (engine or client).
+    If no argument is given the query will be bound to the default engine.
     ###
     oldEngine = @engine
 
@@ -89,39 +76,65 @@ module.exports = class BaseQuery
     assert @engine?.connect
     assert @engine?.render
 
-  render: withBinding ->
-    ### Render the query to SQL. ###
+  render: ->
+    ###
+    Render the query to SQL.
+
+    :param bindable: (optional)
+      If present, the query will be bound to this object using :meth:`bind`
+    ###
     sql = @engine.render @q
     console.log sql if @doEcho
     console.log @q.params() if @doEcho
     sql
 
-  compile: withBinding ->
+  compile: ->
     ###
     Compile this query object, returning a SQL string and parameter array.
+
     :param bindable: (optional)
-      The query will *temporarily* be bound to this object using :meth:`bind`
+      If present, the query will be bound to this object using :meth:`bind`
     ###
     [@engine.render(@q), @q.params()]
 
-  execute: withBinding (cb) ->
+  execute: (cb) ->
     ###
     Execute the query and buffer all results.
 
     :param bindable: (optional)
       If present, the query will be bound to this object using :meth:`bind`
-    :param cb: Result callback of the form ``(err, res) -> undefined``
+    :param cb: A node-style callback that will be called with any errors and/or
+      the query results.
     ###
     @engine.execute @, cb
 
-  stream: withBinding (cb) ->
+  stream: (cb) ->
     ###
     Execute the query and stream the results.
     
     :param bindable: (optional)
       If present, the query will be bound to this object using :meth:`bind`
-    :param cb: Per-row callback of the form ``(err, row) -> undefined``
+    :param cb: A node-style callback that will be called with any errors and/or
+      each row of the query results.
+ 
     ###
     @engine.stream @, cb
 
   toString: -> @render()
+
+withBinding = (original) ->
+  ###
+  Decorates a method so that it can accept a bindable object as it's first
+  argument, and will always call @bind() before the method itself.
+  ###
+  (bindable, args...) ->
+    unless bindable?.execute or bindable?.connect
+      # First argument is not a bindable object
+      args.unshift bindable
+      bindable = null
+    original.apply @bind(bindable), args
+
+for method in ['compile', 'render', 'execute', 'stream']
+  BaseQuery::[method] = withBinding BaseQuery::[method]
+
+fluidize BaseQuery, 'bind', 'echo', 'visit'

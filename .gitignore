@@ -1,0 +1,5 @@
+src
+lib
+node_modules
+doc
+*.coffee

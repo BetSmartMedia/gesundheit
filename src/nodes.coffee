@@ -1,8 +1,8 @@
 ###
 These are the classes that represent nodes in the AST for a SQL statement.
 Application code should very rarely have to deal with these classes directly;
-Instead, the APIs exposed by the various `Query Manager Classes`_ are intended
-to cover the majority of use-cases. However, in the spirit of "making hard things
+Instead, the APIs exposed by the various query manager classes are intended to
+cover the majority of use-cases. However, in the spirit of "making hard things
 possible", the various AST nodes can be constructed and assembled manually if you
 so desire.
 ###
@@ -10,7 +10,7 @@ so desire.
 class Node
   ### (Empty) base Node class ###
 
-ValueNode = class ValueNode extends Node
+class ValueNode extends Node
   ### A ValueNode is a literal string that should be printed unescaped. ###
   constructor: (@value) ->
   copy: -> new @constructor @value
@@ -423,7 +423,19 @@ text = (rawSQL, params...) ->
   return node
 
 binaryOp = (left, op, right) ->
-  ### Create a new :class:`Binary` node ###
+  ###
+  Create a new :class:`nodes::Binary` node::
+
+    binaryOp('hstore_column', '->', toParam(y))
+    # hstore_column -> ?
+
+  .. seealso::
+
+    :meth:`queries/select::SelectQuery.project`
+       Returns :class:`nodes::Projection` objects that have comparison methods
+       from :class:`nodes::ComparableMixin`.
+
+  ###
   new Binary left, op, right
 
 module.exports = {

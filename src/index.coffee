@@ -1,9 +1,6 @@
-# The main module just re-exports the most commonly used pieces
-
-# Dialects and engines for easier extension
 exports.dialects = require './dialects'
 exports.engines = require './engines'
-exports.defaultEngine = exports.engines.fakeEngine
+exports.defaultEngine = exports.engines.fakeEngine()
 
 # Common pre-defined value nodes (e.g. IS_NULL, LEFT_OUTER)
 nodes = require './nodes'

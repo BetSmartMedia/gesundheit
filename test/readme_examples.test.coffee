@@ -6,31 +6,22 @@ coffee = require 'coffee-script'
 
 # Hacky little test to make sure the examples in the readme run
 vows.describe("README test").addBatch(
-	"When the README has examples":
-		topic: ->
-			readme = fs.readFileSync(__dirname+'/../README.markdown', 'ascii')
+  "When the README has examples":
+    topic: ->
+      readme = fs.readFileSync(__dirname+'/../README.markdown', 'ascii')
 
-			examples = []
-			currentsource = ["{select} = require '../lib'"]
-			issource = false
-			for line in readme.split '\n'
-				if line.match /```coffee/
-					issource=true
-				else if issource and line.match /```/
-					issource=false
-					examples.push currentsource.join '\n'
-					currentsource = ["{select} = require '../lib'"]
-				else if issource
-					currentsource.push line
+      code = []
+      issource = false
+      lines = readme.split '\n'
+      for line in readme.split '\n'
+        code.push(line.replace(/^    /, '')) if line.match /^    /
+      code[0] = code[0].replace './', '../'
+      code.pop() # Remove npm install line
+      code.join '\n'
 
-			return examples
-
-		"and the examples compile":
-			topic: (examples) -> coffee.compile e for e in examples
-
-			"the examples run": (e) ->
-				for example in e
-					eval example
+    "the examples run": (code) ->
+      console.log code
+      eval code
 
 ).export(module)
 

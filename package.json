@@ -1,6 +1,7 @@
 {
   "name": "gesundheit",
   "description": "Concise SQL generation in coffee-script",
+  "keywords": ["sql", "query", "sqlalchemy", "arel"],
   "version": "0.4.1",
   "private": false,
   "main": "lib",

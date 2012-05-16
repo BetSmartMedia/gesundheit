@@ -1,10 +1,20 @@
+###
+Dialects are responsible for rendering an AST to a SQL string compatible with
+a particular DBMS. They are rarely used directly, instead a query is usually bound
+to an `engine <Engines>`_ that will delegate rendering to a private dialect
+instance.
+###
+
 prefixIfNotEmpty = (prefix) ->
   (node) ->
     children = @renderNodeSet node
     if children then prefix + children else ''
 
 exports.BaseDialect = class BaseDialect
-
+  ###
+  A dialect that isn't specific to a particular DBMS, but used as a base for both
+  MySQL and Postgres.
+  ###
   render: (node) ->
     type = node.__proto__
     name = type.constructor.name
@@ -89,14 +99,15 @@ exports.BaseDialect = class BaseDialect
       when 'is' then 'IS'
       else throw new Error("Unsupported comparison operator: #{op}")
 
-exports.PostgresDialect = class PostgresDialect extends BaseDialect
-
-  {Select, Update, Delete} = require './nodes'
+exports.Postgres = class Postgres extends BaseDialect
+  ### Specialization of BaseDialect for Postgres ###
 
   render: (node) ->
     if node.constructor in [Select, Update, Delete]
       @paramCount = 1
     super node
+
+  {Select, Update, Delete} = require './nodes'
 
   renderParameter: (node) -> "$#{@paramCount++}"
 
@@ -106,7 +117,7 @@ exports.PostgresDialect = class PostgresDialect extends BaseDialect
       when '->' then '->'
       else super op
 
-exports.MySQLDialect = class MySQLDialect extends BaseDialect
+exports.MySQL = class MySQL extends BaseDialect
   ###
   Specialization of BaseDialect for MySQL
   ###

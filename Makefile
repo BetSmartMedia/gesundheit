@@ -1,5 +1,5 @@
 LIB_DIR = ./lib
-VOWS_OPTS += --debug-brk --cover-html
+VOWS_OPTS += --cover-html
 SRC_DIR = ./src
 TEST ?= ./test/*.test.coffee
 
@@ -28,3 +28,6 @@ clean:
 
 $(LIB_DIR): $(SRC_DIR)
 	@coffee -o $@ -c $<
+
+pages:
+	make -C doc clean html

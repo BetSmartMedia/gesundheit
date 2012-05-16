@@ -1,8 +1,11 @@
 # Gesundheit - Concise SQL generation in CoffeeScript
 
-Gesundheit generates SQL, it does this using a sugary API for managing the
-abstract syntax tree of a SQL statement, then compiling that AST to a
-string and array of bound parameters at query execution time. For example:
+Gesundheit generates SQL using a sugary API for managing the abstract syntax
+tree of a statement. After building your statement programmatically, gesundheit
+can compile it to a string or execute it against your database for you, using
+proper bound parameters and allowing for streaming of results.
+
+A quick example:
 
     gesundheit = require('./lib')
     assert = require('assert')
@@ -13,6 +16,8 @@ string and array of bound parameters at query execution time. For example:
       'SELECT chairs.chair_type, chairs.size FROM chairs WHERE chairs.chair_type = ? AND chairs.weight < ?',
       ['recliner', 25]
     ])
+
+		query.execute(console.log)
 
 See [the documentation](http://betsmartmedia.github.com/gesundheit/) for more
 thorough examples showing different query types, joins, query execution and more.

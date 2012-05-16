@@ -6,6 +6,10 @@
 Gesundheit!
 ===========
 
+.. include:: ../README.markdown
+  :start-after: # Gesundheit - Concise SQL generation in CoffeeScript
+  :end-before: A quick example
+
 Contents:
 
 .. toctree::

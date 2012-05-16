@@ -6,7 +6,7 @@ newQuery = require('./macros').newQuery
 
 suite = vows.describe('SELECT queries').addBatch(
 	"When performing a SELECT": newQuery
-		topic: -> select.from 't1'
+		topic: -> select 't1'
 		sql: "SELECT * FROM t1"
 
 		"self-joins require alias": (q) ->
@@ -26,19 +26,19 @@ suite = vows.describe('SELECT queries').addBatch(
 			sql: "SELECT * FROM t1 LIMIT 100"
 
 		"and adding an ORDER BY": newQuery
-			mod: -> @orderBy size: 'ASC'
+			mod: -> @order size: 'ASC'
 			sql: "SELECT * FROM t1 ORDER BY t1.size ASC"
 
 		"and adding a string ORDER BY": newQuery
-			mod: -> @orderBy 'size'
+			mod: -> @order 'size'
 			sql: "SELECT * FROM t1 ORDER BY t1.size"
 
 		"and adding a string ORDER BY with a direction": newQuery
-			mod: -> @orderBy 'size descending'
+			mod: -> @order 'size descending'
 			sql: "SELECT * FROM t1 ORDER BY t1.size DESC"
 
 		"invalid ORDER BY direction throws an error": (q) ->
-			assert.throws (-> q.orderBy x: "LEFTWISE"), Error
+			assert.throws (-> q.order x: "LEFTWISE"), Error
 
 		"and a where clause is added": newQuery
 			mod: -> @where x: 2
@@ -103,7 +103,7 @@ suite = vows.describe('SELECT queries').addBatch(
 			assert.throws (-> q.join "t2", type: "DOVETAIL"), Error
 
 	"When performing a SELECT with fields": newQuery
-		topic: -> select.from 't1', ['col1', 'col2']
+		topic: -> select 't1', ['col1', 'col2']
 		sql: "SELECT t1.col1, t1.col2 FROM t1"
 
 		"and doing a GROUP BY": newQuery
@@ -124,7 +124,7 @@ suite = vows.describe('SELECT queries').addBatch(
 				msg: "new fields use last table"
 
 	"When performing a SELECT with all kinds of aliases": newQuery
-		topic: -> select.from {t1: 'LongTableName'}, [{short: 'long_field_name'}]
+		topic: -> select {t1: 'LongTableName'}, [{short: 'long_field_name'}]
 		sql: "SELECT t1.long_field_name AS short FROM LongTableName AS t1"
 
 ).export(module)

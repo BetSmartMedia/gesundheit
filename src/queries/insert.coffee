@@ -9,6 +9,7 @@ module.exports = class InsertQuery extends BaseQuery
   Insert queries are much simpler than most query types: they cannot join
   multiple tables.
   ###
+  @rootNode = Insert
 
   addRows: (rows...) ->
     ### Add multiple rows of data to the insert statement. ###
@@ -27,12 +28,3 @@ module.exports = class InsertQuery extends BaseQuery
       else throw new Error "Can only insert from a SELECT"
 
 fluidize InsertQuery, 'addRow', 'addRows', 'from'
-
-InsertQuery.into = (tbl, fields, opts={}) ->
-  if not fields and fields.length
-    throw new Error "Column list is required when constructing an INSERT"
-  opts.table = tbl
-  iq = new InsertQuery Insert, opts
-  # TODO this is gross
-  iq.q.columns = iq.q.nodes[1] = new Tuple fields
-  return iq

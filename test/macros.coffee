@@ -11,7 +11,7 @@ exports.newQuery = (subctx) ->
 	delete subctx.msg
 	delete subctx.par
 
-	subctx.topic ?= if mod? and mod.length
+	subctx.topic ?= if mod?.length
 		(q) -> mod q.copy()
 	else if mod?
 		(q) -> q.copy().visit mod

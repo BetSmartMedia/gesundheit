@@ -6,7 +6,7 @@ assert = require 'assert'
 
 vows.describe('DELETE queries').addBatch(
 	"When performing a DELETE": newQuery
-		topic: -> DELETE.from 't1'
+		topic: -> DELETE 't1'
 		sql: "DELETE FROM t1"
 
 		"and adding a limit": newQuery
@@ -14,7 +14,7 @@ vows.describe('DELETE queries').addBatch(
 			sql: "DELETE FROM t1 LIMIT 10"
 			
 			"and adding an order": newQuery
-				mod: -> @orderBy age: 'DESC'
+				mod: -> @order age: 'DESC'
 				sql: "DELETE FROM t1 ORDER BY t1.age DESC LIMIT 10"
 
 ).export(module)

@@ -8,13 +8,14 @@ module.exports = class BaseQuery
   The base class for all queries. While this class itself is not part of
   gesundheits public API, the methods defined on it are.
   ###
+  @rootNode = null
 
-  constructor: (rootNodeCtor, opts={}) ->
+  constructor: (opts={}) ->
     ###
-    :param rootNodeCtor:  Constructor for the root AST Node (e.g. Select)
     :param opts.table: a ``String``, ``Relation``, ``Alias``, or an object
       literal with a single key and value which will be interpreted as an alias
-      name and table, respectively.
+      name and table, respectively. This is given to as the first parameter to
+      the query creation functions in :mod:`queries/index`
     :param opts.bind: (optional) an :mod:`engine` or connection that the
       query will be bound to. The engine is used to render and/or execute the
       query. If not given ``gesundheit.defaultEngine`` will be used.
@@ -23,7 +24,7 @@ module.exports = class BaseQuery
     @bind(opts.binding)
     if (table = opts.table)?
       table = toRelation table
-    @q = new rootNodeCtor table
+    @q = new @constructor.rootNode table
 
   copy: ->
     ### Instantiate a new query with a deep copy of this ones AST ###

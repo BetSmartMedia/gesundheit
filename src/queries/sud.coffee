@@ -15,11 +15,23 @@ module.exports = class SUDQuery extends BaseQuery
     Add a WHERE clause to the query. Can optionally take a table/alias name as the
     first parameter, otherwise the clause is added using the last table added to
     the query.
-   
-    The where clause itself is an object where each key is treated as field name
-    and each value is treated as a constraint. Constraints can be literal values
-    or objects, in which case each key of the constraint is treated as an
-    operator, and each value must be a literal value. 
+
+    The where clause itself can be a comparison node, such as those produced by
+    the :class:`nodes::ComparableMixin` methods::
+
+      q.where(q.project('table','field1').eq(42))
+      q.where(q.project('table','field2').gt(42))
+
+    ... Or an object literal where each key is a field name (or field name
+    alias) and each value is a constraint::
+
+      q.where('table', {field1: 42, field2: {gt: 42}})
+
+    Constraints values can also be other projected fields::
+
+      p = q.project.bind(q, 'table')
+      q.where('table', p('field1').gt(p('field2')))
+
     ###
     if predicate?
       rel = @q.relations.get alias
@@ -53,11 +65,11 @@ module.exports = class SUDQuery extends BaseQuery
         clauses.push rel.project(field).eq constraint
     clauses
 
-  orderBy: (args...) ->
+  order: (args...) ->
     ###
     Add an ORDER BY to the query. Currently this *always* uses the "active"
     table of the query. (See :meth:`queries/select::SelectQuery.from`)
-   
+
     Each ordering can either be a string, in which case it must be a valid-ish
     SQL snippet like 'some_field DESC', (the field name and direction will still
     be normalized) or an object, in which case each key will be treated as a
@@ -96,7 +108,7 @@ module.exports = class SUDQuery extends BaseQuery
   defaultRel: ->
     @q.relations.active
 
-fluidize SUDQuery, 'where', 'or', 'limit', 'offset', 'orderBy'
+fluidize SUDQuery, 'where', 'or', 'limit', 'offset', 'order'
 
 # A helper for throwing Errors
 unknown = (type, val) -> throw new Error "Unknown #{type}: #{val}"

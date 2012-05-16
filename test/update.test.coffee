@@ -6,7 +6,7 @@ newQuery = require('./macros').newQuery
 
 vows.describe('UPDATE queries').addBatch(
 	"When performing an UPDATE": newQuery
-		topic: -> UPDATE.table 't1'
+		topic: -> UPDATE 't1'
 
 		"and setting a column to a value": newQuery
 			mod: -> @set x: 45
@@ -23,7 +23,7 @@ vows.describe('UPDATE queries').addBatch(
 				sql: "UPDATE t1 SET x = ? LIMIT 10"
 			
 				"and adding an order": newQuery
-					mod: -> @orderBy age: 'DESC'
+					mod: -> @order age: 'DESC'
 					sql: "UPDATE t1 SET x = ? ORDER BY t1.age DESC LIMIT 10"
 
 ).export(module)

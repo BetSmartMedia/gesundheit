@@ -4,12 +4,10 @@ SUDQuery = require './sud'
 
 module.exports = class SelectQuery extends SUDQuery
   ###
-  Our friend the ``SELECT`` query. Select adds :meth:`orderBy` and
-  :meth:`groupBy` methods to :class:`queries/sud::SUDQuery`.
-
-  It is idiomatic to create new ``SelectQuery`` instances using
-  :func:`queries/select::SelectQuery.from`
+  Adds a number of SELECT-specific methods to :class:`queries/sud::SUDQuery`,
+  such as `fields` and `groupBy`
   ###
+  @rootNode = Select
 
   fields: (fields...) ->
     ###
@@ -20,7 +18,7 @@ module.exports = class SelectQuery extends SUDQuery
     to work.
 
     If the second argument is not an array, then each argument is treated as an 
-    individual field to be projected from the last table added to the query.
+    individual field to be projected from the currently focused table.
     ###
     if fields[1] and Array.isArray fields[1]
       rel = @q.relations.get fields[0]
@@ -52,7 +50,7 @@ module.exports = class SelectQuery extends SUDQuery
 
     Example::
 
-      select.from('t1').agg('count', 'id') # SELECT count(id) FROM t1
+      select('t1').agg('count', 'id') # SELECT count(id) FROM t1
     
     ###
     if alias = getAlias fun
@@ -70,16 +68,20 @@ module.exports = class SelectQuery extends SUDQuery
     ###
     @q.distinct.enable = bool
 
-  join: (tbl, opts={}) ->
+  join: (table, opts={}) ->
     ###
     Join another table to the query.
 
-    :param tbl: A string tablename, will be processed by :func:`nodes::toRelation`
-    :param opts.on: An object literal expressing join conditions. See :func:`where`
+    :param table: A table name, or alias literal. An error will be thrown if
+      the table/alias name is not unique. See :func:`nodes::toRelation` for
+      more information on the many things ``table`` could be.
+    :param opts.on:
+      An object literal expressing join conditions. See
+      :meth:`queries/select::SelectQuery::where` for more.
     :param opts.type: A join type constant (e.g. INNER, OUTER)
     :param opts.fields: A list of fields to be projected from the newly joined table.
     ###
-    rel = toRelation tbl
+    rel = toRelation table
     if @q.relations.get rel.ref(), false
       throw new Error "Table/alias #{rel.ref()} is not unique!"
 
@@ -93,33 +95,43 @@ module.exports = class SelectQuery extends SUDQuery
     if opts.fields?
       @fields(opts.fields...)
 
-  ensureJoin: (tbl, opts={}) ->
+  ensureJoin: (table, opts={}) ->
     ###
     The same as :meth:`join`, but will only join ``tbl`` if it is **not**
     joined already.
     ###
-    rel = toRelation tbl
+    rel = toRelation table
     if not @q.relations.get rel.ref(), false
       @join tbl, opts
 
   rel: (alias) ->
-    ### A shorthand way to get a relation by name ###
+    ### A shorthand way to get a relation by (alias) name ###
     @q.relations.get alias
 
   project: (alias, field) ->
     ###
-    Return an AST node representing ``<alias>.<field>``.
-    See :class:`nodes::Projection` for methods supported by the returned node.
+    Return a :class:`nodes::Projection` node representing ``<alias>.<field>``.
+
+    This node has a number methods from :class:`nodes::ComparableMixin` that can
+    create new comparison nodes usable in join conditions and where clauses::
+
+      # Find developers over the age of 45
+      s = select('people', ['name'])
+      dep_id = s.project('people', 'department_id')
+      s.join('departments', on: {id: dep_id})
+      s.where(s.project('departments', 'name').eq('development'))
+      s.where(s.project('people', 'age').gte(45))
+
     ###
     @q.relations.get(alias, true).project(field)
 
   focus: (alias) ->
     ###
-    Make a different table "active", this will use that table as the default for 
-    the ``fields``, ``orderBy`` and ``where`` methods
+    Make a different table "focused", this will use that table as the default
+    for the ``fields``, ``order`` and ``where`` methods.
 
     :param alias: The table/alias name to focus. If the table or alias is not
-      already part of the query an Error will be thrown.
+      already part of the query an error will be thrown.
     ###
     @q.relations.switch alias
 
@@ -136,22 +148,3 @@ fluidize SelectQuery,
   'distinct', 'fields', 'agg', 'join', 'ensureJoin', 'focus', 'groupBy'
 
 SelectQuery::field = SelectQuery::fields
-
-SelectQuery.from = (table, fields, opts={}) ->
-  ###
-  Factory function for new SelectQuery instances
-
-  :param table: Table name to select rows from.
-  :param fields: (Optional) Fields to select from ``table``.
-  :param opts: Additional options for :meth:`queries/base::BaseQuery.constructor`
-  ###
-  if fields? and fields.constructor != Array
-    opts = fields
-    fields = null
-  opts.table = table
-  query = new SelectQuery Select, opts
-  if fields?
-    query.fields fields...
-  return query
-
-

@@ -7,12 +7,10 @@ newQuery = require('./macros').newQuery
 
 suite = vows.describe('INSERT queries').addBatch(
 	"A new INSERT without fields errors": ->
-		assert.throws (-> insert.into 't1'), Error
+		assert.throws (-> insert 't1'), Error
 
 	"A new INSERT":
-		topic: -> insert.into 't1', ['a', 'b']
-
-		"exists": (e, q) -> assert.instanceOf q, insert
+		topic: -> insert 't1', ['a', 'b']
 
 		"errors when adding a row of the wrong length": (q) ->
 			assert.throws (-> q.addRow [1, 2, 3]), Error
@@ -33,7 +31,7 @@ suite = vows.describe('INSERT queries').addBatch(
 			par: [1]
 			
 		"from a SELECT query": newQuery
-			mod: -> @from select.from('t2', ['x', 'y']).where(x: {gt: 50})
+			mod: -> @from select('t2', ['x', 'y']).where(x: {gt: 50})
 			sql: "INSERT INTO t1 (a, b) SELECT t2.x, t2.y FROM t2 WHERE t2.x > ?"
 			par: [50]
 ).export(module)

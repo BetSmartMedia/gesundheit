@@ -7,6 +7,7 @@ module.exports = class UpdateQuery extends SUDQuery
   The update query is a little underpowered right now, and can only handle
   simple updates of a single table.
   ###
+  @rootNode = Update
 
   set: (data) ->
     ###
@@ -26,9 +27,3 @@ module.exports = class UpdateQuery extends SUDQuery
   defaultRel: -> @q.relation
 
 fluidize UpdateQuery, 'set', 'setNodes'
-
-UpdateQuery.table = (table, opts={}) ->
-    ### Create a new ``UpdateQuery`` that will update ``table`` ###
-    opts.table = table
-    new UpdateQuery Update, opts
-

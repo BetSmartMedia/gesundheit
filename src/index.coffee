@@ -2,16 +2,13 @@ exports.dialects = require './dialects'
 exports.engines = require './engines'
 exports.defaultEngine = exports.engines.fakeEngine()
 
-# Common pre-defined value nodes (e.g. IS_NULL, LEFT_OUTER)
-nodes = require './nodes'
-for name in nodes.CONST_NODES
-  exports[name] = nodes[name]
+exports.nodes = require './nodes'
 
-for name in nodes.JOIN_TYPES
-  exports[name] = nodes[name]
+for name, node of exports.nodes.CONST_NODES
+  exports[name] = exports.nodes.CONST_NODES[name]
 
-# Re-export all nodes
-exports.nodes = nodes
+for name, node of exports.nodes.JOIN_TYPES
+  exports[name] = exports.nodes.JOIN_TYPES[name]
 
 # Each query with capitalization to satisfy all tastes
 uc      = (str) -> str.toUpperCase()

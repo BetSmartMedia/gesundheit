@@ -1,6 +1,6 @@
 fluid = require '../fluid'
 SUDQuery = require './sud'
-{Node, Alias, Select, And, Join, toRelation, sqlFunction, INNER, Projection} = require '../nodes'
+{Alias, getAlias, Select, And, Join, toRelation, sqlFunction, JOIN_TYPES} = require '../nodes'
 
 # Our friend the SELECT query. Select adds ORDER BY and GROUP BY support.
 module.exports = class SelectQuery extends SUDQuery
@@ -75,8 +75,8 @@ module.exports = class SelectQuery extends SUDQuery
     if @q.relations.get rel.ref(), false
       throw new Error "Table/alias #{rel.ref()} is not unique!"
 
-    type = opts.type || INNER
-    if type not instanceof INNER.constructor
+    type = opts.type || JOIN_TYPES.INNER
+    if type not instanceof JOIN_TYPES.INNER.constructor
       throw new Error "Invalid join type #{type}, try the constant types exported in the base module (e.g. INNER)."
     joinClause = opts.on && new And(@makeClauses rel, opts.on)
     @q.relations.addNode new Join type, rel, joinClause

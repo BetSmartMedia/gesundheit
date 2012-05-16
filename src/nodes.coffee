@@ -1,39 +1,59 @@
-class Node
+###
+These are the classes that represent nodes in the AST for a SQL statement.
+Application code should very rarely have to deal with these classes directly;
+Instead, the APIs exposed by the various `Query Manager Classes`_ are intended
+to cover the majority of use-cases. However, in the spirit of "making hard things
+possible", the various AST nodes can be constructed and assembled manually if you
+so desire.
+###
 
-exports.ValueNode = class ValueNode extends Node
+class Node
+  ### (Empty) base Node class ###
+
+ValueNode = class ValueNode extends Node
+  ### A ValueNode is a literal string that should be printed unescaped. ###
   constructor: (@value) ->
   copy: -> new @constructor @value
 
-exports.CONST_NODES = [
+CONST_NODES = {}
+CONST_NODES[name] = new ValueNode name.replace '_', ' ' for name in [
   'DEFAULT', 'NULL', 'IS_NULL', 'IS_NOT_NULL'
 ]
 
-for name in exports.CONST_NODES
-  exports[name] = new ValueNode name.replace '_', ' '
-
-DEFAULT = exports.DEFAULT
-
 class JoinType extends ValueNode
 
-exports.JOIN_TYPES = [
+JOIN_TYPES = {}
+JOIN_TYPES[name] = new ValueNode name.replace '_', ' ' for name in [
   'LEFT', 'RIGHT', 'INNER',
   'LEFT_OUTER', 'RIGHT_OUTER', 'FULL_OUTER'
   'NATURAL', 'CROSS'
 ]
 
-for name in exports.JOIN_TYPES
-  exports[name] = new JoinType name.replace '_', ' '
+class NodeSet extends Node
+  ### A set of nodes joined together by ``@glue`` ###
+  constructor: (@nodes=[], glue=' ') ->
+    ###
+    :param @nodes: A list of child nodes.
+    :param glue: A string that will be used to join the nodes when rendering
+    ###
+    @glue ||= glue
 
-exports.NodeSet = class NodeSet extends Node
-  constructor: (@nodes=[], glue=' ') -> @glue ||= glue
   copy: ->
+    ###
+    Make a deep copy of this node and it's children
+    ###
     c = new @constructor
     c.nodes = copy @nodes
     return c
-  addNode: (nodes...) -> @nodes.push nodes...
 
-# Recurse over nested NodeSet instances, collecting parameter values
+  addNode: (node) ->
+    ### Add a new Node to the end of this set ###
+    @nodes.push node
+
   params: ->
+    ###
+    Recurse over nested NodeSet instances, collecting parameter values.
+    ###
     params = []
     for node in @nodes
       if node.params?
@@ -42,66 +62,95 @@ exports.NodeSet = class NodeSet extends Node
         params.push node.value
     params
 
-# A collection of nodes that disables the ``addNode`` method after construction.
-exports.FixedNodeSet = class FixedNodeSet extends NodeSet
+class FixedNodeSet extends NodeSet
+  ### A NodeSet that disables the ``addNode`` method after construction. ###
   constructor: (nodes, glue) ->
     super nodes, glue
-    delete @addNode
+    @addNode = null
 
-exports.FixedNamedNodeSet = class FixedNamedNodeSet extends FixedNodeSet
+class FixedNamedNodeSet extends FixedNodeSet
+  ###
+  A FixedNodeSet that instantiates a set of nodes defined by the class member
+  ``@structure`` when it it instantiated.
+
+  See :class:`nodes::Select` for example.
+  ###
   constructor: ->
-    nodes = for [k, type] in @structure
+    nodes = for [k, type] in @constructor.structure
       @[k] = new type
     super nodes
 
   copy: ->
     c = super()
-    for i, [k, _] of @structure
+    for i, [k, _] of @constructor.structure
       c[k] = c.nodes[i]
     return c
     
 # End of generic base classes
 
-exports.SqlFunction = class SqlFunction extends Node
+SqlFunction = class SqlFunction extends Node
+  ### Includes :class:`nodes::ComparableMixin` ###
   constructor: (@name, @arglist) ->
   copy: -> new @constructor @name, copy(@arglist)
 
-exports.sqlFunction = sqlFunction = (name, args) -> new SqlFunction name, new Tuple(args)
+class Alias extends Node
+  ###
+  Example::
 
-exports.Alias = class Alias extends Node
+     table = new Relation('my_table_with_a_long_name')
+     alias = new Alias(table, 'mtwaln')
+ 
+  ###
   constructor: (@obj, @alias) ->
   copy: -> new @constructor copy(@obj), @alias
   project: (name) -> new Projection @, name
   field: -> @project arguments
   ref: -> @alias
 
-Alias.getAlias = (o) ->
-  if 'object' == typeof o
-    keys = Object.keys(o)
-    if keys.length == 1 then return keys.pop()
-  return null
-
 exports.Parameter = class Parameter extends ValueNode
+  ###
+  Like a ValueNode, but will render as a bound parameter place-holder
+  (e.g. '?' for MySQL) and it's value will be collected by
+  :meth:`nodes::NodeSet.params`
+  ###
+
 
 exports.Relation = class Relation extends ValueNode
-  ref: -> @value
-  project: (field) -> new Projection @, field
-  field: (field) -> @project field
+  ###
+  A relation node represents a table name in a statement.
+  ###
+  ref: ->
+    ###
+    Return the table name. This is a common interface with :class:`nodes:Alias`.
+    ###
+    @value
+
+  project: (field) ->
+    ### Return a new :class:`nodes::Projection` of `field` from this table. ###
+    new Projection @, field
+
+  field: (field) ->
+    ### An alias for :meth:`nodes::Relation.project`. ###
+    @project field
+
   copy: -> new @constructor @value
 
 exports.Limit  = class Limit extends ValueNode
 exports.Offset = class Offset extends ValueNode
 
-exports.Binary = class Binary extends FixedNodeSet
+class Binary extends FixedNodeSet
   constructor: (@left, @op, @right) -> super [@left, @op, @right], ' '
   copy: -> new @constructor copy(@left), @op, copy(@right)
 
-exports.ParenthesizedNodeSet = class ParenthesizedNodeSet extends NodeSet
+class ParenthesizedNodeSet extends NodeSet
+  ### A NodeSet wrapped in parenthesis. ###
 
-exports.Tuple = class Tuple extends ParenthesizedNodeSet
+class Tuple extends ParenthesizedNodeSet
+  ### A tuple node. e.g. (col1, col2) ###
   glue: ', '
 
 class ProjectionSet extends NodeSet
+  ### The list of projected columns in a query ###
   glue: ', '
 
 class Returning extends ProjectionSet
@@ -110,26 +159,31 @@ class Distinct extends ProjectionSet
   constructor: (@enable=false) -> super
 
 class SelectProjectionSet extends ProjectionSet
-
-# Recurse over child nodes, removing all Projection nodes that match the
-# predicate
-  prune: (pred) ->
+  prune: (predicate) ->
+    ###
+    Recurse over child nodes, removing all Projection nodes that match the
+    predicate.
+    ###
     orig = @nodes
     @nodes = []
     for node of orig
       if node instanceof Projection
-        if not pred node then @nodes.push node
+        if not predicate node then @nodes.push node
       else if node instanceof Alias
         if not pred node.obj then @nodes.push node
   
-exports.Projection = class Projection extends FixedNodeSet
+class Projection extends FixedNodeSet
   ###
+  Includes :class:`nodes::ComparableMixin`
   ###
   constructor: (@source, @field) -> super [@source, @field], '.'
   copy: -> new @constructor copy(@source), @field
 
 #######
 exports.RelationSet = class RelationSet extends NodeSet
+  ###
+  Manages a set of relation and exposes methods to find them by alias.
+  ###
   start: (@first) ->
     @byName = {}
     @nodes.unshift @first
@@ -154,10 +208,8 @@ exports.RelationSet = class RelationSet extends NodeSet
       throw new Error "No such relation #{name} in #{Object.keys @byName}"
     return rel
 
-
   switch: (name) ->
-    name = name.ref() unless 'string' == typeof name
-    @active = @byName[name]
+    @active = @get(name)
 
 exports.Join = class Join extends FixedNodeSet
   constructor: (@type, @relation, @on) ->
@@ -167,10 +219,10 @@ exports.Join = class Join extends FixedNodeSet
   copy: -> new @constructor @type, copy(@relation), copy(@on)
 
 #####
-exports.Where = class Where extends NodeSet
+class Where extends NodeSet
   glue: ' AND '
 
-exports.Or = class Or extends ParenthesizedNodeSet
+class Or extends ParenthesizedNodeSet
   glue: ' OR '
 
 exports.And = class And extends ParenthesizedNodeSet
@@ -189,7 +241,7 @@ exports.UpdateSet = class UpdateSet extends NodeSet
   constructor: (nodes) -> super nodes, ', '
 
 exports.Select = class Select extends FixedNamedNodeSet
-  structure: [
+  @structure = [
     ['distinct',    Distinct]
     ['projections', SelectProjectionSet]
     ['relations',   RelationSet]
@@ -202,8 +254,8 @@ exports.Select = class Select extends FixedNamedNodeSet
 
   constructor: (rel) -> super(); @relations.start rel if rel
 
-exports.Update = class Update extends FixedNamedNodeSet
-  structure: [
+class Update extends FixedNamedNodeSet
+  @structure = [
     ['relation',  Relation]
     ['updates',   UpdateSet]
     ['orderBy',   OrderBySet]
@@ -217,10 +269,10 @@ exports.Update = class Update extends FixedNamedNodeSet
 class InsertData extends NodeSet
   glue: ', '
   
-exports.Insert = class Insert extends FixedNamedNodeSet
-  structure: [
+class Insert extends FixedNamedNodeSet
+  @structure = [
     ['relation',  Relation]
-    ['columns',   Tuple] # TODO? - restructure this to make columns optional
+    ['columns',   Tuple]
     ['source',    InsertData]
     ['returning', Returning]
   ]
@@ -243,17 +295,19 @@ exports.Insert = class Insert extends FixedNamedNodeSet
       if v instanceof Node then v else new Parameter v
     @source.addNode new Tuple params
 
-# Add a row from an object. This will set the column list of the query if it
-# isn't set yet. If it _is_ set, then only keys matching the existing column
-# list will be inserted.
   addRowObject: (row) ->
+    ###
+    Add a row from an object. This will set the column list of the query if it
+    isn't set yet. If it _is_ set, then only keys matching the existing column
+    list will be inserted.
+    ###
     array = for f in @columns.nodes
-      if row[f]? or row[f] == null then row[f] else DEFAULT
+      if row[f]? or row[f] == null then row[f] else CONST_NODES.DEFAULT
     @addRowArray array
     
       
-exports.Delete = class Delete extends FixedNamedNodeSet
-  structure: [
+class Delete extends FixedNamedNodeSet
+  @structure = [
     ['relations', RelationSet]
     ['where',     Where]
     ['orderBy',   OrderBySet]
@@ -263,38 +317,144 @@ exports.Delete = class Delete extends FixedNamedNodeSet
   constructor: (rel) -> super(); @relations.start rel if rel
 
 class ComparableMixin
-  eq:  (other) -> new Binary @, '=',  toParam other
-  ne:  (other) -> new Binary @, '<>', toParam other
-  gt:  (other) -> new Binary @, '>',  toParam other
-  lt:  (other) -> new Binary @, '<',  toParam other
-  lte: (other) -> new Binary @, '<=', toParam other
-  gte: (other) -> new Binary @, '>=', toParam other
-  compare: (op, other) -> new Binary @, op, toParam other
+  ###
+  A mixin that adds comparison methods to a class. Each of these comparison
+  methods will yield a new AST node comparing the invocant to the argument.
+  ###
+  eq:  (other) ->
+    ### ``this = other`` ###
+    new Binary @, '=',  toParam other
+  ne: (other) ->
+    ### ``this <> other`` ###
+    new Binary @, '<>', toParam other
+  gt: (other) ->
+    ### ``this > other`` ###
+    new Binary @, '>',  toParam other
+  lt: (other) ->
+    ### ``this < other`` ###
+    new Binary @, '<',  toParam other
+  lte: (other) ->
+    ### ``this <= other`` ###
+    new Binary @, '<=', toParam other
+  gte: (other) ->
+    ### ``this >= other`` ###
+    new Binary @, '>=', toParam other
+  compare: (op, other) ->
+    ### ``this op other`` ###
+    new Binary @, op, toParam other
 
 for k, v of ComparableMixin::
   Projection::[k] = v
   SqlFunction::[k] = v
 
-exports.toParam = toParam = (it) ->
+toParam = (it) ->
+  ###
+  Return a Node that can be used as a parameter.
+
+    * SelectQuery instances will be treated as un-named sub queries,
+    * Node instances will be returned unchanged.
+    * Arrays will be turned into a :class:`nodes::Tuple` instance.
+  
+  All other types will be wrapped in a :class:`nodes::Parameter` instance.
+  ###
   SelectQuery = require './queries/select'
   if it.constructor is SelectQuery then new Tuple([it.q])
   else if it instanceof Node then it
   else if Array.isArray it then new Tuple(it.map toParam)
   else new Parameter it
 
-exports.toRelation = toRelation = (it) ->
+toRelation = toRelation = (it) ->
+  ###
+  Transform ``it`` into a :class:`nodes::Relation` instance.
+
+  This accepts `strings, `Relation`` and ``Alias`` instances, and objects with
+  a single key-value pair, which will be turned into an ``Alias`` instance.
+  
+  Examples::
+  
+     toRelation('some_table') # new Relation('some_table')
+     toRelation(st: 'some_table') # new Alias(Relation('some_table'), 'st')
+     toRelation(new Relation('some_table')) # returns same instance
+     toRelation(new Alias(new Relation('some_table'), 'al') # returns same instance
+ 
+  **Throws Errors** if the input is not valid.
+  ###
   switch it.constructor
     when Relation, Alias then it
     when String then new Relation it
     when Object
-      if alias = Alias.getAlias it
+      if alias = getAlias it
         new Alias(new Relation(it[alias]), alias)
       else
         throw new Error "Can't make relation out of #{it}"
     else
       throw new Error "Can't make relation out of #{it}"
 
+
+sqlFunction = (name, args) ->
+  ###
+  Create a new SQL function call node. For example::
+
+      count = sqlFunction('count', new ValueNode('*'))
+
+  ###
+  new SqlFunction name, new Tuple(args)
+
+getAlias = (o) ->
+  ###
+  Check if ``o`` is an object literal representing an alias, and return the
+  alias name if it is.
+  ###
+  if 'object' == typeof o
+    keys = Object.keys(o)
+    return keys[0] if keys.length == 1
+  return null
+
+text = (rawSQL, params...) ->
+  ###
+  Construct a node with a raw SQL string and (optionally) parameters.
+
+  Parameter arguments are assumed to be values for placeholders in the raw
+  string. Be careful: the number and types of these parameters will **not**
+  be checked, so it is very easy to create invalid statements with this.
+  ###
+  node = new ValueNode rawSQL
+  node.params = -> params
+  return node
+
+binaryOp = (left, op, right) ->
+  ### Create a new :class:`Binary` node ###
+  new Binary left, op, right
+
+module.exports = {
+  CONST_NODES
+  JOIN_TYPES
+
+  binaryOp
+  getAlias
+  sqlFunction
+  text
+  toRelation
+  toParam
+
+  Alias
+  And
+  Or
+  Join
+  OrderBy
+  Tuple
+  FixedNamedNodeSet
+
+  Select
+  Update
+  Insert
+  Delete
+}
+
 copy = (it) ->
+  ###
+  Return a deep copy of ``it``.
+  ###
   if not it then return it
   switch it.constructor
     when String, Number, Boolean then it

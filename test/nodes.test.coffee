@@ -2,7 +2,7 @@ vows = require 'vows'
 assert = require 'assert'
 {
   Update,
-  Relation,
+  toRelation,
   FixedNamedNodeSet,
   Binary,
   Parameter,
@@ -11,16 +11,16 @@ assert = require 'assert'
 
 vows.describe('UPDATE node').addBatch(
   "Given a Relation node,":
-    topic: -> new Relation 'rel'
+    topic: -> toRelation 'rel'
     "copying it":
       topic: (n) -> n.copy()
       "keeps the name": (e, n) -> assert.equal n.value, 'rel'
 
   "Given an Update node,":
-    topic: -> new Update new Relation 't1'
+    topic: -> new Update toRelation 't1'
 
     "it's a FixedNamedNodeSet": (err, node) ->
-      assert.instanceOf node, FixedNamedNodeSet
+      assert node instanceof FixedNamedNodeSet
     "it has a relation with the right name": (err, node) ->
       assert.equal node.relation.ref(), 't1'
 

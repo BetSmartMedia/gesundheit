@@ -1,13 +1,15 @@
-# Gesundheit - Concise SQL generation in CoffeeScript
+Gesundheit - Concise SQL generation in CoffeeScript
+===================================================
 
-[![Build Status](https://secure.travis-ci.org/grncdr/gesundheit.png?branch=master)](http://travis-ci.org/grncdr/gesundheit)
+.. image:: https://secure.travis-ci.org/BetSmartMedia/gesundheit.png?branch=master
+  :target: http://travis-ci.org/BetSmartMedia/gesundheit
 
 Gesundheit generates SQL using a sugary API for managing the abstract syntax
 tree of a statement. After building your statement programmatically, gesundheit
 can compile it to a string or execute it against your database for you, using
 proper bound parameters and allowing for streaming of results.
 
-A quick example:
+A quick example::
 
     gesundheit = require('./lib')
     assert = require('assert')
@@ -19,20 +21,23 @@ A quick example:
       ['recliner', 25]
     ])
 
-		query.execute(console.log)
+    query.execute(console.log)
 
-See [the documentation](http://betsmartmedia.github.com/gesundheit/) for more
+See `the documentation <http://betsmartmedia.github.com/gesundheit/>`_ for more
 thorough examples showing different query types, joins, query execution and more.
 
 
-## Install
+Install
+-------
 
     npm install gesundheit
 
-## License
+License
+-------
 
 MIT
 
-## Author
+Author
+-------
 
 Stephen Sugden <stephen@betsmartmedia.com>

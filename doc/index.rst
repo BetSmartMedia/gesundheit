@@ -7,7 +7,7 @@ Gesundheit!
 ===========
 
 .. include:: ../README.markdown
-  :start-after: # Gesundheit - Concise SQL generation in CoffeeScript
+  :start-after: ===================================================
   :end-before: A quick example
 
 Contents:

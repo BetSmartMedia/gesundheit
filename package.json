@@ -23,6 +23,6 @@
   "optionalDependencies": {},
   "scripts": {
     "install": "make",
-    "test": "make test"
+    "test": "make VOWS_OPTS='--spec' test"
   }
 }

@@ -1,5 +1,7 @@
 # Gesundheit - Concise SQL generation in CoffeeScript
 
+[![Build Status](https://secure.travis-ci.org/grncdr/gesundheit.png?branch=master)](http://travis-ci.org/grncdr/gesundheit)
+
 Gesundheit generates SQL using a sugary API for managing the abstract syntax
 tree of a statement. After building your statement programmatically, gesundheit
 can compile it to a string or execute it against your database for you, using

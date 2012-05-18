@@ -8,7 +8,7 @@ coffee = require 'coffee-script'
 vows.describe("README test").addBatch(
   "When the README has examples":
     topic: ->
-      readme = fs.readFileSync(__dirname+'/../README.markdown', 'ascii')
+      readme = fs.readFileSync(__dirname+'/../README.rst', 'utf-8')
 
       code = []
       issource = false

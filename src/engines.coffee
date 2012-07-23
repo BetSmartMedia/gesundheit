@@ -51,7 +51,10 @@ mysql = (opts) ->
   dialect = new dialects.MySQL
   poolOpts = opts.pool or {}
   poolOpts.name or= opts.user+opts.host+opts.port+opts.database
-  poolOpts.create = mysql.createClient.bind(null, opts)
+  poolOpts.create = (cb) ->
+    c = mysql.createClient opts
+    cb null, c
+
   poolOpts.destroy = (client) -> client.end()
   pool = Pool poolOpts
   engine =
@@ -111,7 +114,7 @@ withClient = (original) ->
       original.apply @, args
     else
       obj.engine.connect (err, client) ->
-        return cb err if err
+        return args[args.length-1](err) if err
         args = [client, obj].concat(args)
         original.apply @, args
 

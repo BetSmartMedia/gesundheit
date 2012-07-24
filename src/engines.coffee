@@ -37,7 +37,7 @@ postgres = (dsn) ->
 mysql = (opts) ->
   ###
   Create a new MySQL engine using an object that is compatible with
-  ``require('node-mysql').createClient(opts)``, 
+  ``require('node-mysql').create{Connection,Client}(opts)``.
 
   Additionally, you can specify extra options for ``generic-pool`` by
   including them as an object in ``opts.pool``. The ``create`` and
@@ -52,7 +52,10 @@ mysql = (opts) ->
   poolOpts = opts.pool or {}
   poolOpts.name or= opts.user+opts.host+opts.port+opts.database
   poolOpts.create = (cb) ->
-    c = mysql.createClient opts
+    c = if mysql.createClient
+      mysql.createClient(opts)
+    else
+      mysql.createConnection opts
     cb null, c
 
   poolOpts.destroy = (client) -> client.end()

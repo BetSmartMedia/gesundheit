@@ -20,7 +20,7 @@ module.exports = class BaseQuery
       query will be bound to. The engine is used to render and/or execute the
       query. If not given ``gesundheit.defaultEngine`` will be used.
     ###
-    @doEcho  = false
+    @doEcho = false
     @bind(opts.binding)
     if (table = opts.table)?
       table = toRelation table

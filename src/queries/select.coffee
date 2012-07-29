@@ -1,6 +1,13 @@
 fluidize = require '../fluid'
 SUDQuery = require './sud'
-{Alias, getAlias, Select, And, Join, toRelation, sqlFunction, JOIN_TYPES} = require '../nodes'
+{ Alias,
+  getAlias,
+  Select,
+  And,
+  Join,
+  toRelation,
+  sqlFunction,
+  JOIN_TYPES } = require '../nodes'
 
 module.exports = class SelectQuery extends SUDQuery
   ###
@@ -147,4 +154,6 @@ module.exports = class SelectQuery extends SUDQuery
 fluidize SelectQuery,
   'distinct', 'fields', 'agg', 'join', 'ensureJoin', 'focus', 'groupBy'
 
+# Alias methods
 SelectQuery::field = SelectQuery::fields
+SelectQuery::p = SelectQuery::project

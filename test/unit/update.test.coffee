@@ -2,7 +2,7 @@ vows = require 'vows'
 assert = require 'assert'
 newQuery = require('./macros').newQuery
 
-{UPDATE} = require '../lib'
+{UPDATE} = require '../../lib'
 
 vows.describe('UPDATE queries').addBatch(
 	"When performing an UPDATE": newQuery

@@ -1,7 +1,7 @@
 LIB_DIR = ./lib
 VOWS_OPTS += --cover-html
 SRC_DIR = ./src
-TEST ?= ./test/*.test.coffee
+TEST ?= ./test/*/*.test.coffee
 HEAD = $(shell git describe --contains --all HEAD)
 
 .PHONY: all

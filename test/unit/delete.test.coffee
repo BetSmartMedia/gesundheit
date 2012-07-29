@@ -2,7 +2,7 @@ vows = require 'vows'
 assert = require 'assert'
 {newQuery} = require('./macros')
 
-{DELETE} = require('../lib')
+{DELETE} = require('../../lib')
 
 vows.describe('DELETE queries').addBatch(
 	"When performing a DELETE": newQuery

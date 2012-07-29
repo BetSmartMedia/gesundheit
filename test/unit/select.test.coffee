@@ -2,7 +2,7 @@ vows = require 'vows'
 assert = require 'assert'
 newQuery = require('./macros').newQuery
 
-{select, LEFT_OUTER} = require '../lib'
+{select, LEFT_OUTER} = require '../../lib'
 
 suite = vows.describe('SELECT queries').addBatch(
 	"When performing a SELECT": newQuery

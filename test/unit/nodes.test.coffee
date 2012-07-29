@@ -7,7 +7,7 @@ assert = require 'assert'
   Binary,
   Parameter,
   When
-} = require '../lib/nodes'
+} = require '../../lib/nodes'
 
 vows.describe('UPDATE node').addBatch(
   "Given a Relation node,":

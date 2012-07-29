@@ -2,7 +2,7 @@ vows = require 'vows'
 assert = require 'assert'
 newQuery = require('./macros').newQuery
 
-{insert, select, DEFAULT} = require '../lib'
+{insert, select, DEFAULT} = require '../../lib'
 
 
 suite = vows.describe('INSERT queries').addBatch(

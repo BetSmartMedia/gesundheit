@@ -26,5 +26,9 @@ vows.describe('UPDATE queries').addBatch(
 					mod: -> @order age: 'DESC'
 					sql: "UPDATE t1 SET x = ? ORDER BY t1.age DESC LIMIT 10"
 
+			"and adding an IS NULL condition": newQuery
+				mod: -> @where {x: null}
+				sql: "UPDATE t1 SET x = ? WHERE t1.x IS NULL"
+
 ).export(module)
 

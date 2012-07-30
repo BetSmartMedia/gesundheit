@@ -1,7 +1,7 @@
 BaseQuery = require './base'
 nodes = require '../nodes'
 fluidize = require '../fluid'
-{Or, OrderBy} = nodes
+{Or, OrderBy, CONST_NODES} = nodes
 
 module.exports = class SUDQuery extends BaseQuery
   ###
@@ -55,14 +55,16 @@ module.exports = class SUDQuery extends BaseQuery
       clauses.push (@makeClauses rel, arg)...
     @q.where.addNode new Or clauses
 
-  makeClauses: (rel, predicate) ->
+  makeClauses: (rel, constraint) ->
     clauses = []
-    for field, constraint of predicate
-      if Object == constraint.constructor
-        for op, val of constraint
+    for field, predicate of constraint
+      if predicate is null
+        clauses.push rel.project(field).compare 'IS', CONST_NODES.NULL
+      else if predicate.constructor is Object
+        for op, val of predicate
           clauses.push rel.project(field).compare op, val
       else
-        clauses.push rel.project(field).eq constraint
+        clauses.push rel.project(field).eq predicate
     clauses
 
   order: (args...) ->

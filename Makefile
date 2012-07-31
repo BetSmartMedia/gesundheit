@@ -1,25 +1,24 @@
 LIB_DIR = ./lib
 VOWS_OPTS += --cover-html
 SRC_DIR = ./src
-TEST ?= ./test/*/*.test.coffee
+UNIT_TESTS ?= ./test/unit/
+INTEGRATION_TESTS ?= ./test/integration/*.test.coffee
+PATH := $(shell npm bin):$(PATH)
 HEAD = $(shell git describe --contains --all HEAD)
 
 .PHONY: all
 all: $(LIB_DIR)
 
 .PHONY: test
-test: $(LIB_DIR)
-	@vows $(VOWS_OPTS) $(TEST)
+test: unit integration
 
-.PHONY: fulltest
-fulltest: coverage
-	@vows $(VOWS_OPTS) $(TEST)
+.PHONY: unit
+unit: $(LIB_DIR)
+	@node_modules/.bin/tap test/unit/
 
-.PHONY: coverage
-coverage: $(LIB_DIR)
-	@rm -rf lib-tmp
-	@mv $< lib-tmp
-	@node_modules/.bin/node-jscoverage lib-tmp $<
+.PHONY: integration
+integration: $(LIB_DIR)
+	@node_modules/.bin/tap test/integration/
 
 .PHONY: clean
 clean:
@@ -27,7 +26,7 @@ clean:
 	rm -rf lib-tmp
 
 $(LIB_DIR): $(SRC_DIR)
-	@coffee -o $@ -c $<
+	@$(shell npm bin)/coffee -o $@ -bc $<
 
 pages:
 	make -C doc clean html

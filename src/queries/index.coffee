@@ -26,20 +26,23 @@ SelectQuery = require './select'
 UpdateQuery = require './update'
 DeleteQuery = require './delete'
 
-INSERT = (table, fields) ->
+INSERT = (table, fieldsOrRow) ->
   ###
   Create a new :class:`queries/insert::InsertQuery` that will add rows to
   ``table``.
 
-  :param fields: Either an array of column names that will be inserted, or a
+  :param fieldsOrRow: Either an array of column names that will be inserted, or a
     plain object representing a row of data to insert, in which case the keys
     of the object will define the columns that are inserted.
   :param visitor: (Optional) a function that will be called with it's context
     set to the newly constructed query object.
   ###
-  if fields and typeof fields is 'object' and not Array.isArray fields
-    row = fields
-    fields = Object.keys(row)
+  if fieldsOrRow and typeof fieldsOrRow is 'object'
+    if Array.isArray fieldsOrRow
+      fields = fieldsOrRow
+    else
+      row = fieldsOrRow
+      fields = Object.keys(row)
   unless fields?.length
     throw new Error "Column list is required when constructing an INSERT"
   iq = new InsertQuery @, {table}
@@ -67,6 +70,7 @@ SELECT = (table, fields) ->
 UPDATE = (table) ->
   ###
   Create a new :class:`queries/update::UpdateQuery` that will update ``table``.
+
   :param visitor: (Optional) a function that will be called with it's context
     set to the newly constructed query object.
   ###
@@ -76,6 +80,7 @@ DELETE = (table) ->
   ###
   Create a new :class:`queries/delete::DeleteQuery` that will delete rows from
   ``table``.
+
   :param visitor: (Optional) a function that will be called with it's context
     set to the newly constructed query object.
   ###

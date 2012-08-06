@@ -6,8 +6,8 @@
 Gesundheit!
 ===========
 
-.. include:: ../README.markdown
-  :start-after: ===================================================
+.. include:: ../README.rst
+  :start-after: ===============================================
   :end-before: A quick example
 
 Contents:
@@ -73,9 +73,9 @@ simply use the ``.execute`` method::
 
 "but..." you might be saying, "gesundheit can't know how connect to my database
 all on it's own!" and you are 100% correct. In order to execute against a real
-database the query must be `bound` to an :mod:`engine <Engines>`. Queries are
-implicitly bound to a default engine when they are created[*]_ and use that
-engine for rendering and executing themselves.
+database the query must be `bound` to an :mod:`engine`. Queries are bound to an
+engine when they are created [#]_ and use that engine for rendering and
+executing themselves.
 
 .. _engine-usage-example:
 
@@ -97,15 +97,11 @@ We can now use ``db`` as query factory, using any of ``select``, ``insert``,
   departments = db.select('departments', ['name', 'manager_id'])
 
 Since it's common to use only a single database in your application, you can
-replace the default engine used by the query methods exposed on gesundheit
-module itself::
+set the global default engine for the module like so::
 
   gesundheit.defaultEngine = db
   # This is now equivalent to db.select(...)
   gesundheit.select('departments', ['name', 'manager_id'])
-
-_[*] : Queries can be rebound with :meth:`queries/base::BaseQuery.bind`, but
-  this should only be used if you know what you're doing and why.
 
 .. _using-aliases:
 
@@ -122,13 +118,16 @@ example of aliasing table and field names::
   # SELECT manager_id AS m_id FROM departments AS d;
   select({d: 'departments'}, [{m_id: 'manager_id'}])
 
-(This example also shows passing a list of fields to select as the second
-parameter).
+(This example also shows passing a list of fields to
+:func:`~queries/index::SELECT` as the second parameter).
 
 .. rubric:: Footnotes
 
 .. [#] Use :meth:`queries/base::BaseQuery.copy` if you want to generate
   multiple independent refinements from a single query instance.
+
+.. [#] Queries can be rebound with :meth:`queries/base::BaseQuery.bind`, but
+  this should only be used if you know what you're doing and why.
 
 
 Query Building API reference
@@ -158,7 +157,7 @@ Select
 Examples
 ^^^^^^^^
 
-Start a select query with :func:`~queries/index::exports.select`::
+Start a select query with :func:`~queries/index::SELECT`::
 
     light_recliners = select('chairs', ['chair_type', 'size'])
       .where({chair_type: 'recliner', weight: {lt: 25}})

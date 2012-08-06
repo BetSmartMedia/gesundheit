@@ -35,17 +35,19 @@ module.exports = class BaseQuery extends EventEmitter
 
   visit: (fn) ->
     ###
-    Call the given function in the context of this query. This is mostly useful
-    in coffeescript where you can use it as a sort-of-DSL::
-        
-        queryObject.visit ->
-          @where x: val
-          @orderBy x: 'ASC'
-    
-    The current query is also given as the first parameter to the query in
-    case you need it.
+    Call the given function in the context of this query. This is useful with
+    query factory functions where you can use it as a sort-of-DSL::
+
+        SELECT('people', ['name'], function(q) {
+          // this === q
+          this.join('addresses', {
+            on: {person_id: q.project('people', 'id')},
+            fields: ['city', 'region']
+          })
+        })
+
     ###
-    fn.call @, @ if fn?
+    fn.call @
 
   bind: (engine) ->
     ###

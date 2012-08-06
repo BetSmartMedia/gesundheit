@@ -55,7 +55,7 @@ SELECT = (table, fields) ->
   :param table: Table name to select rows from.
   :param fields: (Optional) Fields to project from ``table``. If this is not
     given, all fields (``*``) will be projected until
-    :meth:`queries/select::SelectQuery.fields`` is called.
+    :meth:`queries/select::SelectQuery.fields` is called.
   :param visitor: (Optional) a function that will be called with it's context
     set to the newly constructed query object.
   ###

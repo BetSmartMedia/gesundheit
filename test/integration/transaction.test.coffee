@@ -6,7 +6,9 @@ helpers.each_engine "Transactions", (db, t) ->
   t.plan(4)
   db.transaction (err, tx) ->
     throw err if err
-    if db.name is 'mysql' then tx.query "SET AUTOCOMMIT = 0"
+    if db.name is 'mysql'
+      tx.query "SET autocommit = 0"
+      tx.query("SET storage_engine = INNODB")
     console.error db.name
     tx.query """CREATE TABLE people (
       name varchar(255),

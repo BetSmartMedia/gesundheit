@@ -42,9 +42,7 @@ exports.each_engine = (test_name, engine_names, callback) ->
           console.warn(err) if err
           conn.query "CREATE DATABASE #{dbname}", (err) ->
             throw err if err
-            if engine_name is 'mysql'
-              conn.query("USE #{dbname}")
-              conn.query("SET storage_engine = INNODB")
+            if engine_name is 'mysql' then conn.query("USE #{dbname}")
             engine.params.database = dbname
             callback engine, t
 

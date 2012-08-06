@@ -52,8 +52,8 @@ It's important to note that all of the query manager methods modify the query
 **in-place** [#]_ so ``departments`` will now render to ``SELECT
 departments.name, departments.manager_id FROM departments``.
 
-Compiling
----------
+Compiling & Executing
+---------------------
 
 To turn the query object into a SQL string and array of bound parameters, we
 ``.compile`` the query::

@@ -13,10 +13,13 @@ module.exports = class BaseQuery extends EventEmitter
 
   constructor: (engine, opts={}) ->
     ###
-    :param opts.table: a ``String``, ``Relation``, ``Alias``, or an object
-      literal with a single key and value which will be interpreted as an alias
-      name and table, respectively. This is given to as the first parameter to
-      the query creation functions in :mod:`queries/index`
+    :param engine: The engine the query will be bound to.
+
+    :param opts.table:
+      a ``String``, ``Relation``, ``Alias``, or object literal with a single
+      key and value which will be interpreted as an alias name and table,
+      respectively. This is normally given to as the first parameter to the
+      query creation functions in :mod:`queries/index`
     ###
     @bind(engine)
     if table = opts.table

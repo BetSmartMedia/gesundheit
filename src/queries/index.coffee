@@ -1,4 +1,5 @@
 ###
+Queries are build using the factory functions in this module
 The query manager classes use the following inheritance hierarchy:
 
   * BaseQuery
@@ -13,9 +14,10 @@ The query manager classes use the following inheritance hierarchy:
 
       * DeleteQuery
 
-The query factory functions defined here each accept an optional visitor
-callback as a final parameter.  are re-exported by the main gesundheit modu
-by the main gesundheit module:
+The query factory functions defined here are re-exported by the main gesundheit
+module. They each accept an optional visitor callback as a final parameter that
+will be passed to the :meth:`~queries/base::BaseQuery.visit` method of the
+newly created query.
 ###
 
 {Tuple}     = require './../nodes'
@@ -24,7 +26,7 @@ SelectQuery = require './select'
 UpdateQuery = require './update'
 DeleteQuery = require './delete'
 
-exports.insert = (table, fields) ->
+INSERT = (table, fields) ->
   ###
   Create a new :class:`queries/insert::InsertQuery` that will add rows to
   ``table``.
@@ -46,7 +48,7 @@ exports.insert = (table, fields) ->
   iq.addRow(row) if row
   return iq
 
-exports.select = (table, fields) ->
+SELECT = (table, fields) ->
   ###
   Create a new :class:`queries/select::SelectQuery` selecting from ``table``.
 
@@ -62,7 +64,7 @@ exports.select = (table, fields) ->
     query.fields fields...
   query
 
-exports.update = (table) ->
+UPDATE = (table) ->
   ###
   Create a new :class:`queries/update::UpdateQuery` that will update ``table``.
   :param visitor: (Optional) a function that will be called with it's context
@@ -70,7 +72,7 @@ exports.update = (table) ->
   ###
   new UpdateQuery @, {table}
 
-exports.delete = (table) ->
+DELETE = (table) ->
   ###
   Create a new :class:`queries/delete::DeleteQuery` that will delete rows from
   ``table``.
@@ -79,21 +81,21 @@ exports.delete = (table) ->
   ###
   new DeleteQuery @, {table}
 
-exports.mixinFactoryMethods = (proxy, getEngine) ->
+exports.mixinFactoryMethods = (invocant, getEngine) ->
   ###
   Add wrappers methods for each of the query factory functions to ``invocant``
-  The added methods will :meth:`~queries/base::BaseQuery.bind` the query
-  objects they create to the engine returned by ``getEngine`` before returning
-  them.
+  using lower, UPPER, and Camel cases. The new methods will retrieve an engine
+  using ``getEngine`` and then create the query bound to that engine.
 
-  If ``getEngine`` is not given, queries will be bound to ``proxy`` itself.
+  If ``getEngine`` is not given, queries will be bound to ``invocant`` instead.
   ###
-  getEngine ?= -> proxy
-  ['insert', 'select', 'update', 'delete'].forEach (type) ->
-    wrapper = -> exports[type].apply(getEngine(), arguments)
-    proxy[type] = wrapper
-    proxy[type.toUpperCase()] = wrapper
-    proxy[type[0].toUpperCase() + type.substring(1)] = wrapper
+  getEngine ?= -> invocant
+  for type, factory of {INSERT, SELECT, UPDATE, DELETE} then do (type, factory) ->
+    factory = maybeVisit(factory)
+    wrapper = -> factory.apply(getEngine(), arguments)
+    invocant[type] = wrapper
+    invocant[type.toLowerCase()] = wrapper
+    invocant[type[0] + type.toLowerCase().substring(1)] = wrapper
 
 maybeVisit = (func) ->
   ->
@@ -103,9 +105,3 @@ maybeVisit = (func) ->
       func.apply(@, a).visit(cb)
     else
       func.apply(@, a)
-
-for name in ['insert', 'select', 'update', 'delete']
-  func = exports[name]
-  exports[name] = maybeVisit(func)
-  exports[name.toUpperCase()] = exports[name]
-  exports[name[0].toUpperCase() + name.substring(1)] = exports[name]

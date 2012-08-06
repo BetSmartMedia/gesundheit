@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Gesundheit! &mdash; gesundheit 0.5.0-beta1 documentation</title>
+    <title>Gesundheit! &mdash; gesundheit 0.5.0 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.5.0-beta1',
+        VERSION:     '0.5.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.5.0-beta1 documentation" href="#" />
+    <link rel="top" title="gesundheit 0.5.0 documentation" href="#" />
     <link rel="next" title="Gesundheit!" href="" /> 
   </head>
   <body>  
@@ -41,6 +41,7 @@
 <li><a class="reference internal" href="#introduction-making-queries">Introduction - Making queries</a><ul>
 <li><a class="reference internal" href="#creating-a-query-manager">Creating a query manager</a></li>
 <li><a class="reference internal" href="#compiling">Compiling</a></li>
+<li><a class="reference internal" href="#using-a-real-database">Using a real database</a></li>
 <li><a class="reference internal" href="#aliasing-tables-and-fields">Aliasing tables and fields</a></li>
 </ul>
 </li>
@@ -67,7 +68,6 @@
 </li>
 <li><a class="reference internal" href="#engines-and-binding">Engines and Binding</a><ul>
 <li><a class="reference internal" href="#engines">Engines</a></li>
-<li><a class="reference internal" href="#bindings">Bindings</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-dialects::">Dialects</a></li>
@@ -93,11 +93,6 @@
             
   <div class="section" id="gesundheit">
 <h1>Gesundheit!<a class="headerlink" href="#gesundheit" title="Permalink to this headline">¶</a></h1>
-<p>Gesundheit generates SQL, it does this using a sugary API for managing the
-abstract syntax tree of a SQL statement. After building your statement
-programmatically, gesundheit can compile it to a string or execute it against
-your database for you, using proper bound parameters and allowing for streaming
-of results.</p>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul class="current">
@@ -108,6 +103,7 @@ of results.</p>
 <li class="toctree-l1"><a class="reference internal" href="#introduction-making-queries">Introduction - Making queries</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#creating-a-query-manager">Creating a query manager</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#compiling">Compiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-a-real-database">Using a real database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#aliasing-tables-and-fields">Aliasing tables and fields</a></li>
 </ul>
 </li>
@@ -122,7 +118,6 @@ of results.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#engines-and-binding">Engines and Binding</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#engines">Engines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#bindings">Bindings</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-dialects::">Dialects</a></li>
@@ -206,12 +201,12 @@ list we call <a class="reference internal" href="#queries/select::SelectQuery.fi
 </pre></div>
 </div>
 <p>It&#8217;s important to note that all of the query manager methods modify the query
-<strong>in-place</strong> <a class="footnote-reference" href="#id2" id="id1">[1]</a> so <tt class="docutils literal"><span class="pre">departments</span></tt> will now render to <tt class="docutils literal"><span class="pre">SELECT</span> <span class="pre">name,</span>
-<span class="pre">manager_id</span> <span class="pre">FROM</span> <span class="pre">departments</span></tt>.</p>
+<strong>in-place</strong> <a class="footnote-reference" href="#id2" id="id1">[1]</a> so <tt class="docutils literal"><span class="pre">departments</span></tt> will now render to <tt class="docutils literal"><span class="pre">SELECT</span>
+<span class="pre">departments.name,</span> <span class="pre">departments.manager_id</span> <span class="pre">FROM</span> <span class="pre">departments</span></tt>.</p>
 </div>
 <div class="section" id="compiling">
 <h2>Compiling<a class="headerlink" href="#compiling" title="Permalink to this headline">¶</a></h2>
-<p>To turn the query object into a SQL string and array of bind parameters, we
+<p>To turn the query object into a SQL string and array of bound parameters, we
 <tt class="docutils literal"><span class="pre">.compile</span></tt> the query:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">assert</span><span class="p">.</span><span class="nx">deepEqual</span><span class="p">(</span>
   <span class="nx">departments</span><span class="p">.</span><span class="nx">compile</span><span class="p">(),</span>
@@ -219,41 +214,47 @@ list we call <a class="reference internal" href="#queries/select::SelectQuery.fi
 <span class="p">)</span>
 </pre></div>
 </div>
-<p><cite>(there are no bind parameters in our query yet)</cite></p>
+<p><cite>(there are no bound parameters in our query yet)</cite></p>
 <p>Most often you don&#8217;t really care about the SQL string and params themselves, but
 want result of performing the query on an actual database. In that case you
 simply use the <tt class="docutils literal"><span class="pre">.execute</span></tt> method:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">execute</span> <span class="nf">(err, res) -&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="p">{</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>... but gesundheit can&#8217;t know about how to find and connect to your database
-all on it&#8217;s own! To execute with a real connection you will need to <cite>bind</cite> the
-query object to an <tt class="xref coffee coffee-mod docutils literal"><span class="pre">engine</span></tt> or <a class="reference external" href="Clients">client</a>. You can bind a
-query by passing an engine/client as the first parameter to those methods that
-require a binding, or assigning a new <tt class="docutils literal"><span class="pre">defaultEngine</span></tt> for implicit binding.</p>
-<p id="engine-usage-example">The first step in either case is to create an engine:</p>
+<p>&#8220;but...&#8221; you might be saying, &#8220;gesundheit can&#8217;t know how connect to my database
+all on it&#8217;s own!&#8221; and you are 100% correct. In order to execute against a real
+database the query must be <cite>bound</cite> to an <tt class="xref coffee coffee-mod docutils literal"><span class="pre">engine</span></tt>. Queries are
+implicitly bound to a default engine when they are created[*]_ and use that
+engine for rendering and executing themselves.</p>
+</div>
+<div class="section" id="using-a-real-database">
+<span id="engine-usage-example"></span><h2>Using a real database<a class="headerlink" href="#using-a-real-database" title="Permalink to this headline">¶</a></h2>
+<p>So far, we have been using gesundheits built-in mock engine, which does nothing
+but render SQL strings. In order to use a real database, we need to create our
+own engine object to use:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">gesundheit = </span><span class="nx">require</span><span class="p">(</span><span class="s">&#39;gesundheit&#39;</span><span class="p">)</span>
 
-<span class="c1"># The parameter to mysql() is the same as for mysql.createClient()</span>
-<span class="nv">engine = </span><span class="nx">gesundheit</span><span class="p">.</span><span class="nx">engines</span><span class="p">.</span><span class="nx">mysql</span><span class="p">({</span><span class="nv">database: </span><span class="s">&#39;test&#39;</span><span class="p">})</span>
+<span class="c1"># Options are simply passed through to require(&#39;mysql&#39;).createConnection()</span>
+<span class="nv">db = </span><span class="nx">gesundheit</span><span class="p">.</span><span class="nx">engines</span><span class="p">.</span><span class="nx">mysql</span><span class="p">({</span><span class="nv">database: </span><span class="s">&#39;test&#39;</span><span class="p">})</span>
 </pre></div>
 </div>
-<p>Then we can pass it, or a client we returned by it&#8217;s <tt class="docutils literal"><span class="pre">.connect</span></tt> method,
-to <tt class="docutils literal"><span class="pre">query.execute</span></tt>:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">execute</span> <span class="nx">engine</span><span class="p">,</span> <span class="nf">(err, res) -&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="p">{</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">}</span>
-
-<span class="nx">engine</span><span class="p">.</span><span class="nx">connect</span> <span class="nf">(err, client) -&gt;</span>
-  <span class="k">throw</span> <span class="nx">err</span> <span class="k">if</span> <span class="nx">err</span>
-  <span class="nx">query</span><span class="p">.</span><span class="nx">execute</span> <span class="nx">client</span><span class="p">,</span> <span class="nf">(err, res) -&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="p">{</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">}</span>
+<p>We can now use <tt class="docutils literal"><span class="pre">db</span></tt> as query factory, using any of <tt class="docutils literal"><span class="pre">select</span></tt>, <tt class="docutils literal"><span class="pre">insert</span></tt>,
+<tt class="docutils literal"><span class="pre">update</span></tt> or <tt class="docutils literal"><span class="pre">delete</span></tt> as methods:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">departments = </span><span class="nx">db</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;manager_id&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>Finally, you can also set a new defaultEngine for implicit binding:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">gesundheit.defaultEngine = </span><span class="nx">engine</span>
-<span class="nx">query</span><span class="p">.</span><span class="nx">execute</span> <span class="nf">(err, res) -&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="p">{</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">}</span>
+<p>Since it&#8217;s common to use only a single database in your application, you can
+replace the default engine used by the query methods exposed on gesundheit
+module itself:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">gesundheit.defaultEngine = </span><span class="nx">db</span>
+<span class="c1"># This is now equivalent to db.select(...)</span>
+<span class="nx">gesundheit</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;manager_id&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>Now <a class="reference internal" href="#queries/base::BaseQuery.execute" title="queries/base::BaseQuery.execute"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.execute</span></tt></a> and other methods that need a database
-client will get one from the engine automatically.</p>
+<dl class="docutils">
+<dt>_[*] <span class="classifier-delimiter">:</span> <span class="classifier">Queries can be rebound with <a class="reference internal" href="#queries/base::BaseQuery.bind" title="queries/base::BaseQuery.bind"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.bind</span></tt></a>, but</span></dt>
+<dd>this should only be used if you know what you&#8217;re doing and why.</dd>
+</dl>
 </div>
 <div class="section" id="aliasing-tables-and-fields">
 <span id="using-aliases"></span><h2>Aliasing tables and fields<a class="headerlink" href="#aliasing-tables-and-fields" title="Permalink to this headline">¶</a></h2>
@@ -296,20 +297,34 @@ multiple independent refinements from a single query instance.</td></tr>
 </li>
 </ul>
 </div></blockquote>
-<p>The following functions for creating *Query class instances are re-exported
+<p>The query factory functions defined here each accept an optional visitor
+callback as a final parameter.  are re-exported by the main gesundheit modu
 by the main gesundheit module:</p>
 <dl class="function">
 <dt id="queries/index::exports.insert">
-<em class="property">function </em><tt class="descname">exports.insert</tt><big>(</big><em>tbl</em>, <em>fields</em>, <em>opts</em><big>)</big><a class="headerlink" href="#queries/index::exports.insert" title="Permalink to this definition">¶</a></dt>
+<em class="property">function </em><tt class="descname">exports.insert</tt><big>(</big><em>table</em>, <em>fields</em><big>)</big><a class="headerlink" href="#queries/index::exports.insert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new <a class="reference internal" href="#queries/insert::InsertQuery" title="queries/insert::InsertQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">InsertQuery</span></tt></a> that will add rows to
 <tt class="docutils literal"><span class="pre">table</span></tt>.</p>
-<p>The fields parameter is <strong>required</strong> to be an array of column names that
-will be inserted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fields</strong> &#8211; Either an array of column names that will be inserted, or a
+plain object representing a row of data to insert, in which case the keys
+of the object will define the columns that are inserted.</li>
+<li><strong>visitor</strong> &#8211; (Optional) a function that will be called with it&#8217;s context
+set to the newly constructed query object.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="queries/index::exports.select">
-<em class="property">function </em><tt class="descname">exports.select</tt><big>(</big><em>table</em>, <em>fields</em>, <em>opts</em><big>)</big><a class="headerlink" href="#queries/index::exports.select" title="Permalink to this definition">¶</a></dt>
+<em class="property">function </em><tt class="descname">exports.select</tt><big>(</big><em>table</em>, <em>fields</em><big>)</big><a class="headerlink" href="#queries/index::exports.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new <a class="reference internal" href="#queries/select::SelectQuery" title="queries/select::SelectQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SelectQuery</span></tt></a> selecting from <tt class="docutils literal"><span class="pre">table</span></tt>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -320,7 +335,8 @@ will be inserted.</p>
 <li><strong>fields</strong> &#8211; (Optional) Fields to project from <tt class="docutils literal"><span class="pre">table</span></tt>. If this is not
 given, all fields (<tt class="docutils literal"><span class="pre">*</span></tt>) will be projected until
 <tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.fields`</span></tt> is called.</li>
-<li><strong>opts</strong> &#8211; Additional options for <a class="reference internal" href="#queries/base::BaseQuery.constructor" title="queries/base::BaseQuery.constructor"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.constructor</span></tt></a></li>
+<li><strong>visitor</strong> &#8211; (Optional) a function that will be called with it&#8217;s context
+set to the newly constructed query object.</li>
 </ul>
 </td>
 </tr>
@@ -330,44 +346,57 @@ given, all fields (<tt class="docutils literal"><span class="pre">*</span></tt>)
 
 <dl class="function">
 <dt id="queries/index::exports.update">
-<em class="property">function </em><tt class="descname">exports.update</tt><big>(</big><em>table</em>, <em>opts</em><big>)</big><a class="headerlink" href="#queries/index::exports.update" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new <a class="reference internal" href="#queries/update::UpdateQuery" title="queries/update::UpdateQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">UpdateQuery</span></tt></a> that will update <tt class="docutils literal"><span class="pre">table</span></tt>.</p>
+<em class="property">function </em><tt class="descname">exports.update</tt><big>(</big><em>table</em><big>)</big><a class="headerlink" href="#queries/index::exports.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new <a class="reference internal" href="#queries/update::UpdateQuery" title="queries/update::UpdateQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">UpdateQuery</span></tt></a> that will update <tt class="docutils literal"><span class="pre">table</span></tt>.
+:param visitor: (Optional) a function that will be called with it&#8217;s context</p>
+<blockquote>
+<div>set to the newly constructed query object.</div></blockquote>
 </dd></dl>
 
 <dl class="function">
 <dt id="queries/index::exports.delete">
-<em class="property">function </em><tt class="descname">exports.delete</tt><big>(</big><em>table</em>, <em>opts</em><big>)</big><a class="headerlink" href="#queries/index::exports.delete" title="Permalink to this definition">¶</a></dt>
+<em class="property">function </em><tt class="descname">exports.delete</tt><big>(</big><em>table</em><big>)</big><a class="headerlink" href="#queries/index::exports.delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new <a class="reference internal" href="#queries/delete::DeleteQuery" title="queries/delete::DeleteQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">DeleteQuery</span></tt></a> that will delete rows from
-<tt class="docutils literal"><span class="pre">table</span></tt>.</p>
+<tt class="docutils literal"><span class="pre">table</span></tt>.
+:param visitor: (Optional) a function that will be called with it&#8217;s context</p>
+<blockquote>
+<div>set to the newly constructed query object.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="queries/index::exports.mixinFactoryMethods">
+<em class="property">function </em><tt class="descname">exports.mixinFactoryMethods</tt><big>(</big><em>proxy</em>, <em>getEngine</em><big>)</big><a class="headerlink" href="#queries/index::exports.mixinFactoryMethods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add wrappers methods for each of the query factory functions to <tt class="docutils literal"><span class="pre">invocant</span></tt>
+The added methods will <a class="reference internal" href="#queries/base::BaseQuery.bind" title="queries/base::BaseQuery.bind"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.bind</span></tt></a> the query
+objects they create to the engine returned by <tt class="docutils literal"><span class="pre">getEngine</span></tt> before returning
+them.</p>
+<p>If <tt class="docutils literal"><span class="pre">getEngine</span></tt> is not given, queries will be bound to <tt class="docutils literal"><span class="pre">proxy</span></tt> itself.</p>
 </dd></dl>
 
 <div class="section" id="module-queries/base::">
 <span id="basequery"></span><h2>BaseQuery<a class="headerlink" href="#module-queries/base::" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="queries/base::BaseQuery">
-<em class="property">class </em><tt class="descname">BaseQuery</tt><a class="headerlink" href="#queries/base::BaseQuery" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">BaseQuery</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">EventEmitter</span></tt><a class="headerlink" href="#queries/base::BaseQuery" title="Permalink to this definition">¶</a></dt>
 <dd><p>The base class for all queries. While this class itself is not part of
 gesundheits public API, the methods defined on it are.</p>
 <dl class="method">
 <dt id="queries/base::BaseQuery.constructor">
-<em class="property">method </em><tt class="descname">BaseQuery.constructor</tt><big>(</big><em>opts</em><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.constructor" title="Permalink to this definition">¶</a></dt>
+<em class="property">method </em><tt class="descname">BaseQuery.constructor</tt><big>(</big><em>engine</em>, <em>opts</em><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.constructor" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>opts.table</strong> &#8211; a <tt class="docutils literal"><span class="pre">String</span></tt>, <tt class="docutils literal"><span class="pre">Relation</span></tt>, <tt class="docutils literal"><span class="pre">Alias</span></tt>, or an object
-literal with a single key and value which will be interpreted as an alias
-name and table, respectively. This is given to as the first parameter to
-the query creation functions in <tt class="xref coffee coffee-mod docutils literal"><span class="pre">queries/index</span></tt></li>
-<li><strong>opts.bind</strong> &#8211; (optional) an <tt class="xref coffee coffee-mod docutils literal"><span class="pre">engine</span></tt> or connection that the
-query will be bound to. The engine is used to render and/or execute the
-query. If not given <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</span></tt> will be used.</li>
+<li><strong>opts.table</strong> &#8211; a <tt class="docutils literal"><span class="pre">String</span></tt>, <tt class="docutils literal"><span class="pre">Relation</span></tt>, <tt class="docutils literal"><span class="pre">Alias</span></tt>, or an object</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+<p>literal with a single key and value which will be interpreted as an alias
+name and table, respectively. This is given to as the first parameter to
+the query creation functions in <tt class="xref coffee coffee-mod docutils literal"><span class="pre">queries/index</span></tt></p>
 </dd></dl>
 
 <dl class="method">
@@ -391,53 +420,22 @@ case you need it.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="queries/base::BaseQuery.echo">
-<em class="property">method </em><tt class="descname">BaseQuery.echo</tt><big>(</big><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.echo" title="Permalink to this definition">¶</a></dt>
-<dd><p>If called before .render(), then resulting SQL will be sent to stdout
-via console.log()</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="queries/base::BaseQuery.bind">
-<em class="property">method </em><tt class="descname">BaseQuery.bind</tt><big>(</big><em>bindable</em><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.bind" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bind this query object to a <cite>bindable</cite> object (engine or client).
+<em class="property">method </em><tt class="descname">BaseQuery.bind</tt><big>(</big><em>engine</em><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.bind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bind this query object to a new engine.
 If no argument is given the query will be bound to the default engine.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="queries/base::BaseQuery.render">
 <em class="property">method </em><tt class="descname">BaseQuery.render</tt><big>(</big><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.render" title="Permalink to this definition">¶</a></dt>
-<dd><p>Render the query to SQL.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>bindable</strong> &#8211; (optional)
-If present, the query will be bound to this object using <tt class="xref coffee coffee-meth docutils literal"><span class="pre">bind</span></tt></li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
+<dd><p>Render the query to a SQL string.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="queries/base::BaseQuery.compile">
 <em class="property">method </em><tt class="descname">BaseQuery.compile</tt><big>(</big><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.compile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compile this query object, returning a SQL string and parameter array.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>bindable</strong> &#8211; (optional)
-If present, the query will be bound to this object using <tt class="xref coffee coffee-meth docutils literal"><span class="pre">bind</span></tt></li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="method">
@@ -449,10 +447,9 @@ If present, the query will be bound to this object using <tt class="xref coffee 
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>bindable</strong> &#8211; (optional)
-If present, the query will be bound to this object using <tt class="xref coffee coffee-meth docutils literal"><span class="pre">bind</span></tt></li>
-<li><strong>cb</strong> &#8211; A node-style callback that will be called with any errors and/or
-the query results.</li>
+<li><strong>cb</strong> &#8211; An (optional) node-style callback that will be called with any
+errors and/or the query results. If no callback is given, a new EventEmitter
+will be returned that emits either an &#8216;error&#8217; or &#8216;result&#8217; event.</li>
 </ul>
 </td>
 </tr>
@@ -462,15 +459,16 @@ the query results.</li>
 
 <dl class="method">
 <dt id="queries/base::BaseQuery.stream">
-<em class="property">method </em><tt class="descname">BaseQuery.stream</tt><big>(</big><em>cb</em><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.stream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the query and stream the results.</p>
+<em class="property">method </em><tt class="descname">BaseQuery.stream</tt><big>(</big><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the query, returning an EventEmitter that will stream the results.</p>
+<p>The exact events emitted depend on the underlying database engine. For
+example, MySQL query objects emit &#8216;result&#8217; events, while Postgres query
+objects emit &#8216;row&#8217; events.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>bindable</strong> &#8211; (optional)
-If present, the query will be bound to this object using <tt class="xref coffee coffee-meth docutils literal"><span class="pre">bind</span></tt></li>
 <li><strong>cb</strong> &#8211; A node-style callback that will be called with any errors and/or
 each row of the query results.</li>
 </ul>
@@ -480,13 +478,6 @@ each row of the query results.</li>
 </table>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="function">
-<dt id="queries/base::withBinding">
-<em class="property">function </em><tt class="descname">withBinding</tt><big>(</big><em>original</em><big>)</big><a class="headerlink" href="#queries/base::withBinding" title="Permalink to this definition">¶</a></dt>
-<dd><p>Decorates a method so that it can accept a bindable object as it&#8217;s first
-argument, and will always call &#64;bind() before the method itself.</p>
 </dd></dl>
 
 </div>
@@ -844,39 +835,30 @@ synchronous, and will usually just delegate to a subclass of
 <a class="reference internal" href="#dialects::BaseDialect" title="dialects::BaseDialect"><tt class="xref coffee coffee-class docutils literal"><span class="pre">BaseDialect</span></tt></a>.</dd>
 <dt><strong>connect(callback)</strong></dt>
 <dd>Call <tt class="docutils literal"><span class="pre">callback(err,</span> <span class="pre">client)</span></tt> where <cite>client</cite> is an object with a <tt class="docutils literal"><span class="pre">query</span></tt>
-method that works the same as those of the pg and mysql driver clients. The
-client must also have an <tt class="docutils literal"><span class="pre">.engine</span></tt> property that points back to the engine
-instance that created it.</dd>
-<dt><strong>stream([client,] query, cb)</strong></dt>
-<dd>If client is not given, get one by calling connect. Then execute the query,
-calling <tt class="docutils literal"><span class="pre">cb(err,</span> <span class="pre">row)</span></tt> for each row in the result.</dd>
-<dt><strong>execute([client,] query, cb)</strong></dt>
-<dd>If client is not given, get one by calling connect. Then execute the query,
-calling <tt class="docutils literal"><span class="pre">cb(err,</span> <span class="pre">result)</span></tt> with the full query results.</dd>
+method that works the same as those of the pg and mysql driver clients.</dd>
 </dl>
 </div></blockquote>
 <p>Gesundheit exports factory functions for creating <a class="reference internal" href="#engines::postgres" title="engines::postgres"><tt class="xref coffee coffee-func docutils literal"><span class="pre">postgres</span></tt></a> and
 <a class="reference internal" href="#engines::mysql" title="engines::mysql"><tt class="xref coffee coffee-func docutils literal"><span class="pre">mysql</span></tt></a> engines:</p>
 <span class="target" id="module-engines::"></span><dl class="function">
 <dt id="engines::postgres">
-<em class="property">function </em><tt class="descname">postgres</tt><big>(</big><em>dsn</em><big>)</big><a class="headerlink" href="#engines::postgres" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new Postgres engine using a DSN compatible with
-<tt class="docutils literal"><span class="pre">require('pg').connect(dsn)</span></tt>. This generally has the from:</p>
-<p><tt class="docutils literal"><span class="pre">&lt;scheme&gt;://&lt;user&gt;&#64;&lt;host&gt;[:&lt;port&gt;]/&lt;database&gt;</span></tt></p>
+<em class="property">function </em><tt class="descname">postgres</tt><big>(</big><em>config</em><big>)</big><a class="headerlink" href="#engines::postgres" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new Postgres engine using a parameter compatible with
+<a class="reference external" href="require('pg').connect(config)">https://github.com/brianc/node-postgres/wiki/pg#method-connect</a>.</p>
 <p>This will <tt class="docutils literal"><span class="pre">require('pg')</span></tt> and attempt to use the &#8216;native&#8217; interface if it&#8217;s
-available, so that module must be installed for this to work.</p>
+available.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="engines::mysql">
 <em class="property">function </em><tt class="descname">mysql</tt><big>(</big><em>opts</em><big>)</big><a class="headerlink" href="#engines::mysql" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new MySQL engine using an object that is compatible with
-<tt class="docutils literal"><span class="pre">require('node-mysql').createClient(opts)</span></tt>,</p>
+<tt class="docutils literal"><span class="pre">require('mysql').create{Connection,Client}(opts)</span></tt>.</p>
 <p>Additionally, you can specify extra options for <tt class="docutils literal"><span class="pre">generic-pool</span></tt> by
 including them as an object in <tt class="docutils literal"><span class="pre">opts.pool</span></tt>. The <tt class="docutils literal"><span class="pre">create</span></tt> and
 <tt class="docutils literal"><span class="pre">destroy</span></tt> pool functions will be created for you.</p>
-<p>This will <tt class="docutils literal"><span class="pre">require('mysql')</span></tt> and <tt class="docutils literal"><span class="pre">require('generic-pool')</span></tt> so those
-modules must be installed and loadable for this function to work.</p>
+<p>This will <tt class="docutils literal"><span class="pre">require('mysql-compat')</span></tt> which you <strong>must</strong> install separately
+for this function to work.</p>
 </dd></dl>
 
 <dl class="function">
@@ -887,31 +869,6 @@ array to the result callback. This will be the default until you over-ride
 with <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</span> <span class="pre">=</span> <span class="pre">myAppEngine</span></tt>.</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="engines::withClient">
-<em class="property">function </em><tt class="descname">withClient</tt><big>(</big><em>original</em><big>)</big><a class="headerlink" href="#engines::withClient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Decorate a method so that it will be called with a connected client prepended
-to the argument list. The method <strong>must</strong> receive an object bound to an engine
-as it&#8217;s first argument.</p>
-</dd></dl>
-
-</div>
-<div class="section" id="bindings">
-<h2>Bindings<a class="headerlink" href="#bindings" title="Permalink to this headline">¶</a></h2>
-<p>The render, compile, stream, and execute methods of
-<a class="reference internal" href="#queries/base::BaseQuery" title="queries/base::BaseQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">BaseQuery</span></tt></a> all require an engine to do their work. Rather
-than requiring the engine to be passed to each of these methods, the query can
-be &#8220;bound&#8221; to an engine or client object.</p>
-<p>Queries are bound to such &#8220;bindable&#8221; objects in one of 3 ways:</p>
-<blockquote>
-<div><ol class="arabic simple">
-<li>Using <a class="reference internal" href="#queries/base::BaseQuery.bind" title="queries/base::BaseQuery.bind"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.bind</span></tt></a>.</li>
-<li>A bindable object can be given as the first parameter to methods that require
-the query to be bound (e.g.  <a class="reference internal" href="#queries/base::BaseQuery.execute" title="queries/base::BaseQuery.execute"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.execute</span></tt></a>).</li>
-<li>If a method that requires a binding is called on an unbound query (and no
-bindable is given) the value of <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</span></tt> will be used.</li>
-</ol>
-</div></blockquote>
 </div>
 </div>
 <div class="section" id="module-dialects::">
@@ -925,6 +882,12 @@ instance.</p>
 <em class="property">class </em><tt class="descname">BaseDialect</tt><a class="headerlink" href="#dialects::BaseDialect" title="Permalink to this definition">¶</a></dt>
 <dd><p>A dialect that isn&#8217;t specific to a particular DBMS, but used as a base for both
 MySQL and Postgres.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="dialects::Postgres">
+<em class="property">class </em><tt class="descname">Postgres</tt><em class="property"> extends </em><a class="reference internal" href="#dialects::BaseDialect" title="dialects::BaseDialect"><tt class="xref coffee coffee-class docutils literal"><span class="pre">BaseDialect</span></tt></a><a class="headerlink" href="#dialects::Postgres" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specialization of BaseDialect for Postgres</p>
 </dd></dl>
 
 <dl class="class">

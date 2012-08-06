@@ -7,7 +7,7 @@ Gesundheit!
 ===========
 
 .. include:: ../README.markdown
-  :start-after: # Gesundheit - Concise SQL generation in CoffeeScript
+  :start-after: ===================================================
   :end-before: A quick example
 
 Contents:
@@ -49,13 +49,13 @@ list we call :meth:`queries/select::SelectQuery.fields`::
   departments.fields('name', 'manager_id')
 
 It's important to note that all of the query manager methods modify the query
-**in-place** [#]_ so ``departments`` will now render to ``SELECT name,
-manager_id FROM departments``.
+**in-place** [#]_ so ``departments`` will now render to ``SELECT
+departments.name, departments.manager_id FROM departments``.
 
 Compiling
 ---------
 
-To turn the query object into a SQL string and array of bind parameters, we
+To turn the query object into a SQL string and array of bound parameters, we
 ``.compile`` the query::
 
   assert.deepEqual(
@@ -63,7 +63,7 @@ To turn the query object into a SQL string and array of bind parameters, we
     [ 'SELECT name, manager_id FROM departments', [] ]
   )
 
-`(there are no bind parameters in our query yet)`
+`(there are no bound parameters in our query yet)`
 
 Most often you don't really care about the SQL string and params themselves, but
 want result of performing the query on an actual database. In that case you
@@ -71,37 +71,41 @@ simply use the ``.execute`` method::
 
   query.execute (err, res) -> console.log {err, res}
 
-... but gesundheit can't know about how to find and connect to your database
-all on it's own! To execute with a real connection you will need to `bind` the
-query object to an :mod:`engine <Engines>` or `client <Clients>`_. You can bind a
-query by passing an engine/client as the first parameter to those methods that
-require a binding, or assigning a new ``defaultEngine`` for implicit binding.
+"but..." you might be saying, "gesundheit can't know how connect to my database
+all on it's own!" and you are 100% correct. In order to execute against a real
+database the query must be `bound` to an :mod:`engine <Engines>`. Queries are
+implicitly bound to a default engine when they are created[*]_ and use that
+engine for rendering and executing themselves.
 
 .. _engine-usage-example:
 
-The first step in either case is to create an engine::
+Using a real database
+---------------------
+
+So far, we have been using gesundheits built-in mock engine, which does nothing
+but render SQL strings. In order to use a real database, we need to create our
+own engine object to use::
 
   gesundheit = require('gesundheit')
 
-  # The parameter to mysql() is the same as for mysql.createClient()
-  engine = gesundheit.engines.mysql({database: 'test'})
+  # Options are simply passed through to require('mysql').createConnection()
+  db = gesundheit.engines.mysql({database: 'test'})
 
-Then we can pass it, or a client we returned by it's ``.connect`` method,
-to ``query.execute``::
+We can now use ``db`` as query factory, using any of ``select``, ``insert``,
+``update`` or ``delete`` as methods::
 
-  query.execute engine, (err, res) -> console.log {err, res}
+  departments = db.select('departments', ['name', 'manager_id'])
 
-  engine.connect (err, client) ->
-    throw err if err
-    query.execute client, (err, res) -> console.log {err, res}
+Since it's common to use only a single database in your application, you can
+replace the default engine used by the query methods exposed on gesundheit
+module itself::
 
-Finally, you can also set a new defaultEngine for implicit binding::
+  gesundheit.defaultEngine = db
+  # This is now equivalent to db.select(...)
+  gesundheit.select('departments', ['name', 'manager_id'])
 
-  gesundheit.defaultEngine = engine
-  query.execute (err, res) -> console.log {err, res}
-
-Now :meth:`queries/base::BaseQuery.execute` and other methods that need a database
-client will get one from the engine automatically.
+_[*] : Queries can be rebound with :meth:`queries/base::BaseQuery.bind`, but
+  this should only be used if you know what you're doing and why.
 
 .. _using-aliases:
 
@@ -154,12 +158,12 @@ Select
 Examples
 ^^^^^^^^
 
-Start a select query with :func:`queries/index::exports.select`::
+Start a select query with :func:`~queries/index::exports.select`::
 
     light_recliners = select('chairs', ['chair_type', 'size'])
       .where({chair_type: 'recliner', weight: {lt: 25}})
 
-Join another table with :meth:`queries/select::SelectQuery.join`::
+Join another table with :meth:`~queries/select::SelectQuery.join`::
 
     men_with_light_recliners = light_recliners.copy()
       .join("people", {
@@ -257,40 +261,12 @@ An engine is any object that implements the following API:
 
   **connect(callback)**
     Call ``callback(err, client)`` where `client` is an object with a ``query``
-    method that works the same as those of the pg and mysql driver clients. The
-    client must also have an ``.engine`` property that points back to the engine
-    instance that created it.
-
-  **stream([client,] query, cb)**
-    If client is not given, get one by calling connect. Then execute the query,
-    calling ``cb(err, row)`` for each row in the result.
-
-  **execute([client,] query, cb)**
-    If client is not given, get one by calling connect. Then execute the query,
-    calling ``cb(err, result)`` with the full query results.
+    method that works the same as those of the pg and mysql driver clients.
 
 Gesundheit exports factory functions for creating :func:`engines::postgres` and
 :func:`engines::mysql` engines:
 
 .. automodule:: engines
-
-Bindings
---------
-
-The render, compile, stream, and execute methods of
-:class:`queries/base::BaseQuery` all require an engine to do their work. Rather
-than requiring the engine to be passed to each of these methods, the query can
-be "bound" to an engine or client object.
-
-Queries are bound to such "bindable" objects in one of 3 ways:
-
-  1. Using :meth:`queries/base::BaseQuery.bind`.
-
-  2. A bindable object can be given as the first parameter to methods that require
-     the query to be bound (e.g.  :meth:`queries/base::BaseQuery.execute`).
-
-  3. If a method that requires a binding is called on an unbound query (and no
-     bindable is given) the value of ``gesundheit.defaultEngine`` will be used.
 
 Dialects
 ========

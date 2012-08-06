@@ -33,6 +33,7 @@ exports.each_engine = (test_name, engine_names, callback) ->
       engineFactory = g.engines[engine_name]
       engine = engineFactory(engine_params[engine_name])
       engine.connect (err, conn) ->
+        throw err if err
         drop_db = if engine_name is 'mysql'
           "DROP DATABASE IF EXISTS #{dbname}"
         else

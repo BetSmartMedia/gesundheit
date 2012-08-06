@@ -2,7 +2,8 @@
 
 helpers = require('../helpers')
 
-helpers.each_engine "Transactions", (db, t, d) ->
+helpers.each_engine "Transactions", (db, t) ->
+  t.plan(4)
   db.transaction (err, tx) ->
     throw err if err
     if db.name is 'mysql' then tx.query "SET AUTOCOMMIT = 0"
@@ -25,4 +26,3 @@ helpers.each_engine "Transactions", (db, t, d) ->
       throw err if err
       tx.select("people").execute (err, res) ->
         t.ok(!(res && res.rows.length), "Transaction rolled back")
-        t.end()

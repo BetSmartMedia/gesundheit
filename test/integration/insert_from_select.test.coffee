@@ -3,6 +3,7 @@
 helpers = require('../helpers')
 
 helpers.each_engine "INSERT FROM", (db, t) ->
+  t.plan(1)
   db.connect (err, conn) ->
     throw err if err
     conn.query("""CREATE TABLE src (
@@ -21,5 +22,3 @@ helpers.each_engine "INSERT FROM", (db, t) ->
         throw err if err
         db.select('dest').execute (err, res) ->
           t.deepEqual res.rows, test_data
-          t.end()
-

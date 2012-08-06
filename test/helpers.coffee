@@ -7,8 +7,12 @@ g = require('../')
 engine_params =
   mysql:
     user: "root"
+    password: ""
+    host: "127.0.0.1"
   postgres:
     user: "postgres"
+    password: ""
+    host: "127.0.0.1"
 
 exports.each_engine = (test_name, engine_names, callback) ->
   ###

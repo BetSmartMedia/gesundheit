@@ -44,6 +44,7 @@ exports.each_engine = (test_name, engine_names, callback) ->
             throw err if err
             if engine_name is 'mysql'
               conn.query("USE #{dbname}")
+              conn.query("SET storage_engine = INNODB")
             engine.params.database = dbname
             callback engine, t
 

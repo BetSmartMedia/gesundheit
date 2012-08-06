@@ -34,5 +34,5 @@ pages:
 release: test pages
 	git checkout gh-pages
 	cp -R doc/_build/html/ ./
-	git commit -a -m v$(npm_package_version)
+	[[ -z `git status -suno` ]] || git commit -a -m v$(npm_package_version)
 	git checkout $(HEAD)

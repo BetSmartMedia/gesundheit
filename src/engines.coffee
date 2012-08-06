@@ -1,84 +1,56 @@
-
+queries = require('./queries')
 dialects = require('./dialects')
 
-postgres = (dsn) ->
-  ###
-  Create a new Postgres engine using a DSN compatible with
-  ``require('pg').connect(dsn)``. This generally has the from:
 
-  ``<scheme>://<user>@<host>[:<port>]/<database>``
+postgres = (config) ->
+  ###
+  Create a new Postgres engine using a parameter compatible with
+  `https://github.com/brianc/node-postgres/wiki/pg#method-connect <require('pg').connect(config)>`_.
 
   This will ``require('pg')`` and attempt to use the 'native' interface if it's
-  available, so that module must be installed for this to work.
+  available.
   ###
   pg = require('pg')
+
   if pg.native
     pg = pg.native
 
   dialect = new dialects.Postgres
 
   engine =
+    name: "postgres"
+    params: config
     render: dialect.render.bind(dialect)
-    connect: (cb) ->
-      pg.connect dsn, (err, client) ->
-        client.engine = engine if client
-        cb err, client
+    connect: pg.connect.bind(pg, config)
+    destroy: pg.end
+  engine.transaction = transaction.bind(engine)
+  queries.mixinFactoryMethods(engine)
+  engine
 
-    stream: withClient (client, query, cb) ->
-      [sql, params] = query.compile()
-      client.query(sql, params)
-        .on('row', cb.bind(null, null))
-        .on('error', cb)
-
-    execute: withClient (client, query, cb) ->
-      [sql, params] = query.compile()
-      client.query(sql, params, cb)
-    
 mysql = (opts) ->
   ###
   Create a new MySQL engine using an object that is compatible with
-  ``require('node-mysql').create{Connection,Client}(opts)``.
+  ``require('mysql').create{Connection,Client}(opts)``.
 
   Additionally, you can specify extra options for ``generic-pool`` by
   including them as an object in ``opts.pool``. The ``create`` and
   ``destroy`` pool functions will be created for you.
   
-  This will ``require('mysql')`` and ``require('generic-pool')`` so those
-  modules must be installed and loadable for this function to work.
+  This will ``require('mysql-compat')`` which you **must** install separately
+  for this function to work.
   ###
-  mysql = require('mysql')
-  {Pool} = require('generic-pool')
+  mysql = require('mysql-compat')
   dialect = new dialects.MySQL
-  poolOpts = opts.pool or {}
-  poolOpts.name or= opts.user+opts.host+opts.port+opts.database
-  poolOpts.create = (cb) ->
-    c = if mysql.createClient
-      mysql.createClient(opts)
-    else
-      mysql.createConnection opts
-    cb null, c
-
-  poolOpts.destroy = (client) -> client.end()
-  pool = Pool poolOpts
   engine =
+    name: "mysql"
+    params: opts
     render: dialect.render.bind(dialect)
-    connect: pool.acquire.bind(pool)
-    stream: withClient (client, query, cb) ->
-      [sql, params] = query.compile()
-      client.query(sql, params)
-        .on('row', cb.bind(null, null))
-        .on('end', (res) ->
-          pool.release client unless client is query.client
-          if res then cb null, null, res
-        )
-        .on('error', cb)
+    connect: mysql.connect.bind(null, opts)
+    destroy: mysql.end
 
-    execute: withClient (client, query, cb) ->
-      [sql, params] = query.compile()
-      client.query sql, params, (err, res) ->
-        pool.release client unless client is query.client
-        cb err, res
-
+  engine.transaction = transaction.bind(engine)
+  queries.mixinFactoryMethods(engine)
+  engine
 
 fakeEngine = ->
   ###
@@ -88,37 +60,47 @@ fakeEngine = ->
   ###
   bd = new dialects.BaseDialect
   engine =
+    params: {}
     render: bd.render.bind(bd)
     connect: (cb) -> cb null, passthroughClient
-    stream: withClient (client, query, cb) ->
-      [sql, params] = query.compile()
-      client.query sql, params, cb
-    execute: withClient (client, query, cb) ->
-      [sql, params] = query.compile()
-      client.query sql, params, cb
 
   passthroughClient =
     engine: engine
     query: (sql, params, cb) ->
-      if cb
-        process.nextTick cb.bind(null, null, [sql, params])
+      return unless cb
+      process.nextTick cb.bind(null, null, [sql, params])
 
   return engine
 
-withClient = (original) ->
-  ###
-  Decorate a method so that it will be called with a connected client prepended
-  to the argument list. The method **must** receive an object bound to an engine
-  as it's first argument.
-  ###
-  (obj, args...) ->
-    if client = obj.connection
-      args = [client, obj].concat(args)
-      original.apply @, args
-    else
-      obj.engine.connect (err, client) ->
-        return args[args.length-1](err) if err
-        args = [client, obj].concat(args)
-        original.apply @, args
 
-module.exports = {mysql, postgres, fakeEngine, withClient}
+transaction = (cb) ->
+  @connect (err, conn) =>
+    return cb err if err
+    tx = createTxProxy.call @, conn
+    tx.begin (err) ->
+      cb err, tx
+
+createTxProxy = (conn) ->
+  proxy =
+    connection: conn
+    begin: (cb) ->
+      conn.pauseDrain()
+      conn.query 'BEGIN', (err) ->
+        cb(err)
+    commit: (cb) ->
+      conn.query 'COMMIT', (err) ->
+        conn.resumeDrain()
+        cb(err)
+    rollback: (cb) ->
+      conn.query 'ROLLBACK', (err) ->
+        conn.resumeDrain()
+        cb(err)
+    query: conn.query.bind(conn)
+    connect: (cb) -> cb null, conn
+    render: @render.bind(@)
+
+  queries.mixinFactoryMethods(proxy)
+  proxy
+
+
+module.exports = {mysql, postgres, fakeEngine}

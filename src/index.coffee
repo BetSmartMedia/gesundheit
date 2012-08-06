@@ -63,7 +63,7 @@ for name, node of exports.nodes.JOIN_TYPES
 for name, helper of exports.nodes when name[0] is name[0].toLowerCase()
   exports[name] = helper
 
-for name, func of require('./queries')
-  exports[name] = func
-  exports[name.toUpperCase()] = func
-  exports[name[0].toUpperCase() + name.substring(1)] = func
+require('./queries').mixinFactoryMethods(exports, -> exports.defaultEngine)
+
+exports.transaction = (args...) ->
+  exports.defaultEngine.transaction args...

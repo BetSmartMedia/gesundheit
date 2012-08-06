@@ -358,7 +358,7 @@ toParam = (it) ->
   All other types will be wrapped in a :class:`nodes::Parameter` instance.
   ###
   SelectQuery = require './queries/select'
-  if it.constructor is SelectQuery then new Tuple([it.q])
+  if it?.constructor is SelectQuery then new Tuple([it.q])
   else if it instanceof Node then it
   else if Array.isArray it then new Tuple(it.map toParam)
   else new Parameter it

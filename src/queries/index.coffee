@@ -35,12 +35,12 @@ exports.insert = (table, fields) ->
   :param visitor: (Optional) a function that will be called with it's context
     set to the newly constructed query object.
   ###
-  unless Array.isArray fields
+  if fields and typeof fields is 'object' and not Array.isArray fields
     row = fields
-    fields = Object.keys(fields)
+    fields = Object.keys(row)
   unless fields?.length
     throw new Error "Column list is required when constructing an INSERT"
-  iq = new InsertQuery {table}
+  iq = new InsertQuery @, {table}
   # TODO this is gross
   iq.q.columns = iq.q.nodes[1] = new Tuple fields
   iq.addRow(row) if row
@@ -57,7 +57,7 @@ exports.select = (table, fields) ->
   :param visitor: (Optional) a function that will be called with it's context
     set to the newly constructed query object.
   ###
-  query = new SelectQuery {table}
+  query = new SelectQuery @, {table}
   if fields?
     query.fields fields...
   query
@@ -68,7 +68,7 @@ exports.update = (table) ->
   :param visitor: (Optional) a function that will be called with it's context
     set to the newly constructed query object.
   ###
-  new UpdateQuery {table}
+  new UpdateQuery @, {table}
 
 exports.delete = (table) ->
   ###
@@ -77,17 +77,35 @@ exports.delete = (table) ->
   :param visitor: (Optional) a function that will be called with it's context
     set to the newly constructed query object.
   ###
-  new DeleteQuery {table}
+  new DeleteQuery @, {table}
+
+exports.mixinFactoryMethods = (proxy, getEngine) ->
+  ###
+  Add wrappers methods for each of the query factory functions to ``invocant``
+  The added methods will :meth:`~queries/base::BaseQuery.bind` the query
+  objects they create to the engine returned by ``getEngine`` before returning
+  them.
+
+  If ``getEngine`` is not given, queries will be bound to ``proxy`` itself.
+  ###
+  getEngine ?= -> proxy
+  ['insert', 'select', 'update', 'delete'].forEach (type) ->
+    wrapper = -> exports[type].apply(getEngine(), arguments)
+    proxy[type] = wrapper
+    proxy[type.toUpperCase()] = wrapper
+    proxy[type[0].toUpperCase() + type.substring(1)] = wrapper
 
 maybeVisit = (func) ->
-  (args...) ->
-    if typeof args[args.length - 1] is 'function'
-      cb = args.pop()
-      func(args...).visit(cb)
+  ->
+    a = [].slice.call(arguments)
+    if typeof a[a.length - 1] is 'function'
+      cb = a.pop()
+      func.apply(@, a).visit(cb)
     else
-      func args...
+      func.apply(@, a)
 
-for name, func of exports
+for name in ['insert', 'select', 'update', 'delete']
+  func = exports[name]
   exports[name] = maybeVisit(func)
   exports[name.toUpperCase()] = exports[name]
   exports[name[0].toUpperCase() + name.substring(1)] = exports[name]

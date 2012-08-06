@@ -1,36 +1,33 @@
+{EventEmitter} = require 'events'
 {toRelation} = require '../nodes'
 assert = require 'assert'
 fluidize = require '../fluid'
 
 
-module.exports = class BaseQuery
+module.exports = class BaseQuery extends EventEmitter
   ###
   The base class for all queries. While this class itself is not part of
   gesundheits public API, the methods defined on it are.
   ###
   @rootNode = null
 
-  constructor: (opts={}) ->
+  constructor: (engine, opts={}) ->
     ###
     :param opts.table: a ``String``, ``Relation``, ``Alias``, or an object
       literal with a single key and value which will be interpreted as an alias
       name and table, respectively. This is given to as the first parameter to
       the query creation functions in :mod:`queries/index`
-    :param opts.bind: (optional) an :mod:`engine` or connection that the
-      query will be bound to. The engine is used to render and/or execute the
-      query. If not given ``gesundheit.defaultEngine`` will be used.
     ###
-    @doEcho = false
-    @bind(opts.binding)
-    if (table = opts.table)?
+    @bind(engine)
+    if table = opts.table
       table = toRelation table
     @q = new @constructor.rootNode table
 
   copy: ->
     ### Instantiate a new query with a deep copy of this ones AST ###
-    c = new @constructor ->
+    c = new @constructor @engine
     c.q = @q.copy()
-    c.engine = @engine
+    c.bind(@engine)
     return c
 
   visit: (fn) ->
@@ -47,95 +44,78 @@ module.exports = class BaseQuery
     ###
     fn.call @, @ if fn?
 
-  echo: ->
+  bind: (engine) ->
     ###
-    If called before .render(), then resulting SQL will be sent to stdout
-    via console.log()
-    ###
-    @doEcho = true
-
-  bind: (bindable=null) ->
-    ###
-    Bind this query object to a `bindable` object (engine or client).
+    Bind this query object to a new engine.
     If no argument is given the query will be bound to the default engine.
     ###
     oldEngine = @engine
-
-    # We are binding to a specific client object
-    if bindable?.engine
-      @client = bindable
-      @engine = bindable.engine
-    else if bindable
-      @engine = bindable
-    else if not @engine
-      # Bind to the defaultEngine
-      @engine = require('../').defaultEngine
+    @engine = engine or require('../').defaultEngine
     if @engine isnt oldEngine
       oldEngine.unextend(@) if oldEngine?.unextend
       @engine.extend(@) if @engine.extend
 
-    assert @engine?.connect
-    assert @engine?.render
+    assert @engine?.connect, "Engine has no connect method: #{@engine}"
+    assert @engine?.render, "Engine has no render method: #{@engine}"
 
   render: ->
     ###
-    Render the query to SQL.
-
-    :param bindable: (optional)
-      If present, the query will be bound to this object using :meth:`bind`
+    Render the query to a SQL string.
     ###
-    sql = @engine.render @q
-    console.log sql if @doEcho
-    console.log @q.params() if @doEcho
-    sql
+    @engine.render @q
 
   compile: ->
     ###
     Compile this query object, returning a SQL string and parameter array.
-
-    :param bindable: (optional)
-      If present, the query will be bound to this object using :meth:`bind`
     ###
-    [@engine.render(@q), @q.params()]
+    [@render(), @q.params()]
 
   execute: (cb) ->
     ###
     Execute the query and buffer all results.
 
-    :param bindable: (optional)
-      If present, the query will be bound to this object using :meth:`bind`
-    :param cb: A node-style callback that will be called with any errors and/or
-      the query results.
+    :param cb: An (optional) node-style callback that will be called with any
+      errors and/or the query results. If no callback is given, a new EventEmitter
+      will be returned that emits either an 'error' or 'result' event.
     ###
-    @engine.execute @, cb
+    unless cb
+      e = new EventEmitter
+      cb = (err, res) ->
+        if err then e.emit('error', err) else e.emit('result', res)
 
-  stream: (cb) ->
+    @engine.connect (err, conn) =>
+      return cb err if err
+      conn.query.apply conn, @compile().concat([cb])
+    return e
+
+  stream: ->
     ###
-    Execute the query and stream the results.
-    
-    :param bindable: (optional)
-      If present, the query will be bound to this object using :meth:`bind`
+    Execute the query, returning an EventEmitter that will stream the results.
+
+    The exact events emitted depend on the underlying database engine. For
+    example, MySQL query objects emit 'result' events, while Postgres query
+    objects emit 'row' events.
+
     :param cb: A node-style callback that will be called with any errors and/or
       each row of the query results.
  
     ###
-    @engine.stream @, cb
+    e = new EventEmitter
+    @engine.connect (err, conn) ->
+      return e.emit('error', err) if err
+      q = conn.query.apply(conn, @compile())
+      q.on(evt, @emit.bind(e, evt)) for evt in [
+        'error'
+        'row'
+        'end'
+        'fields'
+        'result'
+        'close'
+      ]
 
-  toString: -> @render()
+    return e
 
-withBinding = (original) ->
-  ###
-  Decorates a method so that it can accept a bindable object as it's first
-  argument, and will always call @bind() before the method itself.
-  ###
-  (bindable, args...) ->
-    unless bindable?.execute or bindable?.connect
-      # First argument is not a bindable object
-      args.unshift bindable
-      bindable = null
-    original.apply @bind(bindable), args
+  toString: ->
+    @render()
 
-for method in ['compile', 'render', 'execute', 'stream']
-  BaseQuery::[method] = withBinding BaseQuery::[method]
-
-fluidize BaseQuery, 'bind', 'echo', 'visit'
+fluidize BaseQuery, 'bind', 'visit'

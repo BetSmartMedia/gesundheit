@@ -101,13 +101,13 @@ exports.BaseDialect = class BaseDialect
 
 exports.Postgres = class Postgres extends BaseDialect
   ### Specialization of BaseDialect for Postgres ###
+  {Select, Update, Delete, Insert} = require './nodes'
 
   render: (node) ->
-    if node.constructor in [Select, Update, Delete]
+    if node.constructor in [Select, Update, Delete, Insert]
       @paramCount = 1
     super node
 
-  {Select, Update, Delete} = require './nodes'
 
   renderParameter: (node) -> "$#{@paramCount++}"
 

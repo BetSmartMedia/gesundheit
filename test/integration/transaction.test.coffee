@@ -3,7 +3,8 @@
 helpers = require('../helpers')
 
 helpers.each_engine "Transactions", (db, t, d) ->
-  db.transaction d.intercept (tx) ->
+  db.transaction (err, tx) ->
+    throw err if err
     if db.name is 'mysql' then tx.query "SET AUTOCOMMIT = 0"
     console.error db.name
     tx.query """CREATE TABLE people (

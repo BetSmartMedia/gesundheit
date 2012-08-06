@@ -1,5 +1,4 @@
 {test}  = require('tap')
-domain = require('domain')
 g = require('../')
 
 ['pg', 'mysql-compat'].forEach (mod) ->
@@ -27,11 +26,6 @@ exports.each_engine = (test_name, engine_names, callback) ->
   do nextEngine = ->
     return process.nextTick(process.exit) unless engine_name = engine_names[i++]
     test "#{test_name} - #{engine_name}", (t) ->
-      d = domain.create()
-      d.on 'error', (err) ->
-        console.error "Failed against #{engine_name}"
-        throw err
-
       engineFactory = g.engines[engine_name]
       engine = engineFactory(engine_params[engine_name])
       engine.connect (err, conn) ->
@@ -41,11 +35,12 @@ exports.each_engine = (test_name, engine_names, callback) ->
           "DROP DATABASE #{dbname}"
         conn.query drop_db, (err) ->
           console.warn(err) if err
-          conn.query "CREATE DATABASE #{dbname}", d.intercept ->
+          conn.query "CREATE DATABASE #{dbname}", (err) ->
+            throw err if err
             if engine_name is 'mysql'
               conn.query("USE #{dbname}")
             engine.params.database = dbname
-            d.run -> callback engine, t, d
+            callback engine, t
 
       t.on 'end', engine.destroy
       t.on 'end', nextEngine

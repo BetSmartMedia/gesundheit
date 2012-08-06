@@ -311,7 +311,7 @@ will be passed to the <a class="reference internal" href="#queries/base::BaseQue
 newly created query.</p>
 <dl class="function">
 <dt id="queries/index::INSERT">
-<em class="property">function </em><tt class="descname">INSERT</tt><big>(</big><em>table</em>, <em>fields</em><big>)</big><a class="headerlink" href="#queries/index::INSERT" title="Permalink to this definition">¶</a></dt>
+<em class="property">function </em><tt class="descname">INSERT</tt><big>(</big><em>table</em>, <em>fieldsOrRow</em><big>)</big><a class="headerlink" href="#queries/index::INSERT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new <a class="reference internal" href="#queries/insert::InsertQuery" title="queries/insert::InsertQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">InsertQuery</span></tt></a> that will add rows to
 <tt class="docutils literal"><span class="pre">table</span></tt>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -319,7 +319,7 @@ newly created query.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fields</strong> &#8211; Either an array of column names that will be inserted, or a
+<li><strong>fieldsOrRow</strong> &#8211; Either an array of column names that will be inserted, or a
 plain object representing a row of data to insert, in which case the keys
 of the object will define the columns that are inserted.</li>
 <li><strong>visitor</strong> &#8211; (Optional) a function that will be called with it&#8217;s context
@@ -356,20 +356,38 @@ set to the newly constructed query object.</li>
 <dl class="function">
 <dt id="queries/index::UPDATE">
 <em class="property">function </em><tt class="descname">UPDATE</tt><big>(</big><em>table</em><big>)</big><a class="headerlink" href="#queries/index::UPDATE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new <a class="reference internal" href="#queries/update::UpdateQuery" title="queries/update::UpdateQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">UpdateQuery</span></tt></a> that will update <tt class="docutils literal"><span class="pre">table</span></tt>.
-:param visitor: (Optional) a function that will be called with it&#8217;s context</p>
-<blockquote>
-<div>set to the newly constructed query object.</div></blockquote>
+<dd><p>Create a new <a class="reference internal" href="#queries/update::UpdateQuery" title="queries/update::UpdateQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">UpdateQuery</span></tt></a> that will update <tt class="docutils literal"><span class="pre">table</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>visitor</strong> &#8211; (Optional) a function that will be called with it&#8217;s context
+set to the newly constructed query object.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="queries/index::DELETE">
 <em class="property">function </em><tt class="descname">DELETE</tt><big>(</big><em>table</em><big>)</big><a class="headerlink" href="#queries/index::DELETE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new <a class="reference internal" href="#queries/delete::DeleteQuery" title="queries/delete::DeleteQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">DeleteQuery</span></tt></a> that will delete rows from
-<tt class="docutils literal"><span class="pre">table</span></tt>.
-:param visitor: (Optional) a function that will be called with it&#8217;s context</p>
-<blockquote>
-<div>set to the newly constructed query object.</div></blockquote>
+<tt class="docutils literal"><span class="pre">table</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>visitor</strong> &#8211; (Optional) a function that will be called with it&#8217;s context
+set to the newly constructed query object.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">

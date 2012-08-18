@@ -109,7 +109,7 @@ module.exports = class SelectQuery extends SUDQuery
     ###
     rel = toRelation table
     if not @q.relations.get rel.ref(), false
-      @join tbl, opts
+      @join rel, opts
 
   rel: (alias) ->
     ### A shorthand way to get a relation by (alias) name ###

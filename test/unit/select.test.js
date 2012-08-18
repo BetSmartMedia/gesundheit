@@ -101,6 +101,19 @@ test("SELECT queries", function (t) {
 
     t.end()
   })
+  t.test("ensureJoin", function (t) {
+    var q = select('t1', ['*'])
+    t.plan(2)
+    q.ensureJoin('t2', {on: {id: q.p('t1', 't2_id')}, fields: ['*']})
+    t.equal(q.render(),
+      "SELECT t1.*, t2.* FROM t1 INNER JOIN t2 ON (t2.id = t1.t2_id)",
+      "... first join")
+    q.ensureJoin('t2', {on: {id: q.p('t1', 't2_id')}, fields: ['*']})
+    t.equal(q.render(),
+      "SELECT t1.*, t2.* FROM t1 INNER JOIN t2 ON (t2.id = t1.t2_id)",
+      "... same join")
+
+  })
 
   t.test("misc. SELECT tricks", function (t) {
     var q = select('t1', ['col1', 'col2'])

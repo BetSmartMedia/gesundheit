@@ -7,14 +7,14 @@
     "sqlalchemy",
     "arel"
   ],
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": false,
   "main": "lib",
   "files": [
-		"package.json",
-		"README.rst",
+    "package.json",
+    "README.rst",
     "lib",
-		"Makefile",
+    "Makefile",
     "doc/*.rst"
   ],
   "engines": {

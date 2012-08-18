@@ -33,5 +33,6 @@
   "scripts": {
     "test": "make test",
     "prepublish": "make release"
-  }
+  },
+  "license": "MIT"
 }

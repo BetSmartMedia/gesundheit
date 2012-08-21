@@ -1,12 +1,17 @@
 {
   "name": "gesundheit",
-  "description": "Concise SQL generation in coffee-script",
+  "description": "Concise SQL generation for Postgres and MySQL",
   "keywords": [
     "sql",
     "query",
     "sqlalchemy",
     "arel"
   ],
+  "homepage": "http://betsmartmedia.github.com/gesundheit",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/BetSmartMedia/gesundheit.git"
+  },
   "version": "0.5.1",
   "private": false,
   "main": "lib",

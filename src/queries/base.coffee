@@ -100,9 +100,6 @@ module.exports = class BaseQuery extends EventEmitter
     The exact events emitted depend on the underlying database engine. For
     example, MySQL query objects emit 'result' events, while Postgres query
     objects emit 'row' events.
-
-    :param cb: A node-style callback that will be called with any errors and/or
-      each row of the query results.
  
     ###
     e = new EventEmitter

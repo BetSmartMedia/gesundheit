@@ -1,6 +1,5 @@
 language: node_js
 node_js: [ 0.6, 0.8 ]
-# We don't use this database, but need it to exist for the default connection
-# parameters to work.
 before_script:
-  - psql -c 'create database vagrant;' -Upostgres
+  - psql -c 'create database gesundheit_test;' -U postgres postgres
+  - mysql -e 'create database gesundheit_test;' -u root

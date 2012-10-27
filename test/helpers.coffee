@@ -1,18 +1,23 @@
 {test}  = require('tap')
 g = require('../')
 
-['pg', 'mysql-compat'].forEach (mod) ->
-  require(mod).defaults.idleTimeoutMillis = 2000
+dbname = 'gesundheit_test'
 
 engine_params =
-  mysql:
-    user: "root"
-    password: ""
-    host: "127.0.0.1"
-  postgres:
-    user: "postgres"
-    password: ""
-    host: "127.0.0.1"
+  mysql: [
+    "mysql://root@localhost/#{dbname}"
+    {
+      max: 2
+      afterCreate: (conn, done) ->
+        conn.query "SET autocommit = 0", (err) ->
+          return done(err) if err
+          conn.query "SET storage_engine = INNODB", done
+    }
+  ]
+  postgres: [
+    "postgres://postgres@localhost/#{dbname}"
+    { max: 2 }
+  ]
 
 exports.each_engine = (test_name, engine_names, callback) ->
   ###
@@ -25,27 +30,18 @@ exports.each_engine = (test_name, engine_names, callback) ->
     callback = engine_names
     engine_names = Object.keys(engine_params)
 
-  dbname = 'gesundheit_test'
   i = 0
   do nextEngine = ->
     return process.nextTick(process.exit) unless engine_name = engine_names[i++]
     test "#{test_name} - #{engine_name}", (t) ->
-      engineFactory = g.engines[engine_name]
-      engine = engineFactory(engine_params[engine_name])
-      engine.connect (err, conn) ->
+      db = g.engine.apply(null, engine_params[engine_name])
+      tx = db.begin (err, tx) ->
         throw err if err
-        drop_db = if engine_name is 'mysql'
-          "DROP DATABASE IF EXISTS #{dbname}"
-        else
-          "DROP DATABASE #{dbname}"
-        conn.query drop_db, (err) ->
-          console.warn(err) if err
-          conn.query "CREATE DATABASE #{dbname}", (err) ->
-            throw err if err
-            if engine_name is 'mysql' then conn.query("USE #{dbname}")
-            engine.params.database = dbname
-            callback engine, t
+        console.log "transaction open"
+        t.listeners('end').unshift ->
+          tx.rollback() if tx.state() is 'open'
+        callback tx, t
+      tx.log = console.error
 
-      t.on 'end', engine.destroy
+      t.on 'end', db.close.bind(db)
       t.on 'end', nextEngine
-

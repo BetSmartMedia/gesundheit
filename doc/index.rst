@@ -88,8 +88,7 @@ own engine object to use::
 
   gesundheit = require('gesundheit')
 
-  # Options are simply passed through to require('mysql').createConnection()
-  db = gesundheit.engines.mysql({database: 'test'})
+  db = gesundheit.engine('mysql://localhost/test')
 
 We can now use ``db`` as query factory, using any of ``select``, ``insert``,
 ``update`` or ``delete`` as methods::
@@ -245,22 +244,20 @@ apps that deal with a single database, you can simply create an engine instance
 during application startup, assign it to ``gesundheit.defaultEngine`` and not
 have to think about binding after that.
 
-For more complicated scenarios where you need control over the exact connections
-used (e.g. transactions) you will need to understand the engine/binding system.
-
 Engines
 -------
 
-An engine is any object that implements the following API:
+An engine is gesundheits interface to a SQL database.
 
   **render(query)**
     Render the given query instance to a SQL string. This method **must** be
     synchronous, and will usually just delegate to a subclass of
     :class:`dialects::BaseDialect`.
 
-  **connect(callback)**
-    Call ``callback(err, client)`` where `client` is an object with a ``query``
-    method that works the same as those of the pg and mysql driver clients.
+  **query(statementText, [params], [callback])**
+    Perform the SQL query in ``statementText``, binding any parameters given.
+    If the optional callback is included, call it with the results
+    
 
 Gesundheit exports factory functions for creating :func:`engines::postgres` and
 :func:`engines::mysql` engines:

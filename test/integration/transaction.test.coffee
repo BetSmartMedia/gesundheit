@@ -2,7 +2,7 @@
 
 helpers = require('../helpers')
 
-helpers.each_engine "Transactions", (tx, t) ->
+helpers.eachEngine "Transactions", (tx, t) ->
   t.plan(4)
 
   tx.engine.query """CREATE TABLE people (

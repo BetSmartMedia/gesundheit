@@ -1,11 +1,11 @@
 {test}  = require('tap')
 g = require('../')
 
-dbname = 'gesundheit_test'
+DBNAME = 'gesundheit_test'
 
-engine_params =
+ENGINE_PARAMS =
   mysql: [
-    "mysql://root@localhost/#{dbname}"
+    "mysql://root@localhost/#{DBNAME}"
     {
       max: 2
       afterCreate: (conn, done) ->
@@ -15,29 +15,28 @@ engine_params =
     }
   ]
   postgres: [
-    "postgres://postgres@localhost/#{dbname}"
+    "postgres://postgres@localhost/#{DBNAME}"
     { max: 2 }
   ]
 
-exports.each_engine = (test_name, engine_names, callback) ->
+exports.eachEngine = (testName, engineNames, callback) ->
   ###
   Run ``callback(db, tap_test)`` where ``db`` is an engine pointed at an empty
   database, and ``tap_test`` is a node-tap test object
   
-  :param engine_names: (Optional) list of engine names to test against.
+  :param engineNames: (Optional) list of engine names to test against.
   ###
   if not callback
-    callback = engine_names
-    engine_names = Object.keys(engine_params)
+    callback = engineNames
+    engineNames = Object.keys(ENGINE_PARAMS)
 
   i = 0
   do nextEngine = ->
-    return process.nextTick(process.exit) unless engine_name = engine_names[i++]
-    test "#{test_name} - #{engine_name}", (t) ->
-      db = g.engine.apply(null, engine_params[engine_name])
+    return process.nextTick(process.exit) unless engineName = engineNames[i++]
+    test "#{testName} - #{engineName}", (t) ->
+      db = g.engine.apply(null, ENGINE_PARAMS[engineName])
       tx = db.begin (err, tx) ->
         throw err if err
-        console.log "transaction open"
         t.listeners('end').unshift ->
           tx.rollback() if tx.state() is 'open'
         callback tx, t

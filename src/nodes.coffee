@@ -410,17 +410,54 @@ getAlias = (o) ->
     return keys[0] if keys.length == 1
   return null
 
-text = (rawSQL, params...) ->
+text = do (re = /\$([\w]+)\b/g) -> (rawSQL, bindVals) ->
   ###
-  Construct a node with a raw SQL string and (optionally) parameters.
+  Construct a node with a raw SQL string and (optionally) parameters. Useful for
+  when you want to construct a query that is difficult or impossible with the
+  normal APIs. [#]_
 
-  Parameter arguments are assumed to be values for placeholders in the raw
-  string. Be careful: the number and types of these parameters will **not**
-  be checked, so it is very easy to create invalid statements with this.
+  To use bound parameters in the SQL string, use ``$`` prefixed names, and
+  pass a ``bindVals`` argument with corresponding property names. For example,
+  :meth:`~queries/sud::SUDQuery.where` doesn't (currently) support the SQL
+  ``BETWEEN`` operator, but if you needed it, you could use ``text``::
+
+      function peopleInWeightRange (min, max, callback) {
+        return select('people')
+          .where(text("weight BETWEEN $min AND $max", {min: min, max: max}))
+          .execute(callback)
+      }
+
+  Because javascript doesn't distinguish between array indexing and property
+  access, it can be more clear to use numbered parameters for such short
+  snippets::
+
+      function peopleInWeightRange (min, max, callback) {
+        return select('people')
+          .where(text("weight BETWEEN $0 AND $1", [min, max]))
+          .execute(callback)
+      }
+
+  .. rubric:: Footnotes
+
+  .. [#] If you find yourself using this function often, please consider opening
+    an issue on `Github <https://github.com/BetSmartMedia/gesundheit>`_ with
+    details on your use case so gesundheit can support it more elegantly.
+
   ###
-  node = new ValueNode rawSQL
-  node.params = -> params
-  return node
+  nodes = []
+  lastIndex = 0
+  debugger
+  while match = re.exec rawSQL
+    if match.index > lastIndex
+      nodes.push new ValueNode rawSQL.substring(lastIndex, match.index)
+    nodes.push new Parameter bindVals[match[1]]
+    lastIndex = re.lastIndex
+
+  if lastIndex is 0
+    new ValueNode rawSQL
+  else
+    nodes.push new ValueNode rawSQL.substring(lastIndex)
+    new FixedNodeSet nodes, ''
 
 binaryOp = (left, op, right) ->
   ###

@@ -247,21 +247,6 @@ have to think about binding after that.
 Engines
 -------
 
-An engine is gesundheits interface to a SQL database.
-
-  **render(query)**
-    Render the given query instance to a SQL string. This method **must** be
-    synchronous, and will usually just delegate to a subclass of
-    :class:`dialects::BaseDialect`.
-
-  **query(statementText, [params], [callback])**
-    Perform the SQL query in ``statementText``, binding any parameters given.
-    If the optional callback is included, call it with the results
-    
-
-Gesundheit exports factory functions for creating :func:`engines::postgres` and
-:func:`engines::mysql` engines:
-
 .. automodule:: engines
 
 Dialects

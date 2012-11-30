@@ -1,7 +1,7 @@
 BaseQuery = require './base'
 nodes = require '../nodes'
 fluidize = require '../fluid'
-{Or, OrderBy, CONST_NODES} = nodes
+{And, Or, OrderBy, CONST_NODES} = nodes
 
 module.exports = class SUDQuery extends BaseQuery
   ###
@@ -48,12 +48,27 @@ module.exports = class SUDQuery extends BaseQuery
   or: (args...) ->
     ###
     Add one or more WHERE clauses, all joined by the OR operator.
+
+    If any argument is an object literal that creates more than one clause on
+    it's own those clauses will be joined with AND operators. So for example::
+
+      select('t').or({a: 1}, {b: 2, c: 3})
+
+    Will generate the SQL statement::
+
+      SELECT * FROM t WHERE (t.a = 1 OR (t.b = 2 AND t.c = 3))
+
     ###
     rel = @defaultRel()
     clauses = []
+    orClause = new Or
     for arg in args
-      clauses.push (@makeClauses rel, arg)...
-    @q.where.addNode new Or clauses
+      andClauses = @makeClauses rel, arg
+      if andClauses.length > 1
+        orClause.addNode(new And(andClauses))
+      else if andClauses.length is 1
+        orClause.addNode(andClauses[0])
+    @where orClause
 
   makeClauses: (rel, constraint) ->
     clauses = []

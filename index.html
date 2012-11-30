@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Gesundheit! &mdash; gesundheit 0.5.0 documentation</title>
+    <title>Gesundheit! &mdash; gesundheit 0.6.0 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.5.0',
+        VERSION:     '0.6.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.5.0 documentation" href="#" />
+    <link rel="top" title="gesundheit 0.6.0 documentation" href="#" />
     <link rel="next" title="Gesundheit!" href="" /> 
   </head>
   <body>  
@@ -493,18 +493,6 @@ will be returned that emits either an &#8216;error&#8217; or &#8216;result&#8217
 <p>The exact events emitted depend on the underlying database engine. For
 example, MySQL query objects emit &#8216;result&#8217; events, while Postgres query
 objects emit &#8216;row&#8217; events.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>cb</strong> &#8211; A node-style callback that will be called with any errors and/or
-each row of the query results.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 </dd></dl>
@@ -574,6 +562,15 @@ alias) and each value is a constraint:</p>
 <dt id="queries/sud::SUDQuery.or">
 <em class="property">method </em><tt class="descname">SUDQuery.or</tt><big>(</big><em>args...</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.or" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add one or more WHERE clauses, all joined by the OR operator.</p>
+<p>If any argument is an object literal that creates more than one clause on
+it&#8217;s own those clauses will be joined with AND operators. So for example:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">select</span><span class="p">(</span><span class="s">&#39;t&#39;</span><span class="p">).</span><span class="o">or</span><span class="p">({</span><span class="nv">a: </span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="nv">b: </span><span class="mi">2</span><span class="p">,</span> <span class="nv">c: </span><span class="mi">3</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>Will generate the SQL statement:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">SELECT</span> <span class="o">*</span> <span class="nx">FROM</span> <span class="nx">t</span> <span class="nx">WHERE</span> <span class="p">(</span><span class="nv">t.a = </span><span class="mi">1</span> <span class="nx">OR</span> <span class="p">(</span><span class="nv">t.b = </span><span class="mi">2</span> <span class="nx">AND</span> <span class="nv">t.c = </span><span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">

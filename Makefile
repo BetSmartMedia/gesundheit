@@ -1,5 +1,4 @@
 LIB_DIR = ./lib
-VOWS_OPTS += --cover-html
 SRC_DIR = ./src
 UNIT_TESTS ?= ./test/unit/
 INTEGRATION_TESTS ?= ./test/integration/*.test.coffee
@@ -26,12 +25,12 @@ clean:
 	rm -rf lib-tmp
 
 $(LIB_DIR): $(SRC_DIR)
-	@$(shell npm bin)/coffee -o $@ -bc $<
+	@node_modules/.bin/coffee -o $@ -bc $<
 
 pages:
 	make -C doc clean html
 
-release: test pages
+release: clean test pages
 	git checkout gh-pages
 	cp -R doc/_build/html/ ./
 	[[ -z `git status -suno` ]] || git commit -a -m v$(npm_package_version)

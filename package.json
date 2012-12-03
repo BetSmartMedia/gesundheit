@@ -25,9 +25,9 @@
   "engines": {
     "node": ">=0.4.0"
   },
-	"dependencies": {
-		"any-db": "~0.0.0"
-	},
+  "dependencies": {
+    "any-db": "*"
+  },
   "devDependencies": {
     "coffee-script": "~1.3.0",
     "pg": "~0.8.2",

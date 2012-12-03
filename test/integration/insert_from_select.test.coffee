@@ -10,9 +10,9 @@ helpers.eachEngine "INSERT FROM", (db, t) ->
       throw err if err
 
       testData = ({a: i, b: 10 - i} for i in [1..10])
-      db.insert("src", ['a', 'b']).addRows(testData...).execute ->
+      db.insert("src", ['a', 'b']).addRows(testData...).execute (err) ->
         throw err if err
-        db.insert("dest", ['a', 'b']).from(db.select('src')).execute (err, res) ->
+        db.insert("dest", ['a', 'b']).from(db.select('src')).execute (err) ->
           throw err if err
           db.select('dest').execute (err, res) ->
-            t.deepEqual res, testData
+            t.deepEqual res.rows, testData

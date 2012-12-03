@@ -3,7 +3,7 @@
 helpers = require('../helpers')
 
 helpers.eachEngine "Transactions", (tx, t) ->
-  t.plan(4)
+  t.plan(3)
 
   tx.engine.query """CREATE TABLE people (
     name varchar(255),
@@ -15,13 +15,9 @@ helpers.eachEngine "Transactions", (tx, t) ->
     tx.select('people').execute (err, res) ->
       throw err if err
       console.log('selected')
-      t.ok(res && (res.length is 1), "Inserted data is visible")
-      t.deepEqual(res, [{name: 'Stephen', location: 'Montreal'}])
+      t.equal(res?.rows.length, 1, "Inserted data is visible")
+      t.deepEqual(res.rows[0], {name: 'Stephen', location: 'Montreal'})
+      # Select from people on a differenct connection
       tx.engine.select("people").execute (err, res) ->
         throw err if err
-        t.ok(!(res?.length), "Transaction is isolated")
-
-        tx.rollback (err) ->
-          throw err if err
-          tx.select("people").execute (err, res) ->
-            t.ok(!(res?.length), "Transaction rolled back")
+        t.ok(!(res?.rows.length), "Transaction is isolated")

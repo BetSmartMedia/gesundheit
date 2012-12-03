@@ -34,9 +34,9 @@ module.exports = class SUDQuery extends BaseQuery
     To create a set of constraints joined by the OR operator, use 'or' as a key in
     the object literal with an array of further constraints. Similarly, you can use
     'and' as a key to nest 'and' constraints within an OR, nesting clauses arbitrarily
-    deep.
+    deep::
 
-      select('t').where({or: [{a: 1, and: [{b: 2, c: 3}]}]})
+      select('t').where({or: {a: 1, and: {b: 2, c: 3}}})
 
     Will generate the SQL statement::
 
@@ -85,6 +85,7 @@ module.exports = class SUDQuery extends BaseQuery
     @where or: clauses
 
   and: (clauses...) ->
+    ### Shortcut for ``.where({and: clauses}) ###
     @where and: clauses
 
   order: (args...) ->

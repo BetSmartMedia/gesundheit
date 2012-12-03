@@ -4,6 +4,14 @@ queries  = require('./queries')
 dialects = require('./dialects')
 
 module.exports = (dbUrl, poolOptions) ->
+  ###
+  Create an engine using an `Any-DB <https://github.com/grncdr/node-any-db>`_
+  connect string and connection pool options, this is exported by gesundheit
+  as ``gesundheit.engine(...)``.
+
+  In addition to the drivers supported by Any-DB, gesundheit includes (and
+  defaults to using) a "fake" engine that only renders SQL strings.
+  ###
   driverName = url.parse(dbUrl).protocol.replace(':', '').split('+').shift()
 
   if driverName is 'fake'

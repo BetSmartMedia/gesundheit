@@ -142,6 +142,12 @@ class Binary extends FixedNodeSet
   constructor: (@left, @op, @right) -> super [@left, @op, @right], ' '
   copy: -> new @constructor copy(@left), @op, copy(@right)
 
+  and: (args...) ->
+    new And [@, args...]
+
+  or: ->
+    new Or [@, args...]
+
 class ParenthesizedNodeSet extends NodeSet
   ### A NodeSet wrapped in parenthesis. ###
 
@@ -182,7 +188,7 @@ class Projection extends FixedNodeSet
 #######
 exports.RelationSet = class RelationSet extends NodeSet
   ###
-  Manages a set of relation and exposes methods to find them by alias.
+  Manages a set of relations and exposes methods to find them by alias.
   ###
   start: (@first) ->
     @byName = {}
@@ -237,8 +243,25 @@ class Where extends NodeSet
 class Or extends ParenthesizedNodeSet
   glue: ' OR '
 
+  and: (args...) ->
+    new And [@, args...]
+
+  or: (args...) ->
+    ret = @copy()
+    ret.addNode(arg) for arg in args
+    return ret
+
+
 exports.And = class And extends ParenthesizedNodeSet
   glue: ' AND '
+
+  and: (args...) ->
+    ret = @copy()
+    ret.addNode(arg) for arg in args
+    return ret
+
+  or: (args...) ->
+    new Or [@, args...]
 
 exports.GroupBy = class GroupBy extends NodeSet
   constructor: (gs) -> super gs, ', '
@@ -461,6 +484,7 @@ module.exports = {
   toRelation
   toParam
 
+  Node
   Alias
   And
   Or

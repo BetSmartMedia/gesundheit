@@ -95,10 +95,12 @@ module.exports = class SelectQuery extends SUDQuery
     type = opts.type || JOIN_TYPES.INNER
     if type not instanceof JOIN_TYPES.INNER.constructor
       throw new Error "Invalid join type #{type}, try the constant types exported in the base module (e.g. INNER)."
-    joinClause = opts.on && new And(@makeClauses rel, opts.on)
-    @q.relations.addNode new Join type, rel, joinClause
+    join = new Join type, rel
+    @q.relations.addNode join
     @q.relations.registerName rel
     @q.relations.switch rel
+    # must switch to the new relation before making clauses
+    if opts.on then join.on(new And(@makeClauses opts.on))
     if opts.fields?
       @fields(opts.fields...)
 
@@ -114,23 +116,6 @@ module.exports = class SelectQuery extends SUDQuery
   rel: (alias) ->
     ### A shorthand way to get a relation by (alias) name ###
     @q.relations.get alias
-
-  project: (alias, field) ->
-    ###
-    Return a :class:`nodes::Projection` node representing ``<alias>.<field>``.
-
-    This node has a number methods from :class:`nodes::ComparableMixin` that can
-    create new comparison nodes usable in join conditions and where clauses::
-
-      # Find developers over the age of 45
-      s = select('people', ['name'])
-      dep_id = s.project('people', 'department_id')
-      s.join('departments', on: {id: dep_id})
-      s.where(s.project('departments', 'name').eq('development'))
-      s.where(s.project('people', 'age').gte(45))
-
-    ###
-    @q.relations.get(alias, true).project(field)
 
   focus: (alias) ->
     ###
@@ -156,4 +141,3 @@ fluidize SelectQuery,
 
 # Alias methods
 SelectQuery::field = SelectQuery::fields
-SelectQuery::p = SelectQuery::project

@@ -1,7 +1,7 @@
 BaseQuery = require './base'
 nodes = require '../nodes'
 fluidize = require '../fluid'
-{Or, OrderBy, CONST_NODES} = nodes
+{Node, And, Or, OrderBy, CONST_NODES} = nodes
 
 module.exports = class SUDQuery extends BaseQuery
   ###
@@ -10,62 +10,82 @@ module.exports = class SUDQuery extends BaseQuery
   ordering.
   ###
 
-  where: (alias, predicate) ->
+  where: (constraint) ->
     ###
-    Add a WHERE clause to the query. Can optionally take a table/alias name as the
-    first parameter, otherwise the clause is added using the last table added to
-    the query.
+    Add a WHERE clause to the query.
 
     The where clause itself can be a comparison node, such as those produced by
     the :class:`nodes::ComparableMixin` methods::
 
-      q.where(q.project('table','field1').eq(42))
-      q.where(q.project('table','field2').gt(42))
+      q.where(q.p('table','field1').eq(42))
+      q.where(q.p('table','field2').gt(42))
 
     ... Or an object literal where each key is a field name (or field name
     alias) and each value is a constraint::
 
-      q.where('table', {field1: 42, field2: {gt: 42}})
+      q.where({field1: 42, field2: {gt: 42}})
 
-    Constraints values can also be other projected fields::
+    Constraint values can also be other projected fields::
 
       p = q.project.bind(q, 'table')
       q.where('table', p('field1').gt(p('field2')))
 
-    ###
-    if predicate?
-      rel = @q.relations.get alias
-      unknown 'table', alias unless rel?
-    else
-      predicate = alias
-      rel = @defaultRel()
 
-    if predicate.constructor != Object
-      return @q.where.addNode predicate
+    To create a set of constraints joined by the OR operator, use 'or' as a key in
+    the object literal with an array of further constraints. Similarly, you can use
+    'and' as a key to nest 'and' constraints within an OR, nesting clauses arbitrarily
+    deep.
 
-    @q.where.addNode(node) for node in @makeClauses(rel, predicate)
+      select('t').where({or: [{a: 1, and: [{b: 2, c: 3}]}]})
 
-  or: (args...) ->
+    Will generate the SQL statement::
+
+      SELECT * FROM t WHERE (t.a = 1 OR (t.b = 2 AND t.c = 3))
+
     ###
-    Add one or more WHERE clauses, all joined by the OR operator.
+    @q.where.addNode(node) for node in @makeClauses(constraint)
+
+  makeClauses: (constraint) ->
     ###
-    rel = @defaultRel()
+    Return an array of Binary, And, and Or nodes for this constraint object
+    ###
     clauses = []
-    for arg in args
-      clauses.push (@makeClauses rel, arg)...
-    @q.where.addNode new Or clauses
 
-  makeClauses: (rel, constraint) ->
-    clauses = []
+    # Recursive call from 'and' and 'or' object keys
+    if Array.isArray(constraint)
+      for item in constraint
+        if item instanceof Node
+          clauses.push(item)
+        else
+          clauses = clauses.concat(@makeClauses(item))
+      return clauses
+
+    if constraint instanceof Node
+      return [constraint]
+
     for field, predicate of constraint
-      if predicate is null
-        clauses.push rel.project(field).compare 'IS', CONST_NODES.NULL
-      else if predicate.constructor is Object
-        for op, val of predicate
-          clauses.push rel.project(field).compare op, val
+      if field is 'and'
+        clauses.push new And @makeClauses(predicate)
+      else if field is 'or'
+        debugger
+        clauses.push new Or @makeClauses(predicate)
       else
-        clauses.push rel.project(field).eq predicate
+        column = @project field
+        if predicate is null
+          clauses.push column.compare 'IS', CONST_NODES.NULL
+        else if predicate.constructor is Object
+          for op, val of predicate
+            clauses.push column.compare op, val
+        else
+          clauses.push column.eq predicate
     clauses
+
+  or: (clauses...) ->
+    ### Shortcut for ``.where({or: clauses}) ###
+    @where or: clauses
+
+  and: (clauses...) ->
+    @where and: clauses
 
   order: (args...) ->
     ###
@@ -110,7 +130,46 @@ module.exports = class SUDQuery extends BaseQuery
   defaultRel: ->
     @q.relations.active
 
-fluidize SUDQuery, 'where', 'or', 'limit', 'offset', 'order'
+  project: (relation, field) ->
+    ###
+    Return a :class:`nodes::Projection` node representing ``<relation>.<field>``.
 
-# A helper for throwing Errors
-unknown = (type, val) -> throw new Error "Unknown #{type}: #{val}"
+    The first argument is optional and specifies a table or alias name referring
+    to a relation already joined to this query. If you don't specify a relation,
+    the table added or focused last will be used. Alternatively, you can specify
+    the relation name and field with a single dot-separated string::
+
+      q.project('departments.name') == q.project('departments', 'name')
+
+    The returned object has a methods from :class:`nodes::ComparableMixin` that
+    can create new comparison nodes usable in join conditions and where clauses::
+
+      # Find developers over the age of 45
+      s = select('people', ['name'])
+      s.join('departments', on: {id: s.project('people', 'department_id')})
+      s.where(s.project('departments', 'name').eq('development'))
+      s.where(s.project('people', 'age').gte(45))
+
+    ``project`` is also aliased as ``p`` for those who value brevity::
+
+         q.where(q.p('departments.name').eq('development'))
+
+    .. note:: this means you *must* specify a relation name if you have a field
+      name with a dot in it, if you have dots in your column names, sorry.
+
+    ###
+    if field?
+      rel = @q.relations.get(relation, true)
+    else
+      field = relation
+      rel_field = field.split('.')
+      if rel_field.length is 2
+        field = rel_field[1]
+        rel = @q.relations.get(rel_field[0], true)
+      else
+        rel = @defaultRel()
+    rel.project(field)
+
+fluidize SUDQuery, 'where', 'or', 'and', 'limit', 'offset', 'order'
+
+SUDQuery::p = SUDQuery::project

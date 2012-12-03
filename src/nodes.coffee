@@ -212,11 +212,23 @@ exports.RelationSet = class RelationSet extends NodeSet
     @active = @get(name)
 
 exports.Join = class Join extends FixedNodeSet
-  constructor: (@type, @relation, @on) ->
+  constructor: (@type, @relation) ->
     nodes = [@type, 'JOIN', @relation]
-    if @on then nodes.push 'ON', @on
     super nodes
-  copy: -> new @constructor @type, copy(@relation), copy(@on)
+
+  on: (clause) ->
+    if @nodes.length < 4
+      @nodes.push 'ON'
+    @nodes.push clause
+
+  ref: ->
+    @relation.ref()
+
+  copy: ->
+    c = super
+    c.type = c.nodes[0]
+    c.relation = c.nodes[2]
+    return c
 
 #####
 class Where extends NodeSet

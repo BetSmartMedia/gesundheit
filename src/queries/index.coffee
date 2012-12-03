@@ -101,6 +101,7 @@ exports.mixinFactoryMethods = (invocant, getEngine) ->
     invocant[type] = wrapper
     invocant[type.toLowerCase()] = wrapper
     invocant[type[0] + type.toLowerCase().substring(1)] = wrapper
+  invocant
 
 maybeVisit = (func) ->
   ->

@@ -1,7 +1,7 @@
 Gesundheit - Concise SQL generation for node.js
 ===============================================
 
-.. image:: https://secure.travis-ci.org/BetSmartMedia/gesundheit.png?branch=master
+.. image:: https://secure.travis-ci.org/BetSmartMedia/gesundheit.png?branch=any-db
   :target: http://travis-ci.org/BetSmartMedia/gesundheit
 
 Gesundheit generates SQL using a sugary API for managing the abstract syntax
@@ -9,11 +9,11 @@ tree of a statement. After building your statement programmatically, gesundheit
 can compile it to a string or execute it against your database for you, using
 proper bound parameters and allowing for streaming of results.
 
-A quick example::
+Here's a quick example to illustrate::
 
-    gesundheit = require('./lib')
+    select = require('./lib').select
     assert = require('assert')
-    query = gesundheit.select('chairs', ['chair_type', 'size'])
+    query = select('chairs', ['chair_type', 'size'])
       .where({chair_type: 'recliner', weight: {lt: 25}})
 
     assert.deepEqual(query.compile(), [
@@ -30,7 +30,10 @@ thorough examples showing different query types, joins, query execution and more
 Install
 -------
 
-    npm install gesundheit
+In addition to the usual ``npm install gesundheit``, you will need to install
+the driver for your database. Driver support is provided by `any-db
+<https://github.com/grncdr/any-db>`_, which currently works with the ``pg``,
+``mysql``, and ``sqlite3`` database drivers.
 
 License
 -------

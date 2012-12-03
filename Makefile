@@ -17,12 +17,16 @@ unit: $(LIB_DIR)
 
 .PHONY: integration
 integration: $(LIB_DIR)
+	@mysql -u root -e 'drop database gesundheit_test'
+	@mysql -u root -e 'create database gesundheit_test'
+	@psql -U postgres -c 'drop database gesundheit_test' 2>&1 >/dev/null
+	@psql -U postgres -c 'create database gesundheit_test' 2>&1 >/dev/null
 	@node_modules/.bin/tap test/integration/
 
 .PHONY: clean
 clean:
-	rm -rf $(LIB_DIR)
-	rm -rf lib-tmp
+	@rm -rf $(LIB_DIR)
+	@rm -rf lib-tmp
 
 $(LIB_DIR): $(SRC_DIR)
 	@node_modules/.bin/coffee -o $@ -bc $<

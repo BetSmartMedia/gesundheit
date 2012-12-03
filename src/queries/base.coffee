@@ -1,7 +1,8 @@
+{inspect}      = require 'util'
 {EventEmitter} = require 'events'
-{toRelation} = require '../nodes'
-assert = require 'assert'
-fluidize = require '../fluid'
+{toRelation}   = require '../nodes'
+assert         = require 'assert'
+fluidize       = require '../fluid'
 
 
 module.exports = class BaseQuery extends EventEmitter
@@ -57,11 +58,11 @@ module.exports = class BaseQuery extends EventEmitter
     oldEngine = @engine
     @engine = engine or require('../').defaultEngine
     if @engine isnt oldEngine
-      oldEngine.unextend(@) if oldEngine?.unextend
-      @engine.extend(@) if @engine.extend
+      oldEngine?.unextendQuery?(@)
+      @engine.extendQuery?(@)
 
-    assert @engine?.connect, "Engine has no connect method: #{@engine}"
-    assert @engine?.render, "Engine has no render method: #{@engine}"
+    assert @engine?.query, "Engine has no query method: #{inspect @engine}"
+    assert @engine?.render, "Engine has no render method: #{inspect @engine}"
 
   render: ->
     ###
@@ -73,49 +74,18 @@ module.exports = class BaseQuery extends EventEmitter
     ###
     Compile this query object, returning a SQL string and parameter array.
     ###
-    [@render(), @q.params()]
+    console.log ret = [@render(), @q.params()]
+    return ret
 
   execute: (cb) ->
     ###
-    Execute the query and buffer all results.
+    Execute the query using ``@engine`` and return a `QueryAdapter`.
 
     :param cb: An (optional) node-style callback that will be called with any
       errors and/or the query results. If no callback is given, a new EventEmitter
       will be returned that emits either an 'error' or 'result' event.
     ###
-    unless cb
-      e = new EventEmitter
-      cb = (err, res) ->
-        if err then e.emit('error', err) else e.emit('result', res)
-
-    @engine.connect (err, conn) =>
-      return cb err if err
-      conn.query.apply conn, @compile().concat([cb])
-    return e
-
-  stream: ->
-    ###
-    Execute the query, returning an EventEmitter that will stream the results.
-
-    The exact events emitted depend on the underlying database engine. For
-    example, MySQL query objects emit 'result' events, while Postgres query
-    objects emit 'row' events.
- 
-    ###
-    e = new EventEmitter
-    @engine.connect (err, conn) ->
-      return e.emit('error', err) if err
-      q = conn.query.apply(conn, @compile())
-      q.on(evt, @emit.bind(e, evt)) for evt in [
-        'error'
-        'row'
-        'end'
-        'fields'
-        'result'
-        'close'
-      ]
-
-    return e
+    @engine.query.apply(@engine, @compile().concat(cb))
 
   toString: ->
     @render()

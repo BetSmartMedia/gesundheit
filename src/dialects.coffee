@@ -99,7 +99,7 @@ exports.BaseDialect = class BaseDialect
       when 'is' then 'IS'
       else throw new Error("Unsupported comparison operator: #{op}")
 
-exports.Postgres = class Postgres extends BaseDialect
+exports.postgres = class PostgresDialect extends BaseDialect
   ### Specialization of BaseDialect for Postgres ###
   {Select, Update, Delete, Insert} = require './nodes'
 
@@ -117,8 +117,10 @@ exports.Postgres = class Postgres extends BaseDialect
       when '->' then '->'
       else super op
 
-exports.MySQL = class MySQL extends BaseDialect
+exports.mysql = class MySQLDialect extends BaseDialect
   ###
   Specialization of BaseDialect for MySQL
   ###
   renderParameter: (node) -> '?'
+
+exports.sqlite3 = class SQLite3Dialect extends BaseDialect

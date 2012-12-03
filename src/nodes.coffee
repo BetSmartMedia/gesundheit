@@ -13,7 +13,13 @@ class Node
 class ValueNode extends Node
   ### A ValueNode is a literal string that should be printed unescaped. ###
   constructor: (@value) ->
+    if @value?
+      throw new Error("Invalid #{@constructor.name}: #{@value}") unless @valid()
   copy: -> new @constructor @value
+  valid: -> true
+
+class IntegerNode extends ValueNode
+  valid: -> not isNaN @value = parseInt @value
 
 CONST_NODES = {}
 CONST_NODES[name] = new ValueNode name.replace '_', ' ' for name in [
@@ -58,7 +64,7 @@ class NodeSet extends Node
     for node in @nodes
       if node.params?
         params = params.concat node.params()
-      else if node.constructor == Parameter
+      else if node.constructor is Parameter
         params.push node.value
     params
 
@@ -107,15 +113,14 @@ class Alias extends Node
   field: -> @project arguments
   ref: -> @alias
 
-exports.Parameter = class Parameter extends ValueNode
+class Parameter extends ValueNode
   ###
   Like a ValueNode, but will render as a bound parameter place-holder
   (e.g. '?' for MySQL) and it's value will be collected by
   :meth:`nodes::NodeSet.params`
   ###
 
-
-exports.Relation = class Relation extends ValueNode
+class Relation extends ValueNode
   ###
   A relation node represents a table name in a statement.
   ###
@@ -135,8 +140,8 @@ exports.Relation = class Relation extends ValueNode
 
   copy: -> new @constructor @value
 
-exports.Limit  = class Limit extends ValueNode
-exports.Offset = class Offset extends ValueNode
+class Limit extends IntegerNode
+class Offset extends IntegerNode
 
 class Binary extends FixedNodeSet
   constructor: (@left, @op, @right) -> super [@left, @op, @right], ' '
@@ -176,7 +181,7 @@ class SelectProjectionSet extends ProjectionSet
       if node instanceof Projection
         if not predicate node then @nodes.push node
       else if node instanceof Alias
-        if not pred node.obj then @nodes.push node
+        if not predicate node.obj then @nodes.push node
   
 class Projection extends FixedNodeSet
   ###
@@ -186,7 +191,7 @@ class Projection extends FixedNodeSet
   copy: -> new @constructor copy(@source), @field
 
 #######
-exports.RelationSet = class RelationSet extends NodeSet
+class RelationSet extends NodeSet
   ###
   Manages a set of relations and exposes methods to find them by alias.
   ###
@@ -217,7 +222,7 @@ exports.RelationSet = class RelationSet extends NodeSet
   switch: (name) ->
     @active = @get(name)
 
-exports.Join = class Join extends FixedNodeSet
+class Join extends FixedNodeSet
   constructor: (@type, @relation) ->
     nodes = [@type, 'JOIN', @relation]
     super nodes
@@ -252,7 +257,7 @@ class Or extends ParenthesizedNodeSet
     return ret
 
 
-exports.And = class And extends ParenthesizedNodeSet
+class And extends ParenthesizedNodeSet
   glue: ' AND '
 
   and: (args...) ->
@@ -263,19 +268,19 @@ exports.And = class And extends ParenthesizedNodeSet
   or: (args...) ->
     new Or [@, args...]
 
-exports.GroupBy = class GroupBy extends NodeSet
+class GroupBy extends NodeSet
   constructor: (gs) -> super gs, ', '
 
-exports.OrderBySet = class OrderBySet extends NodeSet
+class OrderBySet extends NodeSet
   constructor: (os) -> super os, ', '
 
-exports.OrderBy = class OrderBy extends FixedNodeSet
+class OrderBy extends FixedNodeSet
   constructor: (projection, direction) -> super [projection, direction]
 
-exports.UpdateSet = class UpdateSet extends NodeSet
+class UpdateSet extends NodeSet
   constructor: (nodes) -> super nodes, ', '
 
-exports.Select = class Select extends FixedNamedNodeSet
+class Select extends FixedNamedNodeSet
   @structure = [
     ['distinct',    Distinct]
     ['projections', SelectProjectionSet]
@@ -375,7 +380,7 @@ class ComparableMixin
     ### ``this >= other`` ###
     new Binary @, '>=', toParam other
   compare: (op, other) ->
-    ### ``this op other`` ###
+    ### ``this op other`` **DANGER** `op` is **NOT** escaped! ###
     new Binary @, op, toParam other
 
 for k, v of ComparableMixin::
@@ -445,17 +450,54 @@ getAlias = (o) ->
     return keys[0] if keys.length == 1
   return null
 
-text = (rawSQL, params...) ->
+text = do (re = /\$([\w]+)\b/g) -> (rawSQL, bindVals) ->
   ###
-  Construct a node with a raw SQL string and (optionally) parameters.
+  Construct a node with a raw SQL string and (optionally) parameters. Useful for
+  when you want to construct a query that is difficult or impossible with the
+  normal APIs. [#]_
 
-  Parameter arguments are assumed to be values for placeholders in the raw
-  string. Be careful: the number and types of these parameters will **not**
-  be checked, so it is very easy to create invalid statements with this.
+  To use bound parameters in the SQL string, use ``$`` prefixed names, and
+  pass a ``bindVals`` argument with corresponding property names. For example,
+  :meth:`~queries/sud::SUDQuery.where` doesn't (currently) support the SQL
+  ``BETWEEN`` operator, but if you needed it, you could use ``text``::
+
+      function peopleInWeightRange (min, max, callback) {
+        return select('people')
+          .where(text("weight BETWEEN $min AND $max", {min: min, max: max}))
+          .execute(callback)
+      }
+
+  Because javascript doesn't distinguish between array indexing and property
+  access, it can be more clear to use numbered parameters for such short
+  snippets::
+
+      function peopleInWeightRange (min, max, callback) {
+        return select('people')
+          .where(text("weight BETWEEN $0 AND $1", [min, max]))
+          .execute(callback)
+      }
+
+  .. rubric:: Footnotes
+
+  .. [#] If you find yourself using this function often, please consider opening
+    an issue on `Github <https://github.com/BetSmartMedia/gesundheit>`_ with
+    details on your use case so gesundheit can support it more elegantly.
+
   ###
-  node = new ValueNode rawSQL
-  node.params = -> params
-  return node
+  nodes = []
+  lastIndex = 0
+  debugger
+  while match = re.exec rawSQL
+    if match.index > lastIndex
+      nodes.push new ValueNode rawSQL.substring(lastIndex, match.index)
+    nodes.push new Parameter bindVals[match[1]]
+    lastIndex = re.lastIndex
+
+  if lastIndex is 0
+    new ValueNode rawSQL
+  else
+    nodes.push new ValueNode rawSQL.substring(lastIndex)
+    new FixedNodeSet nodes, ''
 
 binaryOp = (left, op, right) ->
   ###

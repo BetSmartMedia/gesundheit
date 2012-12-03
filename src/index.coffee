@@ -14,14 +14,14 @@ cases will be covered by using the following properties of the main module:
   **gesundheit.{Insert, INSERT, insert}**
     Function for creating new :class:`queries/insert::InsertQuery` instances.
 
-  **gesundheit.engines.{mysql, postgres}**
-    Functions for creating new :mod:`engines`.
+  **gesundheit.engine**
+    Function for creating new :mod:`engines`.
 
   **gesundheit.defaultEngine**
     The engine that will be used for queries that aren't explicitly bound. This
-    is set to a no-op engine that you will want to replace either using the
-    ``gesundheit.engines`` functions or by implementing the engine interface
-    yourself.
+    is set to a no-op engine that you will want to replace with either an object
+    returned by the ``gesundheit.engine`` function or by implementing the engine
+    interface yourself.
 
   **Join types**
     Constant nodes for use with :meth:`queries/sud::SUDQuery.join`.
@@ -49,8 +49,8 @@ particularly unusual SQL statements, you might also want to make use of these:
 
 ###
 exports.dialects = require './dialects'
-exports.engines = require './engines'
-exports.defaultEngine = exports.engines.fakeEngine()
+exports.engine = require './engine'
+exports.defaultEngine = exports.engine 'fake://localhost/'
 
 exports.nodes = require './nodes'
 
@@ -65,5 +65,5 @@ for name, helper of exports.nodes when name[0] is name[0].toLowerCase()
 
 require('./queries').mixinFactoryMethods(exports, -> exports.defaultEngine)
 
-exports.transaction = (args...) ->
-  exports.defaultEngine.transaction args...
+exports.begin = (args...) ->
+  exports.defaultEngine.begin args...

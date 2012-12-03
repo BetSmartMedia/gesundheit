@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Gesundheit! &mdash; gesundheit 0.6.0 documentation</title>
+    <title>Gesundheit! &mdash; gesundheit 0.6.0b documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.6.0',
+        VERSION:     '0.6.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.6.0 documentation" href="#" />
+    <link rel="top" title="gesundheit 0.6.0b documentation" href="#" />
     <link rel="next" title="Gesundheit!" href="" /> 
   </head>
   <body>  
@@ -55,13 +55,13 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#update">Update</a><ul>
-<li><a class="reference internal" href="#id5">Examples</a></li>
-<li><a class="reference internal" href="#id6">API</a></li>
+<li><a class="reference internal" href="#id7">Examples</a></li>
+<li><a class="reference internal" href="#id8">API</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#delete">Delete</a><ul>
-<li><a class="reference internal" href="#id7">Examples</a></li>
-<li><a class="reference internal" href="#id8">API</a></li>
+<li><a class="reference internal" href="#id9">Examples</a></li>
+<li><a class="reference internal" href="#id10">API</a></li>
 </ul>
 </li>
 </ul>
@@ -71,7 +71,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#module-dialects::">Dialects</a></li>
-<li><a class="reference internal" href="#id9">Nodes</a></li>
+<li><a class="reference internal" href="#id11">Nodes</a></li>
 </ul>
 <h3>Project Links</h3>
 <ul>
@@ -93,11 +93,6 @@
             
   <div class="section" id="gesundheit">
 <h1>Gesundheit!<a class="headerlink" href="#gesundheit" title="Permalink to this headline">¶</a></h1>
-<a class="reference external image-reference" href="http://travis-ci.org/BetSmartMedia/gesundheit"><img alt="https://secure.travis-ci.org/BetSmartMedia/gesundheit.png?branch=master" src="https://secure.travis-ci.org/BetSmartMedia/gesundheit.png?branch=master" /></a>
-<p>Gesundheit generates SQL using a sugary API for managing the abstract syntax
-tree of a statement. After building your statement programmatically, gesundheit
-can compile it to a string or execute it against your database for you, using
-proper bound parameters and allowing for streaming of results.</p>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul class="current">
@@ -126,7 +121,7 @@ proper bound parameters and allowing for streaming of results.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-dialects::">Dialects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#id9">Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#id11">Nodes</a></li>
 </ul>
 </div>
 <ul class="simple">
@@ -147,13 +142,13 @@ cases will be covered by using the following properties of the main module:</p>
 <dd>Function for creating new <a class="reference internal" href="#queries/delete::DeleteQuery" title="queries/delete::DeleteQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">DeleteQuery</span></tt></a> instances.</dd>
 <dt><strong>gesundheit.{Insert, INSERT, insert}</strong></dt>
 <dd>Function for creating new <a class="reference internal" href="#queries/insert::InsertQuery" title="queries/insert::InsertQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">InsertQuery</span></tt></a> instances.</dd>
-<dt><strong>gesundheit.engines.{mysql, postgres}</strong></dt>
-<dd>Functions for creating new <tt class="xref coffee coffee-mod docutils literal"><span class="pre">engines</span></tt>.</dd>
+<dt><strong>gesundheit.engine</strong></dt>
+<dd>Function for creating new <tt class="xref coffee coffee-mod docutils literal"><span class="pre">engines</span></tt>.</dd>
 <dt><strong>gesundheit.defaultEngine</strong></dt>
 <dd>The engine that will be used for queries that aren&#8217;t explicitly bound. This
-is set to a no-op engine that you will want to replace either using the
-<tt class="docutils literal"><span class="pre">gesundheit.engines</span></tt> functions or by implementing the engine interface
-yourself.</dd>
+is set to a no-op engine that you will want to replace with either an object
+returned by the <tt class="docutils literal"><span class="pre">gesundheit.engine</span></tt> function or by implementing the engine
+interface yourself.</dd>
 <dt><strong>Join types</strong></dt>
 <dd>Constant nodes for use with <tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.join</span></tt>.
 &#8216;LEFT&#8217;, &#8216;RIGHT&#8217;, &#8216;INNER&#8217;, &#8216;LEFT_OUTER&#8217;, &#8216;RIGHT_OUTER&#8217;, &#8216;FULL_OUTER&#8217;
@@ -167,7 +162,7 @@ constructing queries that the query manager classes don&#8217;t cover as well:</
 <li><tt class="xref coffee coffee-func docutils literal"><span class="pre">toRelation</span></tt></li>
 <li><a class="reference internal" href="#nodes::binaryOp" title="nodes::binaryOp"><tt class="xref coffee coffee-func docutils literal"><span class="pre">binaryOp</span></tt></a></li>
 <li><a class="reference internal" href="#nodes::sqlFunction" title="nodes::sqlFunction"><tt class="xref coffee coffee-func docutils literal"><span class="pre">sqlFunction</span></tt></a></li>
-<li><a class="reference internal" href="#nodes::text" title="nodes::text"><tt class="xref coffee coffee-func docutils literal"><span class="pre">text</span></tt></a></li>
+<li><tt class="xref coffee coffee-func docutils literal"><span class="pre">text</span></tt></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -239,8 +234,7 @@ but render SQL strings. In order to use a real database, we need to create our
 own engine object to use:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">gesundheit = </span><span class="nx">require</span><span class="p">(</span><span class="s">&#39;gesundheit&#39;</span><span class="p">)</span>
 
-<span class="c1"># Options are simply passed through to require(&#39;mysql&#39;).createConnection()</span>
-<span class="nv">db = </span><span class="nx">gesundheit</span><span class="p">.</span><span class="nx">engines</span><span class="p">.</span><span class="nx">mysql</span><span class="p">({</span><span class="nv">database: </span><span class="s">&#39;test&#39;</span><span class="p">})</span>
+<span class="nv">db = </span><span class="nx">gesundheit</span><span class="p">.</span><span class="nx">engine</span><span class="p">(</span><span class="s">&#39;mysql://localhost/test&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We can now use <tt class="docutils literal"><span class="pre">db</span></tt> as query factory, using any of <tt class="docutils literal"><span class="pre">select</span></tt>, <tt class="docutils literal"><span class="pre">insert</span></tt>,
@@ -470,7 +464,7 @@ If no argument is given the query will be bound to the default engine.</p>
 <dl class="method">
 <dt id="queries/base::BaseQuery.execute">
 <em class="property">method </em><tt class="descname">BaseQuery.execute</tt><big>(</big><em>cb</em><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the query and buffer all results.</p>
+<dd><p>Execute the query using <tt class="docutils literal"><span class="pre">&#64;engine</span></tt> and return a <cite>QueryAdapter</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -484,15 +478,6 @@ will be returned that emits either an &#8216;error&#8217; or &#8216;result&#8217
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="method">
-<dt id="queries/base::BaseQuery.stream">
-<em class="property">method </em><tt class="descname">BaseQuery.stream</tt><big>(</big><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.stream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the query, returning an EventEmitter that will stream the results.</p>
-<p>The exact events emitted depend on the underlying database engine. For
-example, MySQL query objects emit &#8216;result&#8217; events, while Postgres query
-objects emit &#8216;row&#8217; events.</p>
 </dd></dl>
 
 </dd></dl>
@@ -536,41 +521,46 @@ logic to <a class="reference internal" href="#queries/base::BaseQuery" title="qu
 ordering.</p>
 <dl class="method">
 <dt id="queries/sud::SUDQuery.where">
-<em class="property">method </em><tt class="descname">SUDQuery.where</tt><big>(</big><em>alias</em>, <em>predicate</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.where" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a WHERE clause to the query. Can optionally take a table/alias name as the
-first parameter, otherwise the clause is added using the last table added to
-the query.</p>
+<em class="property">method </em><tt class="descname">SUDQuery.where</tt><big>(</big><em>constraint</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.where" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a WHERE clause to the query.</p>
 <p>The where clause itself can be a comparison node, such as those produced by
 the <a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a> methods:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">q</span><span class="p">.</span><span class="nx">project</span><span class="p">(</span><span class="s">&#39;table&#39;</span><span class="p">,</span><span class="s">&#39;field1&#39;</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="mi">42</span><span class="p">))</span>
-<span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">q</span><span class="p">.</span><span class="nx">project</span><span class="p">(</span><span class="s">&#39;table&#39;</span><span class="p">,</span><span class="s">&#39;field2&#39;</span><span class="p">).</span><span class="nx">gt</span><span class="p">(</span><span class="mi">42</span><span class="p">))</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">q</span><span class="p">.</span><span class="nx">p</span><span class="p">(</span><span class="s">&#39;table&#39;</span><span class="p">,</span><span class="s">&#39;field1&#39;</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="mi">42</span><span class="p">))</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">q</span><span class="p">.</span><span class="nx">p</span><span class="p">(</span><span class="s">&#39;table&#39;</span><span class="p">,</span><span class="s">&#39;field2&#39;</span><span class="p">).</span><span class="nx">gt</span><span class="p">(</span><span class="mi">42</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>... Or an object literal where each key is a field name (or field name
 alias) and each value is a constraint:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s">&#39;table&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nv">field1: </span><span class="mi">42</span><span class="p">,</span> <span class="nv">field2: </span><span class="p">{</span><span class="nv">gt: </span><span class="mi">42</span><span class="p">}})</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">field1: </span><span class="mi">42</span><span class="p">,</span> <span class="nv">field2: </span><span class="p">{</span><span class="nv">gt: </span><span class="mi">42</span><span class="p">}})</span>
 </pre></div>
 </div>
-<p>Constraints values can also be other projected fields:</p>
+<p>Constraint values can also be other projected fields:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">p = </span><span class="nx">q</span><span class="p">.</span><span class="nx">project</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">q</span><span class="p">,</span> <span class="s">&#39;table&#39;</span><span class="p">)</span>
 <span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s">&#39;table&#39;</span><span class="p">,</span> <span class="nx">p</span><span class="p">(</span><span class="s">&#39;field1&#39;</span><span class="p">).</span><span class="nx">gt</span><span class="p">(</span><span class="nx">p</span><span class="p">(</span><span class="s">&#39;field2&#39;</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>To create a set of constraints joined by the OR operator, use &#8216;or&#8217; as a key in
+the object literal with an array of further constraints. Similarly, you can use
+&#8216;and&#8217; as a key to nest &#8216;and&#8217; constraints within an OR, nesting clauses arbitrarily
+deep.</p>
+<blockquote>
+<div>select(&#8216;t&#8217;).where({or: [{a: 1, and: [{b: 2, c: 3}]}]})</div></blockquote>
+<p>Will generate the SQL statement:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">SELECT</span> <span class="o">*</span> <span class="nx">FROM</span> <span class="nx">t</span> <span class="nx">WHERE</span> <span class="p">(</span><span class="nv">t.a = </span><span class="mi">1</span> <span class="nx">OR</span> <span class="p">(</span><span class="nv">t.b = </span><span class="mi">2</span> <span class="nx">AND</span> <span class="nv">t.c = </span><span class="mi">3</span><span class="p">))</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="method">
+<dt id="queries/sud::SUDQuery.makeClauses">
+<em class="property">method </em><tt class="descname">SUDQuery.makeClauses</tt><big>(</big><em>constraint</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.makeClauses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an array of Binary, And, and Or nodes for this constraint object</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="queries/sud::SUDQuery.or">
-<em class="property">method </em><tt class="descname">SUDQuery.or</tt><big>(</big><em>args...</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.or" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add one or more WHERE clauses, all joined by the OR operator.</p>
-<p>If any argument is an object literal that creates more than one clause on
-it&#8217;s own those clauses will be joined with AND operators. So for example:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">select</span><span class="p">(</span><span class="s">&#39;t&#39;</span><span class="p">).</span><span class="o">or</span><span class="p">({</span><span class="nv">a: </span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="nv">b: </span><span class="mi">2</span><span class="p">,</span> <span class="nv">c: </span><span class="mi">3</span><span class="p">})</span>
-</pre></div>
-</div>
-<p>Will generate the SQL statement:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">SELECT</span> <span class="o">*</span> <span class="nx">FROM</span> <span class="nx">t</span> <span class="nx">WHERE</span> <span class="p">(</span><span class="nv">t.a = </span><span class="mi">1</span> <span class="nx">OR</span> <span class="p">(</span><span class="nv">t.b = </span><span class="mi">2</span> <span class="nx">AND</span> <span class="nv">t.c = </span><span class="mi">3</span><span class="p">))</span>
-</pre></div>
-</div>
+<em class="property">method </em><tt class="descname">SUDQuery.or</tt><big>(</big><em>clauses...</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.or" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortcut for <a href="#id5"><span class="problematic" id="id6">``</span></a>.where({or: clauses})</p>
 </dd></dl>
 
 <dl class="method">
@@ -594,6 +584,37 @@ field and each value as a direction.</p>
 <dt id="queries/sud::SUDQuery.offset">
 <em class="property">method </em><tt class="descname">SUDQuery.offset</tt><big>(</big><em>l</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.offset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the OFFSET of this query</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/sud::SUDQuery.project">
+<em class="property">method </em><tt class="descname">SUDQuery.project</tt><big>(</big><em>relation</em>, <em>field</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a <a class="reference internal" href="#nodes::Projection" title="nodes::Projection"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Projection</span></tt></a> node representing <tt class="docutils literal"><span class="pre">&lt;relation&gt;.&lt;field&gt;</span></tt>.</p>
+<p>The first argument is optional and specifies a table or alias name referring
+to a relation already joined to this query. If you don&#8217;t specify a relation,
+the table added or focused last will be used. Alternatively, you can specify
+the relation name and field with a single dot-separated string:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">project</span><span class="p">(</span><span class="s">&#39;departments.name&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="nx">q</span><span class="p">.</span><span class="nx">project</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The returned object has a methods from <a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a> that
+can create new comparison nodes usable in join conditions and where clauses:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="c1"># Find developers over the age of 45</span>
+<span class="nv">s = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
+<span class="nx">s</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="kc">on</span><span class="o">:</span> <span class="p">{</span><span class="nv">id: </span><span class="nx">s</span><span class="p">.</span><span class="nx">project</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="s">&#39;department_id&#39;</span><span class="p">)})</span>
+<span class="nx">s</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">s</span><span class="p">.</span><span class="nx">project</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="s">&#39;development&#39;</span><span class="p">))</span>
+<span class="nx">s</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">s</span><span class="p">.</span><span class="nx">project</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="s">&#39;age&#39;</span><span class="p">).</span><span class="nx">gte</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">project</span></tt> is also aliased as <tt class="docutils literal"><span class="pre">p</span></tt> for those who value brevity:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">q</span><span class="p">.</span><span class="nx">p</span><span class="p">(</span><span class="s">&#39;departments.name&#39;</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="s">&#39;development&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">this means you <em>must</em> specify a relation name if you have a field
+name with a dot in it, if you have dots in your column names, sorry.</p>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -728,22 +749,6 @@ joined already.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="queries/select::SelectQuery.project">
-<em class="property">method </em><tt class="descname">SelectQuery.project</tt><big>(</big><em>alias</em>, <em>field</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.project" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a <a class="reference internal" href="#nodes::Projection" title="nodes::Projection"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Projection</span></tt></a> node representing <tt class="docutils literal"><span class="pre">&lt;alias&gt;.&lt;field&gt;</span></tt>.</p>
-<p>This node has a number methods from <a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a> that can
-create new comparison nodes usable in join conditions and where clauses:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="c1"># Find developers over the age of 45</span>
-<span class="nv">s = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
-<span class="nv">dep_id = </span><span class="nx">s</span><span class="p">.</span><span class="nx">project</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="s">&#39;department_id&#39;</span><span class="p">)</span>
-<span class="nx">s</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="kc">on</span><span class="o">:</span> <span class="p">{</span><span class="nv">id: </span><span class="nx">dep_id</span><span class="p">})</span>
-<span class="nx">s</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">s</span><span class="p">.</span><span class="nx">project</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="s">&#39;development&#39;</span><span class="p">))</span>
-<span class="nx">s</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">s</span><span class="p">.</span><span class="nx">project</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="s">&#39;age&#39;</span><span class="p">).</span><span class="nx">gte</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="method">
 <dt id="queries/select::SelectQuery.focus">
 <em class="property">method </em><tt class="descname">SelectQuery.focus</tt><big>(</big><em>alias</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.focus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a different table &#8220;focused&#8221;, this will use that table as the default
@@ -774,8 +779,8 @@ already part of the query an error will be thrown.</li>
 </div>
 <div class="section" id="update">
 <h2>Update<a class="headerlink" href="#update" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id5">
-<h3>Examples<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id7">
+<h3>Examples<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <p>Updating rows that match a condition:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">update</span><span class="p">(</span><span class="s">&#39;tweeters&#39;</span><span class="p">)</span>            <span class="c1"># UPDATE tweeters</span>
   <span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nv">influential: </span><span class="kc">true</span><span class="p">)</span>     <span class="c1"># SET tweeters.influential = true</span>
@@ -786,8 +791,8 @@ already part of the query an error will be thrown.</li>
 </pre></div>
 </div>
 </div>
-<div class="section" id="id6">
-<h3>API<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id8">
+<h3>API<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <span class="target" id="module-queries/update::"></span><dl class="class">
 <dt id="queries/update::UpdateQuery">
 <em class="property">class </em><tt class="descname">UpdateQuery</tt><em class="property"> extends </em><a class="reference internal" href="#queries/sud::SUDQuery" title="queries/sud::SUDQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SUDQuery</span></tt></a><a class="headerlink" href="#queries/update::UpdateQuery" title="Permalink to this definition">¶</a></dt>
@@ -823,16 +828,16 @@ simple updates of a single table.</p>
 </div>
 <div class="section" id="delete">
 <h2>Delete<a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id7">
-<h3>Examples<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id9">
+<h3>Examples<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
 <p>Delete all rows that match a condition:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="c1"># DELETE FROM tweeters WHERE tweeters.followers &lt; 10</span>
 <span class="k">delete</span><span class="p">(</span><span class="s">&#39;tweeters&#39;</span><span class="p">).</span><span class="nx">where</span><span class="p">(</span><span class="nv">followers: lt: </span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="id8">
-<h3>API<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id10">
+<h3>API<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <span class="target" id="module-queries/delete::"></span><dl class="class">
 <dt id="queries/delete::DeleteQuery">
 <em class="property">class </em><tt class="descname">DeleteQuery</tt><em class="property"> extends </em><a class="reference internal" href="#queries/sud::SUDQuery" title="queries/sud::SUDQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SUDQuery</span></tt></a><a class="headerlink" href="#queries/delete::DeleteQuery" title="Permalink to this definition">¶</a></dt>
@@ -848,54 +853,9 @@ simple updates of a single table.</p>
 apps that deal with a single database, you can simply create an engine instance
 during application startup, assign it to <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</span></tt> and not
 have to think about binding after that.</p>
-<p>For more complicated scenarios where you need control over the exact connections
-used (e.g. transactions) you will need to understand the engine/binding system.</p>
 <div class="section" id="engines">
 <h2>Engines<a class="headerlink" href="#engines" title="Permalink to this headline">¶</a></h2>
-<p>An engine is any object that implements the following API:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt><strong>render(query)</strong></dt>
-<dd>Render the given query instance to a SQL string. This method <strong>must</strong> be
-synchronous, and will usually just delegate to a subclass of
-<a class="reference internal" href="#dialects::BaseDialect" title="dialects::BaseDialect"><tt class="xref coffee coffee-class docutils literal"><span class="pre">BaseDialect</span></tt></a>.</dd>
-<dt><strong>connect(callback)</strong></dt>
-<dd>Call <tt class="docutils literal"><span class="pre">callback(err,</span> <span class="pre">client)</span></tt> where <cite>client</cite> is an object with a <tt class="docutils literal"><span class="pre">query</span></tt>
-method that works the same as those of the pg and mysql driver clients.</dd>
-</dl>
-</div></blockquote>
-<p>Gesundheit exports factory functions for creating <a class="reference internal" href="#engines::postgres" title="engines::postgres"><tt class="xref coffee coffee-func docutils literal"><span class="pre">postgres</span></tt></a> and
-<a class="reference internal" href="#engines::mysql" title="engines::mysql"><tt class="xref coffee coffee-func docutils literal"><span class="pre">mysql</span></tt></a> engines:</p>
-<span class="target" id="module-engines::"></span><dl class="function">
-<dt id="engines::postgres">
-<em class="property">function </em><tt class="descname">postgres</tt><big>(</big><em>config</em><big>)</big><a class="headerlink" href="#engines::postgres" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new Postgres engine using a parameter compatible with
-<a class="reference external" href="require('pg').connect(config)">https://github.com/brianc/node-postgres/wiki/pg#method-connect</a>.</p>
-<p>This will <tt class="docutils literal"><span class="pre">require('pg')</span></tt> and attempt to use the &#8216;native&#8217; interface if it&#8217;s
-available.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="engines::mysql">
-<em class="property">function </em><tt class="descname">mysql</tt><big>(</big><em>opts</em><big>)</big><a class="headerlink" href="#engines::mysql" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new MySQL engine using an object that is compatible with
-<tt class="docutils literal"><span class="pre">require('mysql').create{Connection,Client}(opts)</span></tt>.</p>
-<p>Additionally, you can specify extra options for <tt class="docutils literal"><span class="pre">generic-pool</span></tt> by
-including them as an object in <tt class="docutils literal"><span class="pre">opts.pool</span></tt>. The <tt class="docutils literal"><span class="pre">create</span></tt> and
-<tt class="docutils literal"><span class="pre">destroy</span></tt> pool functions will be created for you.</p>
-<p>This will <tt class="docutils literal"><span class="pre">require('mysql-compat')</span></tt> which you <strong>must</strong> install separately
-for this function to work.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="engines::fakeEngine">
-<em class="property">function </em><tt class="descname">fakeEngine</tt><big>(</big><big>)</big><a class="headerlink" href="#engines::fakeEngine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a no-op engine that simply returns the compiled SQL and parameter
-array to the result callback. This will be the default until you over-ride
-with <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</span> <span class="pre">=</span> <span class="pre">myAppEngine</span></tt>.</p>
-</dd></dl>
-
-</div>
+<span class="target" id="module-engines::"></span></div>
 </div>
 <div class="section" id="module-dialects::">
 <span id="dialects"></span><h1>Dialects<a class="headerlink" href="#module-dialects::" title="Permalink to this headline">¶</a></h1>
@@ -911,20 +871,14 @@ MySQL and Postgres.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="dialects::Postgres">
-<em class="property">class </em><tt class="descname">Postgres</tt><em class="property"> extends </em><a class="reference internal" href="#dialects::BaseDialect" title="dialects::BaseDialect"><tt class="xref coffee coffee-class docutils literal"><span class="pre">BaseDialect</span></tt></a><a class="headerlink" href="#dialects::Postgres" title="Permalink to this definition">¶</a></dt>
+<dt id="dialects::PostgresDialect">
+<em class="property">class </em><tt class="descname">PostgresDialect</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">AnyDBDialect</span></tt><a class="headerlink" href="#dialects::PostgresDialect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specialization of BaseDialect for Postgres</p>
 </dd></dl>
 
-<dl class="class">
-<dt id="dialects::MySQL">
-<em class="property">class </em><tt class="descname">MySQL</tt><em class="property"> extends </em><a class="reference internal" href="#dialects::BaseDialect" title="dialects::BaseDialect"><tt class="xref coffee coffee-class docutils literal"><span class="pre">BaseDialect</span></tt></a><a class="headerlink" href="#dialects::MySQL" title="Permalink to this definition">¶</a></dt>
-<dd><p>Specialization of BaseDialect for MySQL</p>
-</dd></dl>
-
 </div>
-<div class="section" id="id9">
-<h1>Nodes<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id11">
+<h1>Nodes<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="module-nodes::"></span><p>These are the classes that represent nodes in the AST for a SQL statement.
 Application code should very rarely have to deal with these classes directly;
 Instead, the APIs exposed by the various query manager classes are intended to
@@ -1051,7 +1005,7 @@ alias = new Alias(table, &#8216;mtwaln&#8217;)</p>
 <dl class="class">
 <dt id="nodes::RelationSet">
 <em class="property">class </em><tt class="descname">RelationSet</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::NodeSet" title="nodes::NodeSet"><tt class="xref coffee coffee-class docutils literal"><span class="pre">NodeSet</span></tt></a><a class="headerlink" href="#nodes::RelationSet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Manages a set of relation and exposes methods to find them by alias.</p>
+<dd><p>Manages a set of relations and exposes methods to find them by alias.</p>
 </dd></dl>
 
 <dl class="class">
@@ -1098,7 +1052,7 @@ methods will yield a new AST node comparing the invocant to the argument.</p>
 <dl class="method">
 <dt id="nodes::ComparableMixin.compare">
 <em class="property">method </em><tt class="descname">ComparableMixin.compare</tt><big>(</big><em>op</em>, <em>other</em><big>)</big><a class="headerlink" href="#nodes::ComparableMixin.compare" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">this</span> <span class="pre">op</span> <span class="pre">other</span></tt></p>
+<dd><p><tt class="docutils literal"><span class="pre">this</span> <span class="pre">op</span> <span class="pre">other</span></tt> <strong>DANGER</strong> <cite>op</cite> is <strong>NOT</strong> escaped!</p>
 </dd></dl>
 
 </dd></dl>
@@ -1132,15 +1086,6 @@ alias name if it is.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="nodes::text">
-<em class="property">function </em><tt class="descname">text</tt><big>(</big><em>rawSQL</em>, <em>params...</em><big>)</big><a class="headerlink" href="#nodes::text" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a node with a raw SQL string and (optionally) parameters.</p>
-<p>Parameter arguments are assumed to be values for placeholders in the raw
-string. Be careful: the number and types of these parameters will <strong>not</strong>
-be checked, so it is very easy to create invalid statements with this.</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="nodes::binaryOp">
 <em class="property">function </em><tt class="descname">binaryOp</tt><big>(</big><em>left</em>, <em>op</em>, <em>right</em><big>)</big><a class="headerlink" href="#nodes::binaryOp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new <tt class="xref coffee coffee-class docutils literal"><span class="pre">Binary</span></tt> node:</p>
@@ -1151,7 +1096,7 @@ be checked, so it is very easy to create invalid statements with this.</p>
 <div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <dl class="last docutils">
-<dt><a class="reference internal" href="#queries/select::SelectQuery.project" title="queries/select::SelectQuery.project"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.project</span></tt></a></dt>
+<dt><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.project</span></tt></dt>
 <dd>Returns <a class="reference internal" href="#nodes::Projection" title="nodes::Projection"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Projection</span></tt></a> objects that have comparison methods
 from <a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a>.</dd>
 </dl>

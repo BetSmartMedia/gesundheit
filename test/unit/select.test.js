@@ -37,7 +37,7 @@ test("SELECT queries", function (t) {
       ["SELECT * FROM t1 WHERE t1.x < ?", [ 10 ]],
       "and a 'lt' where clause is added")
 
-    t.deepEqual(q.copy().or({x: {lt: 10}}, {y: 10}).compile(),
+    t.deepEqual(q.copy().or({x: {lt: 10}, y: 10}).compile(),
       ["SELECT * FROM t1 WHERE (t1.x < ? OR t1.y = ?)", [10, 10]],
       "and an 'OR' where clause is added")
       

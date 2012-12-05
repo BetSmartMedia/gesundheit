@@ -57,7 +57,7 @@ module.exports = class SelectQuery extends SUDQuery
 
     Example::
 
-      select('t1').agg('count', 'id') # SELECT count(id) FROM t1
+      select('t1', function (q) { q.agg('count', q.p('id')) }) # SELECT count(id) FROM t1
     
     ###
     if alias = getAlias fun
@@ -100,7 +100,7 @@ module.exports = class SelectQuery extends SUDQuery
     @q.relations.registerName rel
     @q.relations.switch rel
     # must switch to the new relation before making clauses
-    if opts.on then join.on(new And(@makeClauses opts.on))
+    if opts.on then join.on(new And(@_makeClauses opts.on))
     if opts.fields?
       @fields(opts.fields...)
 

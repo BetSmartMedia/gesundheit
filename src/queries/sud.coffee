@@ -12,40 +12,79 @@ module.exports = class SUDQuery extends BaseQuery
 
   where: (constraint) ->
     ###
-    Add a WHERE clause to the query.
+    Adds a WHERE clause to the query. This method accepts wide range of input
+    that can express very complex constraints. The examples below assume we are
+    starting with this simple select query: ``q = select('t1')``
 
-    The where clause itself can be a comparison node, such as those produced by
-    the :class:`nodes::ComparableMixin` methods::
+    The first kind of constraint is a comparison node as produced by the
+    :class:`nodes::ComparableMixin` methods on projected fields::
 
-      q.where(q.p('table','field1').eq(42))
-      q.where(q.p('table','field2').gt(42))
+      q.where(q.p('field1').eq(42))
+      q.where(q.p('field2').gt(42))
+      # WHERE t1.field1 = 42 AND t1.field2 > 42
 
-    ... Or an object literal where each key is a field name (or field name
-    alias) and each value is a constraint::
+    We used an implied table name above, which is always the last table added to
+    the query or focused with  :meth:`queries/sud::SUDQuery.focus`. If you want
+    to specify constraints on multiple tables at once (or just be more explicit)
+    you can also specify the relation for a field by prepending it to the field
+    name (e.g. ``q.p('t1.field1')``. See :meth:`queries/sud::SUDQuery.project`
+    for details.
+
+    The second kind of constraint is an object literal where each key is a field
+    name and each value is a constraint. The last example expressed as a literal
+    object looks like this::
 
       q.where({field1: 42, field2: {gt: 42}})
+      # WHERE t1.field1 = 42 AND t1.field2 > 42
 
-    Constraint values can also be other projected fields::
+    Internally this constructs the comparison nodes for you using a simple
+    transformation: each key is passed to project (meaning you can specify the
+    relation name as part of the key if you so desire) and each value is either
+    used as the argument to :meth:`nodes::ComparableMixin.eq` or (in the case of
+    object literals) converted into one or more calls to the corresponding
+    comparison methods.
 
-      p = q.project.bind(q, 'table')
-      q.where('table', p('field1').gt(p('field2')))
+    To compare two fields, use a projection as the value to be compared::
 
+      p = q.project.bind(q, 't1')
+      q.where({field1: {gt: p('field2')}})
+      # WHERE t1.field1 > t1.field2
 
-    To create a set of constraints joined by the OR operator, use 'or' as a key in
-    the object literal with an array of further constraints. Similarly, you can use
-    'and' as a key to nest 'and' constraints within an OR, nesting clauses arbitrarily
-    deep::
+    If you use either of the special keys ``'and'`` or ``'or'`` in an object,
+    the value will be treated as a nested set of constraints to be joined with
+    the corresponding SQL operator. This process is recursive so you can nest
+    constraints arbitrarily deep::
 
-      select('t').where({or: {a: 1, and: {b: 2, c: 3}}})
+      q.where({or: {a: 1, and: {b: 2, c: 3}}})
+      # WHERE (t1.a = 1 OR (t1.b = 2 AND t1.c = 3))
 
-    Will generate the SQL statement::
+    You can also acheive the same effect by chaining method calls on comparison
+    nodes::
 
-      SELECT * FROM t WHERE (t.a = 1 OR (t.b = 2 AND t.c = 3))
+      a = q.p('a')
+      b = q.p('b')
+      c = q.p('c')
+      q.where(a.eq(1).or(b.eq(2).and(c.eq(3))))
+      # WHERE (t1.a = 1 OR (t1.b = 2 AND t1.c = 3))
 
+    If you have the need to mix both styles (or simply find it more readable,
+    You can use an array of constraints as the value for ``'or'`` or ``'and'``::
+
+      q.where({or: [{a: 1}, b.eq(2).and(c.eq(3))]})
+
+    Note that currently you **cannot** pass an object literal to the ``.and``
+    and ``.or`` methods::
+
+      # Will not work!!
+      q.where(a.eq(1).or({b: 2, c: 3}))
+
+    Finally, there are also shortcut methods :meth:`queries/sud::SUDQuery.and`
+    and :meth:`queries/sud::SUDQuery.or` that treat multiple arguments like an
+    array of constraints.
     ###
-    @q.where.addNode(node) for node in @makeClauses(constraint)
+    @q.where.addNode(node) for node in @_makeClauses(constraint)
 
-  makeClauses: (constraint) ->
+  _makeClauses: (constraint) ->
     ###
     Return an array of Binary, And, and Or nodes for this constraint object
     ###
@@ -57,7 +96,7 @@ module.exports = class SUDQuery extends BaseQuery
         if item instanceof Node
           clauses.push(item)
         else
-          clauses = clauses.concat(@makeClauses(item))
+          clauses = clauses.concat(@_makeClauses(item))
       return clauses
 
     if constraint instanceof Node
@@ -65,10 +104,10 @@ module.exports = class SUDQuery extends BaseQuery
 
     for field, predicate of constraint
       if field is 'and'
-        clauses.push new And @makeClauses(predicate)
+        clauses.push new And @_makeClauses(predicate)
       else if field is 'or'
         debugger
-        clauses.push new Or @makeClauses(predicate)
+        clauses.push new Or @_makeClauses(predicate)
       else
         column = @project field
         if predicate is null
@@ -81,11 +120,11 @@ module.exports = class SUDQuery extends BaseQuery
     clauses
 
   or: (clauses...) ->
-    ### Shortcut for ``.where({or: clauses}) ###
+    ### Shortcut for ``.where({or: clauses})`` ###
     @where or: clauses
 
   and: (clauses...) ->
-    ### Shortcut for ``.where({and: clauses}) ###
+    ### Shortcut for ``.where({and: clauses})`` ###
     @where and: clauses
 
   order: (args...) ->

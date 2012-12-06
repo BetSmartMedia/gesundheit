@@ -1,6 +1,7 @@
 fluidize = require '../fluid'
 SUDQuery = require './sud'
-{ Alias,
+{ Node,
+  Alias,
   getAlias,
   Select,
   And,
@@ -18,34 +19,31 @@ module.exports = class SelectQuery extends SUDQuery
 
   fields: (fields...) ->
     ###
-    Adds one or more fields to the query. If the second argument is an array, 
-    the first argument is treated as a table (in the same way that :meth:`join` 
-    understands tables) and the second argument as the list of fields to 
-    select/update from that table. The table **must** already be joined for this
-    to work.
+    Adds one or more fields to the query. Fields can be strings (in which case
+    they will be passed to :meth:`queries/sud::SUDQuery.project`) or pre-
+    constructed nodes. (Such as those returned by ``project``).
 
-    If the second argument is not an array, then each argument is treated as an 
-    individual field to be projected from the currently focused table.
+    If no fields are given, clears all fields from the currently focused table.
+
+    To alias a field, use an object with a single key where the key is the alias
+    name and the value is a string or node::
+
+      q.fields({employee_name: 'employees.name'})
+
     ###
-    if fields[1] and Array.isArray fields[1]
-      rel = @q.relations.get fields[0]
-      unknown 'table', fields[0] unless rel?
-      fields = fields[1]
-    else
-      rel = @q.relations.active
-
     if fields.length == 0
+      rel = @q.relations.active
       @q.projections.prune((p) -> p.source == rel)
       return
 
-    project = (f) -> if typeof f is 'object' then f else rel.project(f)
+    proj = (o) => if o instanceof Node then o else @project(o)
 
     for f in fields
       if alias = getAlias f
         f = f[alias]
-        @q.projections.addNode new Alias project(f), alias
+        @q.projections.addNode new Alias proj(f), alias
       else
-        @q.projections.addNode project(f)
+        @q.projections.addNode proj(f)
 
   agg: (fun, fields...) ->
     ###

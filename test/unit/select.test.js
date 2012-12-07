@@ -7,18 +7,22 @@ test = require('tap').test
 test("SELECT queries", function (t) {
   t.equal(select('t1').render(), "SELECT * FROM t1", "simplest possible query")
 
+	t.equal(select('case', ['when']).render(),
+		'SELECT "case"."when" FROM "case"',
+		"Quoting identifiers")
+
   t.test("ORDER BY clauses", function (t) {
     var q = select('t1')
-    t.equal(q.copy().order({size: 'ASC'}).render(),
-      "SELECT * FROM t1 ORDER BY t1.size ASC",
+    t.equal(q.copy().order({quantity: 'ASC'}).render(),
+      "SELECT * FROM t1 ORDER BY t1.quantity ASC",
       "object ORDER BY")
 
-    t.equal(q.copy().order('size').render(),
-      "SELECT * FROM t1 ORDER BY t1.size",
+    t.equal(q.copy().order('quantity').render(),
+      "SELECT * FROM t1 ORDER BY t1.quantity",
       "string ORDER BY")
 
-    t.equal(q.copy().order('size descending').render(),
-      "SELECT * FROM t1 ORDER BY t1.size DESC",
+    t.equal(q.copy().order('quantity descending').render(),
+      "SELECT * FROM t1 ORDER BY t1.quantity DESC",
       "string ORDER BY with a direction")
 
     t.throws(function () { q.order({x: "LEFTWISE"}) },
@@ -67,8 +71,8 @@ test("SELECT queries", function (t) {
       "SELECT * FROM t1 INNER JOIN t2",
       "clearing fields")
 
-    t.equal(q.copy().focus("t1").fields("a", "b").render(),
-      "SELECT t1.a, t1.b FROM t1 INNER JOIN t2",
+    t.equal(q.copy().focus("t1").fields("x", "y").render(),
+      "SELECT t1.x, t1.y FROM t1 INNER JOIN t2",
       "fields can be added on the first table")
 
     t.end()

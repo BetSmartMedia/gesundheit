@@ -5,6 +5,8 @@ to an `engine <Engines>`_ that will delegate rendering to a private dialect
 instance.
 ###
 
+fs = require('fs')
+
 prefixIfNotEmpty = (prefix) ->
   (node) ->
     children = @renderNodeSet node
@@ -26,6 +28,25 @@ exports.BaseDialect = class BaseDialect
     @['render'+name](node)
 
   renderString: (s) -> s
+
+  renderIdentifier: (n) -> @quote(n.value)
+
+  quote: (s) ->
+    if s?.match(/\s|"|\./) or @isKeyword(s)
+      return '"' + s.replace('"', '\\"') + '"'
+    else
+      s
+
+  keywords = fs.readFileSync(__dirname + '/sql_keywords.txt', 'ascii').split('\n').filter(Boolean)
+
+  isKeyword: (s) ->
+    keywords.indexOf(s.toUpperCase()) isnt -1
+
+  renderProjection: (p) ->
+    if p.source?.alias?
+      @quote(p.source.alias) + '.' + @render(p.field)
+    else
+      @renderNodeSet(p)
 
   renderNodeSet: (set) ->
     set.nodes.map((n) => @render n).filter((n) -> n).join(set.glue)
@@ -51,12 +72,6 @@ exports.BaseDialect = class BaseDialect
       '*'
     else
       @renderNodeSet set
-
-  renderProjection: (node) ->
-    "#{@quote node.source.ref()}.#{@quote node.field}"
-
-  quote: (part) ->
-    if /\./.exec part then "`#{part}`" else part
 
   renderSqlFunction: (node) -> "#{@render node.name}#{@render node.arglist}"
 

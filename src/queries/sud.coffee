@@ -1,7 +1,7 @@
 BaseQuery = require './base'
 nodes = require '../nodes'
 fluidize = require '../fluid'
-{Node, And, Or, OrderBy, CONST_NODES} = nodes
+{Node, And, Or, OrderBy, Projection, CONST_NODES, toField} = nodes
 
 module.exports = class SUDQuery extends BaseQuery
   ###
@@ -199,16 +199,26 @@ module.exports = class SUDQuery extends BaseQuery
 
     ###
     if field?
-      rel = @q.relations.get(relation, true)
-    else
-      field = relation
-      rel_field = field.split('.')
-      if rel_field.length is 2
-        field = rel_field[1]
-        rel = @q.relations.get(rel_field[0], true)
+      field = toField(field)
+      if typeof relation is 'string'
+        new Projection @q.relations.get(relation), field
       else
-        rel = @defaultRel()
-    rel.project(field)
+        # Make sure this relation is part of our query
+        relation = @q.relations.get(toRelation(relation).ref())
+        new Projection relation, field
+    else if typeof relation is 'string'
+      parts = relation.split '.'
+      if parts.length is 2
+        new Projection @q.relations.get(parts[0]), toField(parts[1])
+      else
+        new Projection @defaultRel(), toField(relation)  # Actually the field
+    else if relation instanceof Projection
+      proj = relation
+      # Check that the source of this projection is in our query
+      @q.relations.get(proj.source?.ref())
+      proj
+    else
+      throw new Error("Can't make a projection from object: #{relation}")
 
 fluidize SUDQuery, 'where', 'or', 'and', 'limit', 'offset', 'order'
 

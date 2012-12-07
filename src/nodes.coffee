@@ -21,6 +21,12 @@ class ValueNode extends Node
 class IntegerNode extends ValueNode
   valid: -> not isNaN @value = parseInt @value
 
+class Identifier extends ValueNode
+  ###
+  An identifier is a column or relation name, that may need to be quoted
+  in the SQL string.
+  ###
+
 CONST_NODES = {}
 CONST_NODES[name] = new ValueNode name.replace '_', ' ' for name in [
   'DEFAULT', 'NULL', 'IS_NULL', 'IS_NOT_NULL'
@@ -116,13 +122,13 @@ class Alias extends Node
 class Parameter extends ValueNode
   ###
   Like a ValueNode, but will render as a bound parameter place-holder
-  (e.g. '?' for MySQL) and it's value will be collected by
+  (e.g. ``$1``) and it's value will be collected by
   :meth:`nodes::NodeSet.params`
   ###
 
-class Relation extends ValueNode
+class Relation extends Identifier
   ###
-  A relation node represents a table name in a statement.
+  A relation node represents a table name or alias in a statement.
   ###
   ref: ->
     ###
@@ -132,13 +138,17 @@ class Relation extends ValueNode
 
   project: (field) ->
     ### Return a new :class:`nodes::Projection` of `field` from this table. ###
-    new Projection @, field
+    new Projection @, toField(field)
 
-  field: (field) ->
-    ### An alias for :meth:`nodes::Relation.project`. ###
-    @project field
+class Field extends Identifier
+  ### A column name ###
 
-  copy: -> new @constructor @value
+class Projection extends FixedNodeSet
+  ###
+  Includes :class:`nodes::ComparableMixin`
+  ###
+  constructor: (@source, @field) -> super [@source, @field], '.'
+  copy: -> new @constructor copy(@source), @field
 
 class Limit extends IntegerNode
 class Offset extends IntegerNode
@@ -183,13 +193,6 @@ class SelectProjectionSet extends ProjectionSet
       else if node instanceof Alias
         if not predicate node.obj then @nodes.push node
   
-class Projection extends FixedNodeSet
-  ###
-  Includes :class:`nodes::ComparableMixin`
-  ###
-  constructor: (@source, @field) -> super [@source, @field], '.'
-  copy: -> new @constructor copy(@source), @field
-
 #######
 class RelationSet extends NodeSet
   ###
@@ -403,7 +406,7 @@ toParam = (it) ->
   else if Array.isArray it then new Tuple(it.map toParam)
   else new Parameter it
 
-toRelation = toRelation = (it) ->
+toRelation = (it) ->
   ###
   Transform ``it`` into a :class:`nodes::Relation` instance.
 
@@ -412,7 +415,7 @@ toRelation = toRelation = (it) ->
   
   Examples::
   
-     toRelation('some_table') # new Relation('some_table')
+     toRelation('some_table')     # new Relation('some_table')
      toRelation(st: 'some_table') # new Alias(Relation('some_table'), 'st')
      toRelation(new Relation('some_table')) # returns same instance
      toRelation(new Alias(new Relation('some_table'), 'al') # returns same instance
@@ -429,6 +432,35 @@ toRelation = toRelation = (it) ->
         throw new Error "Can't make relation out of #{it}"
     else
       throw new Error "Can't make relation out of #{it}"
+
+
+toField = (it) ->
+  if typeof it is 'string'
+    new Field it
+  else if it instanceof Field
+    it
+  else
+    throw new Error "Can't make a field out of #{it}"
+
+
+toProjection = (relation, field) ->
+  ###
+  Create a new :class:`nodes::Projection` instance.
+
+  The first argument is optional and specifies a table (or alias) name.
+  Alternatively, you can specify the relation name and field with a single
+  dot-separated string::
+
+    toProjection('departments.name') == toProjection('departments', 'name')
+
+  Either argument can be an pre-constructed node object (of the correct type).
+  ###
+  if field?
+    new Projection(toRelation(relation), toField(field))
+  else if typeof relation is 'string' and (parts = relation.split('.')).length is 2
+    new Projection(toRelation(parts[0]), toField(parts[1]))
+  else
+    throw new Error("Can't make projection from object: #{relation}")
 
 
 sqlFunction = (name, args) ->
@@ -523,6 +555,7 @@ module.exports = {
   getAlias
   sqlFunction
   text
+  toField
   toRelation
   toParam
 
@@ -532,6 +565,7 @@ module.exports = {
   Or
   Join
   OrderBy
+  Projection
   Tuple
   FixedNamedNodeSet
 

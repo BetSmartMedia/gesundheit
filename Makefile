@@ -7,6 +7,7 @@ HEAD = $(shell git describe --contains --all HEAD)
 
 .PHONY: all
 all: $(LIB_DIR)
+	@cp $(SRC_DIR)/sql_keywords.txt $(LIB_DIR)/
 
 .PHONY: test
 test: unit integration

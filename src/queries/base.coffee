@@ -74,8 +74,7 @@ module.exports = class BaseQuery extends EventEmitter
     ###
     Compile this query object, returning a SQL string and parameter array.
     ###
-    console.log ret = [@render(), @q.params()]
-    return ret
+    [@render(), @q.params()]
 
   execute: (cb) ->
     ###

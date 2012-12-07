@@ -247,7 +247,7 @@ have to think about binding after that.
 Engines
 -------
 
-.. automodule:: engines
+.. automodule:: engine
 
 Dialects
 ========

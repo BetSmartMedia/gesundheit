@@ -13,7 +13,7 @@ all: $(LIB_DIR)
 test: unit integration
 
 .PHONY: unit
-unit: $(LIB_DIR)
+unit: all
 	@node_modules/.bin/tap test/unit/
 
 .PHONY: integration

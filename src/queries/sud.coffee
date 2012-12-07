@@ -219,6 +219,11 @@ module.exports = class SUDQuery extends BaseQuery
     else
       throw new Error("Can't make a projection from object: #{relation}")
 
+  rel: (alias) ->
+    ### A shorthand way to get a relation by (alias) name ###
+    @q.relations.get alias
+
+
 fluidize SUDQuery, 'where', 'or', 'and', 'limit', 'offset', 'order'
 
 SUDQuery::p = SUDQuery::project

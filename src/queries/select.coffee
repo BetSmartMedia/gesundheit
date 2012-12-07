@@ -66,7 +66,6 @@ module.exports = class SelectQuery extends SUDQuery
     else
       @q.projections.addNode funcNode
 
-
   distinct: (bool) ->
     ###
     Make this query DISTINCT on *all* fields.
@@ -110,10 +109,6 @@ module.exports = class SelectQuery extends SUDQuery
     rel = toRelation table
     if not @q.relations.get rel.ref(), false
       @join rel, opts
-
-  rel: (alias) ->
-    ### A shorthand way to get a relation by (alias) name ###
-    @q.relations.get alias
 
   focus: (alias) ->
     ###

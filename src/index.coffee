@@ -32,11 +32,17 @@ cases will be covered by using the following properties of the main module:
     These come from the `nodes <Nodes>`_ module and are often useful when
     constructing queries that the query manager classes don't cover as well:
 
-      * :func:`nodes::toParam`
-      * :func:`nodes::toRelation`
-      * :func:`nodes::binaryOp`
-      * :func:`nodes::sqlFunction`
-      * :func:`nodes::text`
+      :func:`nodes::toParam`
+        Convert any object to a parameter placeholder.
+      :func:`nodes::toRelation`
+        Convert various inputs to :class:`nodes::Relation` nodes.
+      :func:`nodes::binaryOp`
+        Create a binary comparison node manually.  (e.g. for postgres' custom
+        operators).
+      :func:`nodes::sqlFunction`
+        Create SQL function calls (e.g. ``MAX(last_update)``)
+      :func:`nodes::text`
+        Include raw SQL in a query, with parameter placeholders.
 
 If you are implementing support for a different database engine or constructing
 particularly unusual SQL statements, you might also want to make use of these:

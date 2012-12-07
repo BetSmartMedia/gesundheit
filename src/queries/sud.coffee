@@ -6,8 +6,8 @@ fluidize = require '../fluid'
 module.exports = class SUDQuery extends BaseQuery
   ###
   SUDQuery is the base class for SELECT, UPDATE, and DELETE queries. It adds
-  logic to :class:`queries/base::BaseQuery` for dealing with WHERE clauses and
-  ordering.
+  logic to :class:`queries/base::BaseQuery` for adding WHERE clauses, projecting
+  columns, ordering, limits, and offsets.
   ###
 
   where: (constraint) ->
@@ -38,7 +38,7 @@ module.exports = class SUDQuery extends BaseQuery
       # WHERE t1.field1 = 42 AND t1.field2 > 42
 
     Internally this constructs the comparison nodes for you using a simple
-    transformation: each key is passed to project (meaning you can specify the
+    transformation: each key is passed to :meth:`project` (meaning you can specify the
     relation name as part of the key if you so desire) and each value is either
     used as the argument to :meth:`nodes::ComparableMixin.eq` or (in the case of
     object literals) converted into one or more calls to the corresponding
@@ -128,13 +128,12 @@ module.exports = class SUDQuery extends BaseQuery
 
   order: (args...) ->
     ###
-    Add an ORDER BY to the query. Currently this *always* uses the "active"
-    table of the query. (See :meth:`queries/select::SelectQuery.from`)
+    Add an ORDER BY to the query.
 
     Each ordering can either be a string, in which case it must be a valid-ish
-    SQL snippet like 'some_field DESC', (the field name and direction will still
-    be normalized) or an object, in which case each key will be treated as a
-    field and each value as a direction.
+    SQL snippet like 'some_table.some_field DESC', (the field name and direction
+    will still be converted to AST nodes) or an object, in which case each key
+    will be treated as a field and each value as a direction.
     ###
     rel = @defaultRel()
     orderings = []
@@ -156,7 +155,7 @@ module.exports = class SUDQuery extends BaseQuery
         when 'desc', 'descending' then 'DESC'
         when '' then ''
         else throw new Error "Unsupported ordering direction #{direction}"
-      @q.orderBy.addNode new OrderBy(rel.project(field), direction)
+      @q.orderBy.addNode new OrderBy(@project(field), direction)
 
   limit: (l) ->
     ### Set the LIMIT on this query ###

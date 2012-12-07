@@ -1,7 +1,7 @@
 Gesundheit - Concise SQL generation for node.js
 ===============================================
 
-.. image:: https://secure.travis-ci.org/BetSmartMedia/gesundheit.png?branch=any-db
+.. image:: https://secure.travis-ci.org/BetSmartMedia/gesundheit.png?branch=master
   :target: http://travis-ci.org/BetSmartMedia/gesundheit
 
 Gesundheit generates SQL using a sugary API for managing the abstract syntax

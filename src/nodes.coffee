@@ -482,7 +482,8 @@ getAlias = (o) ->
     return keys[0] if keys.length == 1
   return null
 
-text = do (re = /\$([\w]+)\b/g) -> (rawSQL, bindVals) ->
+paramRegexp = /\$([\w]+)\b/g
+text = (rawSQL, bindVals) ->
   ###
   Construct a node with a raw SQL string and (optionally) parameters. Useful for
   when you want to construct a query that is difficult or impossible with the
@@ -518,11 +519,11 @@ text = do (re = /\$([\w]+)\b/g) -> (rawSQL, bindVals) ->
   ###
   nodes = []
   lastIndex = 0
-  while match = re.exec rawSQL
+  while match = paramRegexp.exec rawSQL
     if match.index > lastIndex
       nodes.push new ValueNode rawSQL.substring(lastIndex, match.index)
     nodes.push new Parameter bindVals[match[1]]
-    lastIndex = re.lastIndex
+    lastIndex = paramRegexp.lastIndex
 
   if lastIndex is 0
     new ValueNode rawSQL

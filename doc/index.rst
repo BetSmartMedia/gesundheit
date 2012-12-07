@@ -8,7 +8,7 @@ Gesundheit!
 
 .. include:: ../README.rst
   :start-after: ===============================================
-  :end-before: A quick example
+  :end-before: quick example
 
 Contents:
 
@@ -103,6 +103,16 @@ set the global default engine for the module like so::
   gesundheit.select('departments', ['name', 'manager_id'])
 
 .. _using-aliases:
+
+A quick note on async, errors and ``throw``
+-------------------------------------------
+
+**Gesundheit throws exceptions at pretty much every opportunity**. The only time
+an error is returned to a callback or emitted via event emitter is when a query
+is actually executed. Any error that gesundheit can detect at query building
+time will cause an exception to be thrown. This keeps the query building API's
+straightforward and synchronous, and means gesundheit can prevent your code from
+continuing to run with an obviously broken query.
 
 Aliasing tables and fields
 --------------------------

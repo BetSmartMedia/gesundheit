@@ -518,7 +518,6 @@ text = do (re = /\$([\w]+)\b/g) -> (rawSQL, bindVals) ->
   ###
   nodes = []
   lastIndex = 0
-  debugger
   while match = re.exec rawSQL
     if match.index > lastIndex
       nodes.push new ValueNode rawSQL.substring(lastIndex, match.index)

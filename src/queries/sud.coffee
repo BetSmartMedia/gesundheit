@@ -106,7 +106,6 @@ module.exports = class SUDQuery extends BaseQuery
       if field is 'and'
         clauses.push new And @_makeClauses(predicate)
       else if field is 'or'
-        debugger
         clauses.push new Or @_makeClauses(predicate)
       else
         column = @project field

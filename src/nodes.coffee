@@ -97,10 +97,13 @@ class FixedNamedNodeSet extends FixedNodeSet
     for i, [k, _] of @constructor.structure
       c[k] = c.nodes[i]
     return c
-    
+
+class ParenthesizedNodeSet extends NodeSet
+  ### A NodeSet wrapped in parenthesis. ###
+
 # End of generic base classes
 
-SqlFunction = class SqlFunction extends Node
+class SqlFunction extends Node
   ### Includes :class:`nodes::ComparableMixin` ###
   constructor: (@name, @arglist) ->
   copy: -> new @constructor @name, copy(@arglist)
@@ -111,7 +114,7 @@ class Alias extends Node
 
      table = new Relation('my_table_with_a_long_name')
      alias = new Alias(table, 'mtwaln')
- 
+
   ###
   constructor: (@obj, @alias) ->
   copy: -> new @constructor copy(@obj), @alias
@@ -163,9 +166,6 @@ class Binary extends FixedNodeSet
   or: ->
     new Or [@, args...]
 
-class ParenthesizedNodeSet extends NodeSet
-  ### A NodeSet wrapped in parenthesis. ###
-
 class Tuple extends ParenthesizedNodeSet
   ### A tuple node. e.g. (col1, col2) ###
   glue: ', '
@@ -192,7 +192,7 @@ class SelectProjectionSet extends ProjectionSet
         if not predicate node then @nodes.push node
       else if node instanceof Alias
         if not predicate node.obj then @nodes.push node
-  
+
 #######
 class RelationSet extends NodeSet
   ###
@@ -311,7 +311,7 @@ class Update extends FixedNamedNodeSet
 
 class InsertData extends NodeSet
   glue: ', '
-  
+
 class Insert extends FixedNamedNodeSet
   @structure = [
     ['relation',  Relation]
@@ -347,8 +347,8 @@ class Insert extends FixedNamedNodeSet
     array = for f in @columns.nodes
       if row[f]? or row[f] == null then row[f] else CONST_NODES.DEFAULT
     @addRowArray array
-    
-      
+
+
 class Delete extends FixedNamedNodeSet
   @structure = [
     ['relations', RelationSet]
@@ -397,7 +397,7 @@ toParam = (it) ->
     * SelectQuery instances will be treated as un-named sub queries,
     * Node instances will be returned unchanged.
     * Arrays will be turned into a :class:`nodes::Tuple` instance.
-  
+
   All other types will be wrapped in a :class:`nodes::Parameter` instance.
   ###
   SelectQuery = require './queries/select'
@@ -412,14 +412,14 @@ toRelation = (it) ->
 
   This accepts `strings, `Relation`` and ``Alias`` instances, and objects with
   a single key-value pair, which will be turned into an ``Alias`` instance.
-  
+
   Examples::
-  
+
      toRelation('some_table')     # new Relation('some_table')
      toRelation(st: 'some_table') # new Alias(Relation('some_table'), 'st')
      toRelation(new Relation('some_table')) # returns same instance
      toRelation(new Alias(new Relation('some_table'), 'al') # returns same instance
- 
+
   **Throws Errors** if the input is not valid.
   ###
   switch it.constructor

@@ -43,6 +43,7 @@
 <li><a class="reference internal" href="#compiling-executing">Compiling &amp; Executing</a></li>
 <li><a class="reference internal" href="#using-a-real-database">Using a real database</a></li>
 <li><a class="reference internal" href="#aliasing-tables-and-fields">Aliasing tables and fields</a></li>
+<li><a class="reference internal" href="#a-quick-note-on-async-errors-and-throw">A quick note on async, errors and <tt class="docutils literal"><span class="pre">throw</span></tt></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-queries/index::">Query Building API reference</a><ul>
@@ -67,7 +68,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#engines-and-binding">Engines and Binding</a><ul>
-<li><a class="reference internal" href="#module-engine::">Engines</a></li>
+<li><a class="reference internal" href="#module-engine::">Engine API Reference</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-dialects::">Dialects</a></li>
@@ -93,6 +94,12 @@
             
   <div class="section" id="gesundheit">
 <h1>Gesundheit!<a class="headerlink" href="#gesundheit" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="http://travis-ci.org/BetSmartMedia/gesundheit"><img alt="https://secure.travis-ci.org/BetSmartMedia/gesundheit.png?branch=master" src="https://secure.travis-ci.org/BetSmartMedia/gesundheit.png?branch=master" /></a>
+<p>Gesundheit generates SQL using a sugary API for managing the abstract syntax
+tree of a statement. After building your statement programmatically, gesundheit
+can compile it to a string or execute it against your database for you, using
+proper bound parameters and allowing for streaming of results.</p>
+<p>Here&#8217;s a</p>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul class="current">
@@ -105,6 +112,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#compiling-executing">Compiling &amp; Executing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-a-real-database">Using a real database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#aliasing-tables-and-fields">Aliasing tables and fields</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a-quick-note-on-async-errors-and-throw">A quick note on async, errors and <tt class="docutils literal"><span class="pre">throw</span></tt></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-queries/index::">Query Building API reference</a><ul>
@@ -117,7 +125,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#engines-and-binding">Engines and Binding</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-engine::">Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-engine::">Engine API Reference</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-dialects::">Dialects</a></li>
@@ -157,13 +165,19 @@ interface yourself.</dd>
 <dd><p class="first">These come from the <a class="reference external" href="Nodes">nodes</a> module and are often useful when
 constructing queries that the query manager classes don&#8217;t cover as well:</p>
 <blockquote class="last">
-<div><ul class="simple">
-<li><a class="reference internal" href="#nodes::toParam" title="nodes::toParam"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toParam</span></tt></a></li>
-<li><a class="reference internal" href="#nodes::toRelation" title="nodes::toRelation"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toRelation</span></tt></a></li>
-<li><a class="reference internal" href="#nodes::binaryOp" title="nodes::binaryOp"><tt class="xref coffee coffee-func docutils literal"><span class="pre">binaryOp</span></tt></a></li>
-<li><a class="reference internal" href="#nodes::sqlFunction" title="nodes::sqlFunction"><tt class="xref coffee coffee-func docutils literal"><span class="pre">sqlFunction</span></tt></a></li>
-<li><tt class="xref coffee coffee-func docutils literal"><span class="pre">text</span></tt></li>
-</ul>
+<div><dl class="docutils">
+<dt><a class="reference internal" href="#nodes::toParam" title="nodes::toParam"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toParam</span></tt></a></dt>
+<dd>Convert any object to a parameter placeholder.</dd>
+<dt><a class="reference internal" href="#nodes::toRelation" title="nodes::toRelation"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toRelation</span></tt></a></dt>
+<dd>Convert various inputs to <a class="reference internal" href="#nodes::Relation" title="nodes::Relation"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt></a> nodes.</dd>
+<dt><a class="reference internal" href="#nodes::binaryOp" title="nodes::binaryOp"><tt class="xref coffee coffee-func docutils literal"><span class="pre">binaryOp</span></tt></a></dt>
+<dd>Create a binary comparison node manually.  (e.g. for postgres&#8217; custom
+operators).</dd>
+<dt><a class="reference internal" href="#nodes::sqlFunction" title="nodes::sqlFunction"><tt class="xref coffee coffee-func docutils literal"><span class="pre">sqlFunction</span></tt></a></dt>
+<dd>Create SQL function calls (e.g. <tt class="docutils literal"><span class="pre">MAX(last_update)</span></tt>)</dd>
+<dt><a class="reference internal" href="#nodes::text" title="nodes::text"><tt class="xref coffee coffee-func docutils literal"><span class="pre">text</span></tt></a></dt>
+<dd>Include raw SQL in a query, with parameter placeholders.</dd>
+</dl>
 </div></blockquote>
 </dd>
 </dl>
@@ -214,18 +228,18 @@ list we call <a class="reference internal" href="#queries/select::SelectQuery.fi
 <span class="p">)</span>
 </pre></div>
 </div>
-<p><cite>(there are no bound parameters in our query yet)</cite></p>
+<p><cite>(there are no parameters to our query yet)</cite></p>
 <p>Most often you don&#8217;t really care about the SQL string and params themselves, but
 want result of performing the query on an actual database. In that case you
 simply use the <tt class="docutils literal"><span class="pre">.execute</span></tt> method:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">execute</span> <span class="nf">(err, res) -&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="p">{</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">}</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">execute</span><span class="p">(</span><span class="nx">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">})</span>
 </pre></div>
 </div>
 <p>&#8220;but...&#8221; you might be saying, &#8220;gesundheit can&#8217;t know how connect to my database
 all on it&#8217;s own!&#8221; and you are 100% correct. In order to execute against a real
-database the query must be <cite>bound</cite> to an <tt class="xref coffee coffee-mod docutils literal"><span class="pre">engine</span></tt>. Queries are bound to an
-engine when they are created <a class="footnote-reference" href="#id4" id="id2">[2]</a> and use that engine for rendering and
-executing themselves.</p>
+database the query must be <cite>bound</cite> to an <a class="reference internal" href="#engine::Engine" title="engine::Engine"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Engine</span></tt></a>. Queries are
+bound to an engine when they are created <a class="footnote-reference" href="#id4" id="id2">[2]</a> and use that engine for rendering
+and executing themselves.</p>
 </div>
 <div class="section" id="using-a-real-database">
 <span id="engine-usage-example"></span><h2>Using a real database<a class="headerlink" href="#using-a-real-database" title="Permalink to this headline">¶</a></h2>
@@ -280,11 +294,20 @@ this should only be used if you know what you&#8217;re doing and why.</td></tr>
 </tbody>
 </table>
 </div>
+<div class="section" id="a-quick-note-on-async-errors-and-throw">
+<h2>A quick note on async, errors and <tt class="docutils literal"><span class="pre">throw</span></tt><a class="headerlink" href="#a-quick-note-on-async-errors-and-throw" title="Permalink to this headline">¶</a></h2>
+<p><strong>Gesundheit throws exceptions at pretty much every opportunity</strong>. The only time
+an error is returned to a callback or emitted via event emitter is when a query
+is actually executed. Any error that gesundheit can detect at query building
+time will cause an exception to be thrown. This keeps the query building API&#8217;s
+straightforward and synchronous, and means gesundheit can prevent your code from
+continuing to run with an obviously broken query.</p>
+</div>
 </div>
 <div class="section" id="module-queries/index::">
 <span id="query-building-api-reference"></span><h1>Query Building API reference<a class="headerlink" href="#module-queries/index::" title="Permalink to this headline">¶</a></h1>
-<p>Queries are build using the factory functions in this module
-The query manager classes use the following inheritance hierarchy:</p>
+<p>The factory functions defined here create instances of the corresponding
+<cite>*Query</cite> manager classes, which fit the following inheritance hierarchy:</p>
 <blockquote>
 <div><ul class="simple">
 <li>BaseQuery<ul>
@@ -299,10 +322,13 @@ The query manager classes use the following inheritance hierarchy:</p>
 </li>
 </ul>
 </div></blockquote>
-<p>The query factory functions defined here are re-exported by the main gesundheit
-module. They each accept an optional visitor callback as a final parameter that
-will be passed to the <a class="reference internal" href="#queries/base::BaseQuery.visit" title="queries/base::BaseQuery.visit"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.visit</span></tt></a> method of the
-newly created query.</p>
+<p id="query-factories">These functions are the same ones re-exported by the main gesundheit module
+(where they bind queries to <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</span></tt>), and attached to
+engine/transaction objects (where they bind queries to the engine/transaction
+they are called on).</p>
+<p>Each one accepts an optional visitor callback as a final parameter that will be
+passed to the <a class="reference internal" href="#queries/base::BaseQuery.visit" title="queries/base::BaseQuery.visit"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.visit</span></tt></a> method of the newly created
+query.</p>
 <dl class="function">
 <dt id="queries/index::INSERT">
 <em class="property">function </em><tt class="descname">INSERT</tt><big>(</big><em>table</em>, <em>fieldsOrRow</em><big>)</big><a class="headerlink" href="#queries/index::INSERT" title="Permalink to this definition">¶</a></dt>
@@ -313,6 +339,7 @@ newly created query.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>table</strong> &#8211; Name of the table that rows will be inserted into.</li>
 <li><strong>fieldsOrRow</strong> &#8211; Either an array of column names that will be inserted, or a
 plain object representing a row of data to insert, in which case the keys
 of the object will define the columns that are inserted.</li>
@@ -334,7 +361,8 @@ set to the newly constructed query object.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>table</strong> &#8211; Table name to select rows from.</li>
+<li><strong>table</strong> &#8211; Name or alias object of the first table to select rows from.
+More tables can be joined using <a class="reference internal" href="#queries/select::SelectQuery.join" title="queries/select::SelectQuery.join"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.join</span></tt></a>.</li>
 <li><strong>fields</strong> &#8211; (Optional) Fields to project from <tt class="docutils literal"><span class="pre">table</span></tt>. If this is not
 given, all fields (<tt class="docutils literal"><span class="pre">*</span></tt>) will be projected until
 <a class="reference internal" href="#queries/select::SelectQuery.fields" title="queries/select::SelectQuery.fields"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.fields</span></tt></a> is called.</li>
@@ -356,6 +384,7 @@ set to the newly constructed query object.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>table</strong> &#8211; Name or alias of the table to update.</li>
 <li><strong>visitor</strong> &#8211; (Optional) a function that will be called with it&#8217;s context
 set to the newly constructed query object.</li>
 </ul>
@@ -375,6 +404,7 @@ set to the newly constructed query object.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>table</strong> &#8211; Name or alias of the table to delete rows from.</li>
 <li><strong>visitor</strong> &#8211; (Optional) a function that will be called with it&#8217;s context
 set to the newly constructed query object.</li>
 </ul>
@@ -517,8 +547,8 @@ multiple tables.</p>
 <dt id="queries/sud::SUDQuery">
 <em class="property">class </em><tt class="descname">SUDQuery</tt><em class="property"> extends </em><a class="reference internal" href="#queries/base::BaseQuery" title="queries/base::BaseQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">BaseQuery</span></tt></a><a class="headerlink" href="#queries/sud::SUDQuery" title="Permalink to this definition">¶</a></dt>
 <dd><p>SUDQuery is the base class for SELECT, UPDATE, and DELETE queries. It adds
-logic to <a class="reference internal" href="#queries/base::BaseQuery" title="queries/base::BaseQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">BaseQuery</span></tt></a> for dealing with WHERE clauses and
-ordering.</p>
+logic to <a class="reference internal" href="#queries/base::BaseQuery" title="queries/base::BaseQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">BaseQuery</span></tt></a> for adding WHERE clauses, projecting
+columns, ordering, limits, and offsets.</p>
 <dl class="method">
 <dt id="queries/sud::SUDQuery.where">
 <em class="property">method </em><tt class="descname">SUDQuery.where</tt><big>(</big><em>constraint</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.where" title="Permalink to this definition">¶</a></dt>
@@ -546,7 +576,7 @@ object looks like this:</p>
 </pre></div>
 </div>
 <p>Internally this constructs the comparison nodes for you using a simple
-transformation: each key is passed to project (meaning you can specify the
+transformation: each key is passed to <tt class="xref coffee coffee-meth docutils literal"><span class="pre">project</span></tt> (meaning you can specify the
 relation name as part of the key if you so desire) and each value is either
 used as the argument to <a class="reference internal" href="#nodes::ComparableMixin.eq" title="nodes::ComparableMixin.eq"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">ComparableMixin.eq</span></tt></a> or (in the case of
 object literals) converted into one or more calls to the corresponding
@@ -605,12 +635,11 @@ array of constraints.</p>
 <dl class="method">
 <dt id="queries/sud::SUDQuery.order">
 <em class="property">method </em><tt class="descname">SUDQuery.order</tt><big>(</big><em>args...</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.order" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add an ORDER BY to the query. Currently this <em>always</em> uses the &#8220;active&#8221;
-table of the query. (See <tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.from</span></tt>)</p>
+<dd><p>Add an ORDER BY to the query.</p>
 <p>Each ordering can either be a string, in which case it must be a valid-ish
-SQL snippet like &#8216;some_field DESC&#8217;, (the field name and direction will still
-be normalized) or an object, in which case each key will be treated as a
-field and each value as a direction.</p>
+SQL snippet like &#8216;some_table.some_field DESC&#8217;, (the field name and direction
+will still be converted to AST nodes) or an object, in which case each key
+will be treated as a field and each value as a direction.</p>
 </dd></dl>
 
 <dl class="method">
@@ -697,7 +726,7 @@ table refocus it with <a class="reference internal" href="#queries/select::Selec
 </div>
 <p>The entire query can also be written using <a class="reference internal" href="#queries/base::BaseQuery.visit" title="queries/base::BaseQuery.visit"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.visit</span></tt></a>
 (and less punctuation) like so:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">men_with_light_recliners = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;chairs&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;chair_type&#39;</span><span class="p">,</span> <span class="s">&#39;size&#39;</span><span class="p">]).</span><span class="nx">visit</span> <span class="o">-&gt;</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">men_with_light_recliners = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;chairs&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;chair_type&#39;</span><span class="p">,</span> <span class="s">&#39;size&#39;</span><span class="p">],</span> <span class="o">-&gt;</span>
   <span class="nx">@where</span> <span class="nv">chair_type: </span><span class="s">&#39;recliner&#39;</span><span class="p">,</span> <span class="nv">weight: </span><span class="p">{</span><span class="nv">lt: </span><span class="mi">25</span><span class="p">}</span>
   <span class="nx">@join</span> <span class="s">&quot;people&quot;</span><span class="p">,</span>
     <span class="kc">on</span><span class="o">:</span> <span class="p">{</span><span class="nv">chair_id: </span><span class="nx">@project</span><span class="p">(</span><span class="s">&#39;chairs&#39;</span><span class="p">,</span> <span class="s">&#39;id&#39;</span><span class="p">)},</span>
@@ -824,11 +853,9 @@ already part of the query an error will be thrown.</li>
 <h3>Examples<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <p>Updating rows that match a condition:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">update</span><span class="p">(</span><span class="s">&#39;tweeters&#39;</span><span class="p">)</span>            <span class="c1"># UPDATE tweeters</span>
-  <span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nv">influential: </span><span class="kc">true</span><span class="p">)</span>     <span class="c1"># SET tweeters.influential = true</span>
-  <span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nv">followers: gt: </span><span class="mi">1000</span><span class="p">)</span> <span class="c1"># WHERE tweeters.followers &gt; 1000;</span>
-  <span class="p">.</span><span class="nx">execute</span> <span class="nf">(err, res) -&gt;</span>
-    <span class="k">throw</span> <span class="nx">err</span> <span class="k">if</span> <span class="nx">err</span>
-    <span class="c1"># Woohoo</span>
+  <span class="p">.</span><span class="nx">set</span><span class="p">({</span><span class="nv">influential: </span><span class="kc">true</span><span class="p">})</span>     <span class="c1"># SET tweeters.influential = true</span>
+  <span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">followers: </span><span class="p">{</span><span class="nv">gt: </span><span class="mi">1000</span><span class="p">}})</span> <span class="c1"># WHERE tweeters.followers &gt; 1000;</span>
+  <span class="p">.</span><span class="nx">execute</span><span class="p">(</span><span class="nx">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="sr">/* ... */</span> <span class="p">})</span>
 </pre></div>
 </div>
 </div>
@@ -895,15 +922,52 @@ apps that deal with a single database, you can simply create an engine instance
 during application startup, assign it to <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</span></tt> and not
 have to think about binding after that.</p>
 <div class="section" id="module-engine::">
-<span id="engines"></span><h2>Engines<a class="headerlink" href="#module-engine::" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="engine::module.exports">
-<em class="property">function </em><tt class="descname">module.exports</tt><big>(</big><em>dbUrl</em>, <em>poolOptions</em><big>)</big><a class="headerlink" href="#engine::module.exports" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create an engine using an <a class="reference external" href="https://github.com/grncdr/node-any-db">Any-DB</a>
-connect string and connection pool options, this is exported by gesundheit
-as <tt class="docutils literal"><span class="pre">gesundheit.engine(...)</span></tt>.</p>
-<p>In addition to the drivers supported by Any-DB, gesundheit includes (and
-defaults to using) a &#8220;fake&#8221; engine that only renders SQL strings.</p>
+<span id="engine-api-reference"></span><h2>Engine API Reference<a class="headerlink" href="#module-engine::" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="engine::Engine">
+<em class="property">class </em><tt class="descname">Engine</tt><a class="headerlink" href="#engine::Engine" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">Engine</span></tt> is gesundheits interface to an actual database.</p>
+<p>Engines have all of the <a class="reference internal" href="#query-factories"><em>query factory functions</em></a>
+attached to them as instance methods that automatically bind created queries
+to the engine. They also have these additionaly methods</p>
+<dl class="staticmethod">
+<dt id="engine::Engine.create">
+<em class="property">static method </em><tt class="descname">Engine.create</tt><big>(</big><em>dbUrl</em>, <em>poolOptions</em><big>)</big><a class="headerlink" href="#engine::Engine.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an <a class="reference internal" href="#engine::Engine" title="engine::Engine"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Engine</span></tt></a> instance from an <a class="reference external" href="https://github.com/grncdr/node-any-db">Any-DB</a>
+connect string and extra connection pool options, this is exported by
+gesundheit as <tt class="docutils literal"><span class="pre">gesundheit.engine(...)</span></tt>.</p>
+<p><a class="reference internal" href="#engine-usage-example"><em>This example</em></a> shows the most common way to set up
+a single default database engine for an application.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="engine::Engine.query">
+<em class="property">method </em><tt class="descname">Engine.query</tt><big>(</big><em>statement</em>, <em>params</em>, <em>callback</em><big>)</big><a class="headerlink" href="#engine::Engine.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Passes arguments directly to the query method of the underlying <a class="reference external" href="https://github.com/grncdr/node-any-db/blob/master/DESIGN.md#connectionpool">Any-DB
+ConnectionPool</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="engine::Engine.begin">
+<em class="property">method </em><tt class="descname">Engine.begin</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#engine::Engine.begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start a new transaction and return it.</p>
+<p>The returned object behaves exactly like a new engine, but has <tt class="docutils literal"><span class="pre">commit</span></tt>
+and <tt class="docutils literal"><span class="pre">rollback</span></tt> methods instead of <tt class="docutils literal"><span class="pre">close</span></tt>. (In fact it&#8217;s an <a class="reference external" href="https://github.com/grncdr/node-any-db/blob/master/DESIGN.md#transaction">Any-DB
+Transaction</a> that has had the query factory functions mixed in to it).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="engine::Engine.render">
+<em class="property">method </em><tt class="descname">Engine.render</tt><big>(</big><em>root</em><big>)</big><a class="headerlink" href="#engine::Engine.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render an AST to a SQL string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="engine::Engine.close">
+<em class="property">method </em><tt class="descname">Engine.close</tt><big>(</big><big>)</big><a class="headerlink" href="#engine::Engine.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the internal connection pool.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="function">
@@ -920,14 +984,7 @@ with <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</sp
 <span id="dialects"></span><h1>Dialects<a class="headerlink" href="#module-dialects::" title="Permalink to this headline">¶</a></h1>
 <p>Dialects are responsible for rendering an AST to a SQL string compatible with
 a particular DBMS. They are rarely used directly, instead a query is usually bound
-to an <a class="reference external" href="Engines">engine</a> that will delegate rendering to a private dialect
-instance.</p>
-<dl class="class">
-<dt id="dialects::PostgresDialect">
-<em class="property">class </em><tt class="descname">PostgresDialect</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">AnyDBDialect</span></tt><a class="headerlink" href="#dialects::PostgresDialect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Specialization of BaseDialect for Postgres</p>
-</dd></dl>
-
+to an <a class="reference external" href="Engines">engine</a> that will delegate rendering to it&#8217;s dialect instance.</p>
 </div>
 <div class="section" id="id9">
 <h1>Nodes<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h1>
@@ -985,20 +1042,6 @@ so desire.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="nodes::FixedNodeSet">
-<em class="property">class </em><tt class="descname">FixedNodeSet</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::NodeSet" title="nodes::NodeSet"><tt class="xref coffee coffee-class docutils literal"><span class="pre">NodeSet</span></tt></a><a class="headerlink" href="#nodes::FixedNodeSet" title="Permalink to this definition">¶</a></dt>
-<dd><p>A NodeSet that disables the <tt class="docutils literal"><span class="pre">addNode</span></tt> method after construction.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="nodes::FixedNamedNodeSet">
-<em class="property">class </em><tt class="descname">FixedNamedNodeSet</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::FixedNodeSet" title="nodes::FixedNodeSet"><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNodeSet</span></tt></a><a class="headerlink" href="#nodes::FixedNamedNodeSet" title="Permalink to this definition">¶</a></dt>
-<dd><p>A FixedNodeSet that instantiates a set of nodes defined by the class member
-<tt class="docutils literal"><span class="pre">&#64;structure</span></tt> when it it instantiated.</p>
-<p>See <tt class="xref coffee coffee-class docutils literal"><span class="pre">Select</span></tt> for example.</p>
-</dd></dl>
-
-<dl class="class">
 <dt id="nodes::SqlFunction">
 <em class="property">class </em><tt class="descname">SqlFunction</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">Node</span></tt><a class="headerlink" href="#nodes::SqlFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Includes <a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a></p>
@@ -1032,14 +1075,8 @@ alias = new Alias(table, &#8216;mtwaln&#8217;)</p>
 
 <dl class="class">
 <dt id="nodes::Projection">
-<em class="property">class </em><tt class="descname">Projection</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::FixedNodeSet" title="nodes::FixedNodeSet"><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNodeSet</span></tt></a><a class="headerlink" href="#nodes::Projection" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Projection</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNodeSet</span></tt><a class="headerlink" href="#nodes::Projection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Includes <a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a></p>
-</dd></dl>
-
-<dl class="class">
-<dt id="nodes::Tuple">
-<em class="property">class </em><tt class="descname">Tuple</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">ParenthesizedNodeSet</span></tt><a class="headerlink" href="#nodes::Tuple" title="Permalink to this definition">¶</a></dt>
-<dd><p>A tuple node. e.g. (col1, col2)</p>
 </dd></dl>
 
 <dl class="class">
@@ -1052,6 +1089,38 @@ alias = new Alias(table, &#8216;mtwaln&#8217;)</p>
 <dt id="nodes::RelationSet">
 <em class="property">class </em><tt class="descname">RelationSet</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::NodeSet" title="nodes::NodeSet"><tt class="xref coffee coffee-class docutils literal"><span class="pre">NodeSet</span></tt></a><a class="headerlink" href="#nodes::RelationSet" title="Permalink to this definition">¶</a></dt>
 <dd><p>Manages a set of relations and exposes methods to find them by alias.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nodes::Select">
+<em class="property">class </em><tt class="descname">Select</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNamedNodeSet</span></tt><a class="headerlink" href="#nodes::Select" title="Permalink to this definition">¶</a></dt>
+<dd><p>The root node of a SELECT query</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nodes::Update">
+<em class="property">class </em><tt class="descname">Update</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNamedNodeSet</span></tt><a class="headerlink" href="#nodes::Update" title="Permalink to this definition">¶</a></dt>
+<dd><p>The root node of an UPDATE query</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nodes::Insert">
+<em class="property">class </em><tt class="descname">Insert</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNamedNodeSet</span></tt><a class="headerlink" href="#nodes::Insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>The root node of an INSERT query</p>
+<dl class="method">
+<dt id="nodes::Insert.addRowObject">
+<em class="property">method </em><tt class="descname">Insert.addRowObject</tt><big>(</big><em>row</em><big>)</big><a class="headerlink" href="#nodes::Insert.addRowObject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a row from an object. This will set the column list of the query if it
+isn&#8217;t set yet. If it <cite>is</cite> set, then only keys matching the existing column
+list will be inserted.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nodes::Delete">
+<em class="property">class </em><tt class="descname">Delete</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNamedNodeSet</span></tt><a class="headerlink" href="#nodes::Delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>The root node of a DELETE query</p>
 </dd></dl>
 
 <dl class="class">
@@ -1109,9 +1178,10 @@ methods will yield a new AST node comparing the invocant to the argument.</p>
 <dd><p>Return a Node that can be used as a parameter.</p>
 <blockquote>
 <div><ul class="simple">
-<li>SelectQuery instances will be treated as un-named sub queries,</li>
+<li><a class="reference internal" href="#queries/select::SelectQuery" title="queries/select::SelectQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SelectQuery</span></tt></a> instances will be treated as
+un-named sub queries,</li>
 <li>Node instances will be returned unchanged.</li>
-<li>Arrays will be turned into a <a class="reference internal" href="#nodes::Tuple" title="nodes::Tuple"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Tuple</span></tt></a> instance.</li>
+<li>Arrays will be turned into a <tt class="xref coffee coffee-class docutils literal"><span class="pre">Tuple</span></tt> instance.</li>
 </ul>
 </div></blockquote>
 <p>All other types will be wrapped in a <tt class="xref coffee coffee-class docutils literal"><span class="pre">Parameter</span></tt> instance.</p>
@@ -1161,6 +1231,38 @@ alias name if it is.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="nodes::text">
+<em class="property">function </em><tt class="descname">text</tt><big>(</big><em>rawSQL</em>, <em>bindVals</em><big>)</big><a class="headerlink" href="#nodes::text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a node with a raw SQL string and (optionally) parameters. Useful for
+when you want to construct a query that is difficult or impossible with the
+normal APIs. <a href="#id11"><span class="problematic" id="id12"><span id="id10"></span>[#]_</span></a></p>
+<p>To use bound parameters in the SQL string, use <tt class="docutils literal"><span class="pre">$</span></tt> prefixed names, and
+pass a <tt class="docutils literal"><span class="pre">bindVals</span></tt> argument with corresponding property names. For example,
+<a class="reference internal" href="#queries/sud::SUDQuery.where" title="queries/sud::SUDQuery.where"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.where</span></tt></a> doesn&#8217;t (currently) support the SQL
+<tt class="docutils literal"><span class="pre">BETWEEN</span></tt> operator, but if you needed it, you could use <tt class="docutils literal"><span class="pre">text</span></tt>:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">function</span> <span class="nx">peopleInWeightRange</span> <span class="p">(</span><span class="nx">min</span><span class="p">,</span> <span class="nx">max</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">select</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">text</span><span class="p">(</span><span class="s">&quot;weight BETWEEN $min AND $max&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nv">min: </span><span class="nx">min</span><span class="p">,</span> <span class="nv">max: </span><span class="nx">max</span><span class="p">}))</span>
+    <span class="p">.</span><span class="nx">execute</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Because javascript doesn&#8217;t distinguish between array indexing and property
+access, it can be more clear to use numbered parameters for such short
+snippets:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">function</span> <span class="nx">peopleInWeightRange</span> <span class="p">(</span><span class="nx">min</span><span class="p">,</span> <span class="nx">max</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">select</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">text</span><span class="p">(</span><span class="s">&quot;weight BETWEEN $0 AND $1&quot;</span><span class="p">,</span> <span class="p">[</span><span class="nx">min</span><span class="p">,</span> <span class="nx">max</span><span class="p">]))</span>
+    <span class="p">.</span><span class="nx">execute</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>If you find yourself using this function often, please consider opening an
+issue on <a class="reference external" href="https://github.com/BetSmartMedia/gesundheit">Github</a> with details
+on your use case so gesundheit can support it more elegantly.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="nodes::binaryOp">
 <em class="property">function </em><tt class="descname">binaryOp</tt><big>(</big><em>left</em>, <em>op</em>, <em>right</em><big>)</big><a class="headerlink" href="#nodes::binaryOp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new <tt class="xref coffee coffee-class docutils literal"><span class="pre">Binary</span></tt> node:</p>
@@ -1168,20 +1270,8 @@ alias name if it is.</p>
 <span class="c1"># hstore_column -&gt; ?</span>
 </pre></div>
 </div>
-<div class="admonition-see-also admonition seealso">
-<p class="first admonition-title">See also</p>
-<dl class="last docutils">
-<dt><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.project</span></tt></dt>
-<dd>Returns <a class="reference internal" href="#nodes::Projection" title="nodes::Projection"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Projection</span></tt></a> objects that have comparison methods
-from <a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a>.</dd>
-</dl>
-</div>
-</dd></dl>
-
-<dl class="function">
-<dt id="nodes::copy">
-<em class="property">function </em><tt class="descname">copy</tt><big>(</big><em>it</em><big>)</big><a class="headerlink" href="#nodes::copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a deep copy of <tt class="docutils literal"><span class="pre">it</span></tt>.</p>
+<p>This is for special cases, normally you want to use the methods from
+<a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a>.</p>
 </dd></dl>
 
 </div>

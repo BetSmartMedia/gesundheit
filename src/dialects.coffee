@@ -1,8 +1,7 @@
 ###
 Dialects are responsible for rendering an AST to a SQL string compatible with
 a particular DBMS. They are rarely used directly, instead a query is usually bound
-to an `engine <Engines>`_ that will delegate rendering to a private dialect
-instance.
+to an `engine <Engines>`_ that will delegate rendering to it's dialect instance.
 ###
 
 fs = require('fs')
@@ -12,7 +11,7 @@ prefixIfNotEmpty = (prefix) ->
     children = @renderNodeSet node
     if children then prefix + children else ''
 
-exports.BaseDialect = class BaseDialect
+class BaseDialect
   ###
   A dialect that isn't specific to a particular DBMS, but used as a base for both
   MySQL and Postgres.
@@ -114,7 +113,7 @@ exports.BaseDialect = class BaseDialect
       when 'is' then 'IS'
       else throw new Error("Unsupported comparison operator: #{op}")
 
-exports.anyDB = class AnyDBDialect extends BaseDialect
+class AnyDBDialect extends BaseDialect
   {Select, Update, Delete, Insert} = require './nodes'
 
   render: (node) ->
@@ -125,14 +124,21 @@ exports.anyDB = class AnyDBDialect extends BaseDialect
   renderParameter: (node) ->
     "$#{@paramCount++}"
 
-exports.postgres = class PostgresDialect extends AnyDBDialect
-  ### Specialization of BaseDialect for Postgres ###
+class PostgresDialect extends AnyDBDialect
   renderOp: (op) ->
     switch op.toLowerCase()
       when 'hasKey' then '?'
       when '->' then '->'
       else super op
 
-exports.mysql = class MySQLDialect extends AnyDBDialect
+class MySQLDialect extends AnyDBDialect
 
-exports.sqlite3 = class SQLite3Dialect extends AnyDBDialect
+class SQLite3Dialect extends AnyDBDialect
+
+module.exports =
+  base: BaseDialect
+  anyDB: AnyDBDialect
+  postgres: PostgresDialect
+  mysql: MySQLDialect
+  sqlite3: SQLite3Dialect
+

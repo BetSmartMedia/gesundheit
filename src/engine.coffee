@@ -16,13 +16,14 @@ class Engine
 
   @create = (dbUrl, poolOptions) ->
     ###
-    Create an :class:`engine::Engine` instance from an `Any-DB <https://github.com/grncdr/node-any-db>`_
-    connect string and extra connection pool options, this is exported by
-    gesundheit as ``gesundheit.engine(...)``.
+    Create an :class:`engine::Engine` instance from an Any-DB_ connect string
+    and extra connection pool options, this is exported by gesundheit as
+    ``gesundheit.engine(...)``.
 
     :ref:`This example <engine-usage-example>` shows the most common way to set up
     a single default database engine for an application.
 
+    .. _Any-DB: https://github.com/grncdr/node-any-db
     .. _Any-DB ConnectionPool: https://github.com/grncdr/node-any-db/blob/master/DESIGN.md#connectionpool
     ###
     driverName = url.parse(dbUrl).protocol.replace(':', '').split('+').shift()

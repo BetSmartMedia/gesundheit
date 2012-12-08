@@ -23,8 +23,7 @@ class IntegerNode extends ValueNode
 
 class Identifier extends ValueNode
   ###
-  An identifier is a column or relation name, that may need to be quoted
-  in the SQL string.
+  An identifier is a column or relation name that may need to be quoted.
   ###
 
 CONST_NODES = {}
@@ -75,18 +74,14 @@ class NodeSet extends Node
     params
 
 class FixedNodeSet extends NodeSet
-  ### A NodeSet that disables the ``addNode`` method after construction. ###
+  # A NodeSet that disables the ``addNode`` method after construction.
   constructor: (nodes, glue) ->
     super nodes, glue
     @addNode = null
 
 class FixedNamedNodeSet extends FixedNodeSet
-  ###
-  A FixedNodeSet that instantiates a set of nodes defined by the class member
-  ``@structure`` when it it instantiated.
-
-  See :class:`nodes::Select` for example.
-  ###
+  # A FixedNodeSet that instantiates a set of nodes defined by the class member
+  # ``@structure`` when it it instantiated.
   constructor: ->
     nodes = for [k, type] in @constructor.structure
       @[k] = new type
@@ -167,7 +162,6 @@ class Binary extends FixedNodeSet
     new Or [@, args...]
 
 class Tuple extends ParenthesizedNodeSet
-  ### A tuple node. e.g. (col1, col2) ###
   glue: ', '
 
 class ProjectionSet extends NodeSet
@@ -284,6 +278,9 @@ class UpdateSet extends NodeSet
   constructor: (nodes) -> super nodes, ', '
 
 class Select extends FixedNamedNodeSet
+  ###
+  The root node of a SELECT query
+  ###
   @structure = [
     ['distinct',    Distinct]
     ['projections', SelectProjectionSet]
@@ -298,6 +295,9 @@ class Select extends FixedNamedNodeSet
   constructor: (rel) -> super(); @relations.start rel if rel
 
 class Update extends FixedNamedNodeSet
+  ###
+  The root node of an UPDATE query
+  ###
   @structure = [
     ['relation',  Relation]
     ['updates',   UpdateSet]
@@ -313,6 +313,9 @@ class InsertData extends NodeSet
   glue: ', '
 
 class Insert extends FixedNamedNodeSet
+  ###
+  The root node of an INSERT query
+  ###
   @structure = [
     ['relation',  Relation]
     ['columns',   Tuple]
@@ -341,15 +344,18 @@ class Insert extends FixedNamedNodeSet
   addRowObject: (row) ->
     ###
     Add a row from an object. This will set the column list of the query if it
-    isn't set yet. If it _is_ set, then only keys matching the existing column
+    isn't set yet. If it `is` set, then only keys matching the existing column
     list will be inserted.
     ###
     array = for f in @columns.nodes
-      if row[f]? or row[f] == null then row[f] else CONST_NODES.DEFAULT
+      if row[f]? or row[f] is null then row[f] else CONST_NODES.DEFAULT
     @addRowArray array
 
 
 class Delete extends FixedNamedNodeSet
+  ###
+  The root node of a DELETE query
+  ###
   @structure = [
     ['relations', RelationSet]
     ['where',     Where]
@@ -394,7 +400,8 @@ toParam = (it) ->
   ###
   Return a Node that can be used as a parameter.
 
-    * SelectQuery instances will be treated as un-named sub queries,
+    * :class:`queries/select::SelectQuery` instances will be treated as
+      un-named sub queries,
     * Node instances will be returned unchanged.
     * Arrays will be turned into a :class:`nodes::Tuple` instance.
 
@@ -510,12 +517,9 @@ text = (rawSQL, bindVals) ->
           .execute(callback)
       }
 
-  .. rubric:: Footnotes
-
-  .. [#] If you find yourself using this function often, please consider opening
-    an issue on `Github <https://github.com/BetSmartMedia/gesundheit>`_ with
-    details on your use case so gesundheit can support it more elegantly.
-
+  If you find yourself using this function often, please consider opening an
+  issue on `Github <https://github.com/BetSmartMedia/gesundheit>`_ with details
+  on your use case so gesundheit can support it more elegantly.
   ###
   nodes = []
   lastIndex = 0
@@ -538,12 +542,8 @@ binaryOp = (left, op, right) ->
     binaryOp('hstore_column', '->', toParam(y))
     # hstore_column -> ?
 
-  .. seealso::
-
-    :meth:`queries/select::SelectQuery.project`
-       Returns :class:`nodes::Projection` objects that have comparison methods
-       from :class:`nodes::ComparableMixin`.
-
+  This is for special cases, normally you want to use the methods from
+  :class:`nodes::ComparableMixin`.
   ###
   new Binary left, op, right
 
@@ -576,9 +576,7 @@ module.exports = {
 }
 
 copy = (it) ->
-  ###
-  Return a deep copy of ``it``.
-  ###
+  # Return a deep copy of ``it``.
   if not it then return it
   switch it.constructor
     when String, Number, Boolean then it

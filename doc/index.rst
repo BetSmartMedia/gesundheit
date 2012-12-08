@@ -8,7 +8,7 @@ Gesundheit!
 
 .. include:: ../README.rst
   :start-after: ===============================================
-  :end-before: quick example
+  :end-before: Here's a quick example
 
 Contents:
 
@@ -63,19 +63,19 @@ To turn the query object into a SQL string and array of bound parameters, we
     [ 'SELECT name, manager_id FROM departments', [] ]
   )
 
-`(there are no bound parameters in our query yet)`
+`(there are no parameters to our query yet)`
 
 Most often you don't really care about the SQL string and params themselves, but
 want result of performing the query on an actual database. In that case you
 simply use the ``.execute`` method::
 
-  query.execute (err, res) -> console.log {err, res}
+  query.execute(function (err, res) { console.log(err, res) })
 
 "but..." you might be saying, "gesundheit can't know how connect to my database
 all on it's own!" and you are 100% correct. In order to execute against a real
-database the query must be `bound` to an :mod:`engine`. Queries are bound to an
-engine when they are created [#]_ and use that engine for rendering and
-executing themselves.
+database the query must be `bound` to an :class:`engine::Engine`. Queries are
+bound to an engine when they are created [#]_ and use that engine for rendering
+and executing themselves.
 
 .. _engine-usage-example:
 
@@ -104,16 +104,6 @@ set the global default engine for the module like so::
 
 .. _using-aliases:
 
-A quick note on async, errors and ``throw``
--------------------------------------------
-
-**Gesundheit throws exceptions at pretty much every opportunity**. The only time
-an error is returned to a callback or emitted via event emitter is when a query
-is actually executed. Any error that gesundheit can detect at query building
-time will cause an exception to be thrown. This keeps the query building API's
-straightforward and synchronous, and means gesundheit can prevent your code from
-continuing to run with an obviously broken query.
-
 Aliasing tables and fields
 --------------------------
 
@@ -138,6 +128,15 @@ example of aliasing table and field names::
 .. [#] Queries can be rebound with :meth:`queries/base::BaseQuery.bind`, but
   this should only be used if you know what you're doing and why.
 
+A quick note on async, errors and ``throw``
+-------------------------------------------
+
+**Gesundheit throws exceptions at pretty much every opportunity**. The only time
+an error is returned to a callback or emitted via event emitter is when a query
+is actually executed. Any error that gesundheit can detect at query building
+time will cause an exception to be thrown. This keeps the query building API's
+straightforward and synchronous, and means gesundheit can prevent your code from
+continuing to run with an obviously broken query.
 
 Query Building API reference
 ============================
@@ -195,7 +194,7 @@ Ordering and limits are added with methods of the same name::
 The entire query can also be written using :meth:`queries/base::BaseQuery.visit`
 (and less punctuation) like so::
 
-  men_with_light_recliners = select('chairs', ['chair_type', 'size']).visit ->
+  men_with_light_recliners = select('chairs', ['chair_type', 'size'], ->
     @where chair_type: 'recliner', weight: {lt: 25}
     @join "people",
       on: {chair_id: @project('chairs', 'id')},
@@ -219,11 +218,9 @@ Examples
 Updating rows that match a condition::
 
   update('tweeters')            # UPDATE tweeters
-    .set(influential: true)     # SET tweeters.influential = true
-    .where(followers: gt: 1000) # WHERE tweeters.followers > 1000;
-    .execute (err, res) ->
-      throw err if err
-      # Woohoo
+    .set({influential: true})     # SET tweeters.influential = true
+    .where({followers: {gt: 1000}}) # WHERE tweeters.followers > 1000;
+    .execute(function (err) { /* ... */ })
 
 API
 ^^^
@@ -254,8 +251,8 @@ apps that deal with a single database, you can simply create an engine instance
 during application startup, assign it to ``gesundheit.defaultEngine`` and not
 have to think about binding after that.
 
-Engines
--------
+Engine API Reference
+--------------------
 
 .. automodule:: engine
 

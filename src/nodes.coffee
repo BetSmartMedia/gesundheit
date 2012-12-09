@@ -2,13 +2,18 @@
 These are the classes that represent nodes in the AST for a SQL statement.
 Application code should very rarely have to deal with these classes directly;
 Instead, the APIs exposed by the various query manager classes are intended to
-cover the majority of use-cases. However, in the spirit of "making hard things
-possible", the various AST nodes can be constructed and assembled manually if you
-so desire.
+cover the majority of use-cases.
+
+However, in the spirit of "making hard things possible", all of AST nodes are
+exported from this module so you can constructed and assemble them manually if
+you need to.
 ###
 
 class Node
   ### (Empty) base Node class ###
+  render: (dialect) ->
+    throw new Error "#{@constructor} has no render method. Parents: #{dialect.path}"
+
 
 class ValueNode extends Node
   ### A ValueNode is a literal string that should be printed unescaped. ###
@@ -20,6 +25,7 @@ class ValueNode extends Node
   render: -> @value
 
 class IntegerNode extends ValueNode
+  ### A :class:`nodes::ValueNode` that validates it's input is an integer. ###
   valid: -> not isNaN @value = parseInt @value
 
 class Identifier extends ValueNode
@@ -30,14 +36,14 @@ class Identifier extends ValueNode
     dialect.quote(@value)
 
 CONST_NODES = {}
-CONST_NODES[name] = new ValueNode name.replace '_', ' ' for name in [
+CONST_NODES[name] = new ValueNode(name.replace('_', ' ')) for name in [
   'DEFAULT', 'NULL', 'IS_NULL', 'IS_NOT_NULL'
 ]
 
 class JoinType extends ValueNode
 
 JOIN_TYPES = {}
-JOIN_TYPES[name] = new ValueNode name.replace '_', ' ' for name in [
+JOIN_TYPES[name] = new JoinType(name.replace('_', ' ')) for name in [
   'LEFT', 'RIGHT', 'INNER',
   'LEFT_OUTER', 'RIGHT_OUTER', 'FULL_OUTER'
   'NATURAL', 'CROSS'
@@ -343,11 +349,6 @@ class Ordering extends FixedNodeSet
   constructor: (projection, direction) ->
     super [projection, direction]
 
-class UpdateSet extends NodeSet
-  constructor: (nodes) -> super nodes, ', '
-  render: (dialect) ->
-    if string = super then "SET #{string}" else ""
-
 class Select extends Statement
   ###
   The root node of a SELECT query
@@ -373,6 +374,11 @@ class Update extends Statement
   ###
   @prefix = 'UPDATE '
 
+  class UpdateSet extends NodeSet
+    constructor: (nodes) -> super nodes, ', '
+    render: (dialect) ->
+      if string = super then "SET #{string}" else ""
+
   @structure = [
     ['relation',  Relation]
     ['updates',   UpdateSet]
@@ -382,12 +388,8 @@ class Update extends Statement
     ['where',     Where]
     ['returning', Returning]
   ]
-  constructor: (rel) -> super(); @relation = @nodes[0] = rel if rel
 
-class InsertData extends NodeSet
-  glue: ', '
-  render: (dialect) ->
-    if string = super then "VALUES #{string}" else ""
+  constructor: (rel) -> super(); @relation = @nodes[0] = rel if rel
 
 class Insert extends Statement
   ###
@@ -395,12 +397,18 @@ class Insert extends Statement
   ###
   @prefix = 'INSERT INTO '
 
+  class InsertData extends NodeSet
+    glue: ', '
+    render: (dialect) ->
+      if string = super then "VALUES #{string}" else ""
+
   @structure = [
     ['relation',  Relation]
     ['columns',   Tuple]
     ['source',    InsertData]
     ['returning', Returning]
   ]
+
   constructor: (rel) -> super(); @relation = @nodes[0] = rel if rel
 
   addRow: (row) ->
@@ -554,7 +562,7 @@ sqlFunction = (name, args) ->
   ###
   Create a new SQL function call node. For example::
 
-      count = sqlFunction('count', new ValueNode('*'))
+      count = sqlFunction('count', [new ValueNode('*')])
 
   ###
   new SqlFunction name, new Tuple(args)
@@ -640,20 +648,43 @@ module.exports = {
   toParam
 
   Node
+  ValueNode
+  IntegerNode
+  Identifier
+  JoinType
+  NodeSet
+  FixedNodeSet
+  Statement
+  ParenthesizedNodeSet
+  SqlFunction
+  Alias
   RelationAlias
   ProjectionAlias
-  And
-  Or
-  Join
-  Ordering
+  Parameter
+  Relation
+  Field
   Projection
+  Limit
+  Offset
+  Binary
   Tuple
-  Statement
-
+  ProjectionSet
+  Returning
+  Distinct
+  SelectProjectionSet
+  RelationSet
+  Join
+  Where
+  Or
+  And
+  GroupBy
+  OrderBy
+  Ordering
   Select
   Update
   Insert
   Delete
+  ComparableMixin
 }
 
 copy = (it) ->

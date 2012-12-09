@@ -8,7 +8,7 @@ Gesundheit!
 
 .. include:: ../README.rst
   :start-after: ===============================================
-  :end-before: quick example
+  :end-before: Here's a quick example
 
 Contents:
 
@@ -117,8 +117,18 @@ example of aliasing table and field names::
   # SELECT manager_id AS m_id FROM departments AS d;
   select({d: 'departments'}, [{m_id: 'manager_id'}])
 
-(This example also shows passing a list of fields to
-:func:`~queries/index::SELECT` as the second parameter).
+*(This example also shows passing a list of fields to
+:func:`~queries/index::SELECT` as the second parameter).*
+
+Conversely, if you are using :meth:`queries/sud::SUDQuery.project` to return a
+:class:`nodes::Projection` node, you can use :meth:`~nodes::Projection.as` to
+return an aliased version of the node::
+
+  q = select('departments')
+  q.fields(q.p('manager_id').as('m_id'))
+
+This also works with :class:`nodes::Relation` and :class:`nodes::SqlFunction`
+instances (as returned by :func:`nodes::sqlFunction`).
 
 .. rubric:: Footnotes
 

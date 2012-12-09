@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Gesundheit! &mdash; gesundheit 0.6.0-rc1 documentation</title>
+    <title>Gesundheit! &mdash; gesundheit 0.6.0-rc2 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.6.0-rc1',
+        VERSION:     '0.6.0-rc2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.6.0-rc1 documentation" href="#" />
+    <link rel="top" title="gesundheit 0.6.0-rc2 documentation" href="#" />
     <link rel="next" title="Gesundheit!" href="" /> 
   </head>
   <body>  
@@ -99,7 +99,6 @@
 tree of a statement. After building your statement programmatically, gesundheit
 can compile it to a string or execute it against your database for you, using
 proper bound parameters and allowing for streaming of results.</p>
-<p>Here&#8217;s a</p>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul class="current">
@@ -169,7 +168,7 @@ constructing queries that the query manager classes don&#8217;t cover as well:</
 <dt><a class="reference internal" href="#nodes::toParam" title="nodes::toParam"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toParam</span></tt></a></dt>
 <dd>Convert any object to a parameter placeholder.</dd>
 <dt><a class="reference internal" href="#nodes::toRelation" title="nodes::toRelation"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toRelation</span></tt></a></dt>
-<dd>Convert various inputs to <a class="reference internal" href="#nodes::Relation" title="nodes::Relation"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt></a> nodes.</dd>
+<dd>Convert various inputs to <tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt> nodes.</dd>
 <dt><a class="reference internal" href="#nodes::binaryOp" title="nodes::binaryOp"><tt class="xref coffee coffee-func docutils literal"><span class="pre">binaryOp</span></tt></a></dt>
 <dd>Create a binary comparison node manually.  (e.g. for postgres&#8217; custom
 operators).</dd>
@@ -276,8 +275,17 @@ example of aliasing table and field names:</p>
 <span class="nx">select</span><span class="p">({</span><span class="nv">d: </span><span class="s">&#39;departments&#39;</span><span class="p">},</span> <span class="p">[{</span><span class="nv">m_id: </span><span class="s">&#39;manager_id&#39;</span><span class="p">}])</span>
 </pre></div>
 </div>
-<p>(This example also shows passing a list of fields to
-<a class="reference internal" href="#queries/index::SELECT" title="queries/index::SELECT"><tt class="xref coffee coffee-func docutils literal"><span class="pre">SELECT</span></tt></a> as the second parameter).</p>
+<p><em>(This example also shows passing a list of fields to
+:func:`~queries/index::SELECT` as the second parameter).</em></p>
+<p>Conversely, if you are using <a class="reference internal" href="#queries/sud::SUDQuery.project" title="queries/sud::SUDQuery.project"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.project</span></tt></a> to return a
+<tt class="xref coffee coffee-class docutils literal"><span class="pre">Projection</span></tt> node, you can use <tt class="xref coffee coffee-meth docutils literal"><span class="pre">Projection.as</span></tt> to
+return an aliased version of the node:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">q = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">)</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">fields</span><span class="p">(</span><span class="nx">q</span><span class="p">.</span><span class="nx">p</span><span class="p">(</span><span class="s">&#39;manager_id&#39;</span><span class="p">).</span><span class="nx">as</span><span class="p">(</span><span class="s">&#39;m_id&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>This also works with <tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt> and <tt class="xref coffee coffee-class docutils literal"><span class="pre">SqlFunction</span></tt>
+instances (as returned by <a class="reference internal" href="#nodes::sqlFunction" title="nodes::sqlFunction"><tt class="xref coffee coffee-func docutils literal"><span class="pre">sqlFunction</span></tt></a>).</p>
 <p class="rubric">Footnotes</p>
 <table class="docutils footnote" frame="void" id="id3" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
@@ -326,9 +334,10 @@ continuing to run with an obviously broken query.</p>
 (where they bind queries to <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</span></tt>), and attached to
 engine/transaction objects (where they bind queries to the engine/transaction
 they are called on).</p>
-<p>Each one accepts an optional visitor callback as a final parameter that will be
-passed to the <a class="reference internal" href="#queries/base::BaseQuery.visit" title="queries/base::BaseQuery.visit"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.visit</span></tt></a> method of the newly created
-query.</p>
+<p>Each one accepts a table name or alias object (anything handled by
+<a class="reference internal" href="#nodes::toRelation" title="nodes::toRelation"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toRelation</span></tt></a>), one or more extra parameters, and an optional
+visitor callback as a final parameter that will be called with it&#8217;s <tt class="docutils literal"><span class="pre">this</span></tt>
+context set to the newly constructed query instance.</p>
 <dl class="function">
 <dt id="queries/index::INSERT">
 <em class="property">function </em><tt class="descname">INSERT</tt><big>(</big><em>table</em>, <em>fieldsOrRow</em><big>)</big><a class="headerlink" href="#queries/index::INSERT" title="Permalink to this definition">¶</a></dt>
@@ -439,10 +448,7 @@ gesundheits public API, the methods defined on it are.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>engine</strong> &#8211; The engine the query will be bound to.</li>
-<li><strong>opts.table</strong> &#8211; a <tt class="docutils literal"><span class="pre">String</span></tt>, <tt class="docutils literal"><span class="pre">Relation</span></tt>, <tt class="docutils literal"><span class="pre">Alias</span></tt>, or object literal with a single
-key and value which will be interpreted as an alias name and table,
-respectively. This is normally given to as the first parameter to the
-query creation functions in <tt class="xref coffee coffee-mod docutils literal"><span class="pre">queries/index</span></tt></li>
+<li><strong>opts.table</strong> &#8211; Any object that can be converted by <a class="reference internal" href="#nodes::toRelation" title="nodes::toRelation"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toRelation</span></tt></a>.</li>
 </ul>
 </td>
 </tr>
@@ -635,7 +641,7 @@ array of constraints.</p>
 <dl class="method">
 <dt id="queries/sud::SUDQuery.order">
 <em class="property">method </em><tt class="descname">SUDQuery.order</tt><big>(</big><em>args...</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.order" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add an ORDER BY to the query.</p>
+<dd><p>Add one or more ORDER BY clauses to the query.</p>
 <p>Each ordering can either be a string, in which case it must be a valid-ish
 SQL snippet like &#8216;some_table.some_field DESC&#8217;, (the field name and direction
 will still be converted to AST nodes) or an object, in which case each key
@@ -657,7 +663,7 @@ will be treated as a field and each value as a direction.</p>
 <dl class="method">
 <dt id="queries/sud::SUDQuery.project">
 <em class="property">method </em><tt class="descname">SUDQuery.project</tt><big>(</big><em>relation</em>, <em>field</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.project" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a <a class="reference internal" href="#nodes::Projection" title="nodes::Projection"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Projection</span></tt></a> node representing <tt class="docutils literal"><span class="pre">&lt;relation&gt;.&lt;field&gt;</span></tt>.</p>
+<dd><p>Return a <tt class="xref coffee coffee-class docutils literal"><span class="pre">Projection</span></tt> node representing <tt class="docutils literal"><span class="pre">&lt;relation&gt;.&lt;field&gt;</span></tt>.</p>
 <p>The first argument is optional and specifies a table or alias name referring
 to a relation already joined to this query. If you don&#8217;t specify a relation,
 the table added or focused last will be used. Alternatively, you can specify
@@ -933,9 +939,9 @@ to the engine. They also have these additionaly methods</p>
 <dl class="staticmethod">
 <dt id="engine::Engine.create">
 <em class="property">static method </em><tt class="descname">Engine.create</tt><big>(</big><em>dbUrl</em>, <em>poolOptions</em><big>)</big><a class="headerlink" href="#engine::Engine.create" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create an <a class="reference internal" href="#engine::Engine" title="engine::Engine"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Engine</span></tt></a> instance from an <a class="reference external" href="https://github.com/grncdr/node-any-db">Any-DB</a>
-connect string and extra connection pool options, this is exported by
-gesundheit as <tt class="docutils literal"><span class="pre">gesundheit.engine(...)</span></tt>.</p>
+<dd><p>Create an <a class="reference internal" href="#engine::Engine" title="engine::Engine"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Engine</span></tt></a> instance from an <a class="reference external" href="https://github.com/grncdr/node-any-db">Any-DB</a> connect string
+and extra connection pool options, this is exported by gesundheit as
+<tt class="docutils literal"><span class="pre">gesundheit.engine(...)</span></tt>.</p>
 <p><a class="reference internal" href="#engine-usage-example"><em>This example</em></a> shows the most common way to set up
 a single default database engine for an application.</p>
 </dd></dl>
@@ -991,18 +997,37 @@ to an <a class="reference external" href="Engines">engine</a> that will delegate
 <span class="target" id="module-nodes::"></span><p>These are the classes that represent nodes in the AST for a SQL statement.
 Application code should very rarely have to deal with these classes directly;
 Instead, the APIs exposed by the various query manager classes are intended to
-cover the majority of use-cases. However, in the spirit of &#8220;making hard things
-possible&#8221;, the various AST nodes can be constructed and assembled manually if you
-so desire.</p>
+cover the majority of use-cases.</p>
+<p>However, in the spirit of &#8220;making hard things possible&#8221;, all of AST nodes are
+exported from this module so you can constructed and assemble them manually if
+you need to.</p>
+<dl class="class">
+<dt id="nodes::Node">
+<em class="property">class </em><tt class="descname">Node</tt><a class="headerlink" href="#nodes::Node" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Empty) base Node class</p>
+</dd></dl>
+
 <dl class="class">
 <dt id="nodes::ValueNode">
-<em class="property">class </em><tt class="descname">ValueNode</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">Node</span></tt><a class="headerlink" href="#nodes::ValueNode" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">ValueNode</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::Node" title="nodes::Node"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Node</span></tt></a><a class="headerlink" href="#nodes::ValueNode" title="Permalink to this definition">¶</a></dt>
 <dd><p>A ValueNode is a literal string that should be printed unescaped.</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="nodes::IntegerNode">
+<em class="property">class </em><tt class="descname">IntegerNode</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::ValueNode" title="nodes::ValueNode"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ValueNode</span></tt></a><a class="headerlink" href="#nodes::IntegerNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference internal" href="#nodes::ValueNode" title="nodes::ValueNode"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ValueNode</span></tt></a> that validates it&#8217;s input is an integer.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nodes::Identifier">
+<em class="property">class </em><tt class="descname">Identifier</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::ValueNode" title="nodes::ValueNode"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ValueNode</span></tt></a><a class="headerlink" href="#nodes::Identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>An identifier is a column or relation name that may need to be quoted.</p>
+</dd></dl>
+
+<dl class="class">
 <dt id="nodes::NodeSet">
-<em class="property">class </em><tt class="descname">NodeSet</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">Node</span></tt><a class="headerlink" href="#nodes::NodeSet" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">NodeSet</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::Node" title="nodes::Node"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Node</span></tt></a><a class="headerlink" href="#nodes::NodeSet" title="Permalink to this definition">¶</a></dt>
 <dd><p>A set of nodes joined together by <tt class="docutils literal"><span class="pre">&#64;glue</span></tt></p>
 <dl class="method">
 <dt id="nodes::NodeSet.constructor">
@@ -1042,41 +1067,17 @@ so desire.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="nodes::SqlFunction">
-<em class="property">class </em><tt class="descname">SqlFunction</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">Node</span></tt><a class="headerlink" href="#nodes::SqlFunction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Includes <a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a></p>
+<dt id="nodes::ParenthesizedNodeSet">
+<em class="property">class </em><tt class="descname">ParenthesizedNodeSet</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::NodeSet" title="nodes::NodeSet"><tt class="xref coffee coffee-class docutils literal"><span class="pre">NodeSet</span></tt></a><a class="headerlink" href="#nodes::ParenthesizedNodeSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>A NodeSet wrapped in parenthesis.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="nodes::Alias">
-<em class="property">class </em><tt class="descname">Alias</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">Node</span></tt><a class="headerlink" href="#nodes::Alias" title="Permalink to this definition">¶</a></dt>
-<dd><p>Example:</p>
-<p>table = new Relation(&#8216;my_table_with_a_long_name&#8217;)
-alias = new Alias(table, &#8216;mtwaln&#8217;)</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="nodes::Relation">
-<em class="property">class </em><tt class="descname">Relation</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">Identifier</span></tt><a class="headerlink" href="#nodes::Relation" title="Permalink to this definition">¶</a></dt>
-<dd><p>A relation node represents a table name or alias in a statement.</p>
-<dl class="method">
-<dt id="nodes::Relation.ref">
-<em class="property">method </em><tt class="descname">Relation.ref</tt><big>(</big><big>)</big><a class="headerlink" href="#nodes::Relation.ref" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the table name. This is a common interface with <tt class="xref coffee coffee-class docutils literal"><span class="pre">nodes:Alias</span></tt>.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="nodes::Relation.project">
-<em class="property">method </em><tt class="descname">Relation.project</tt><big>(</big><em>field</em><big>)</big><a class="headerlink" href="#nodes::Relation.project" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a new <a class="reference internal" href="#nodes::Projection" title="nodes::Projection"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Projection</span></tt></a> of <cite>field</cite> from this table.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="nodes::Projection">
-<em class="property">class </em><tt class="descname">Projection</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNodeSet</span></tt><a class="headerlink" href="#nodes::Projection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Includes <a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a></p>
+<dt id="nodes::Parameter">
+<em class="property">class </em><tt class="descname">Parameter</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::ValueNode" title="nodes::ValueNode"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ValueNode</span></tt></a><a class="headerlink" href="#nodes::Parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Like a ValueNode, but will render as a bound parameter place-holder
+(e.g. <tt class="docutils literal"><span class="pre">$1</span></tt>) and it&#8217;s value will be collected by
+<a class="reference internal" href="#nodes::NodeSet.params" title="nodes::NodeSet.params"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">NodeSet.params</span></tt></a></p>
 </dd></dl>
 
 <dl class="class">
@@ -1093,19 +1094,19 @@ alias = new Alias(table, &#8216;mtwaln&#8217;)</p>
 
 <dl class="class">
 <dt id="nodes::Select">
-<em class="property">class </em><tt class="descname">Select</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNamedNodeSet</span></tt><a class="headerlink" href="#nodes::Select" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Select</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">Statement</span></tt><a class="headerlink" href="#nodes::Select" title="Permalink to this definition">¶</a></dt>
 <dd><p>The root node of a SELECT query</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="nodes::Update">
-<em class="property">class </em><tt class="descname">Update</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNamedNodeSet</span></tt><a class="headerlink" href="#nodes::Update" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Update</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">Statement</span></tt><a class="headerlink" href="#nodes::Update" title="Permalink to this definition">¶</a></dt>
 <dd><p>The root node of an UPDATE query</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="nodes::Insert">
-<em class="property">class </em><tt class="descname">Insert</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNamedNodeSet</span></tt><a class="headerlink" href="#nodes::Insert" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Insert</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">Statement</span></tt><a class="headerlink" href="#nodes::Insert" title="Permalink to this definition">¶</a></dt>
 <dd><p>The root node of an INSERT query</p>
 <dl class="method">
 <dt id="nodes::Insert.addRowObject">
@@ -1119,7 +1120,7 @@ list will be inserted.</p>
 
 <dl class="class">
 <dt id="nodes::Delete">
-<em class="property">class </em><tt class="descname">Delete</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNamedNodeSet</span></tt><a class="headerlink" href="#nodes::Delete" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Delete</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">Statement</span></tt><a class="headerlink" href="#nodes::Delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>The root node of a DELETE query</p>
 </dd></dl>
 
@@ -1184,13 +1185,13 @@ un-named sub queries,</li>
 <li>Arrays will be turned into a <tt class="xref coffee coffee-class docutils literal"><span class="pre">Tuple</span></tt> instance.</li>
 </ul>
 </div></blockquote>
-<p>All other types will be wrapped in a <tt class="xref coffee coffee-class docutils literal"><span class="pre">Parameter</span></tt> instance.</p>
+<p>All other types will be wrapped in a <a class="reference internal" href="#nodes::Parameter" title="nodes::Parameter"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Parameter</span></tt></a> instance.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="nodes::toRelation">
 <em class="property">function </em><tt class="descname">toRelation</tt><big>(</big><em>it</em><big>)</big><a class="headerlink" href="#nodes::toRelation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transform <tt class="docutils literal"><span class="pre">it</span></tt> into a <a class="reference internal" href="#nodes::Relation" title="nodes::Relation"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt></a> instance.</p>
+<dd><p>Transform <tt class="docutils literal"><span class="pre">it</span></tt> into a <tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt> instance.</p>
 <p>This accepts <cite>strings, `Relation`</cite> and <tt class="docutils literal"><span class="pre">Alias</span></tt> instances, and objects with
 a single key-value pair, which will be turned into an <tt class="docutils literal"><span class="pre">Alias</span></tt> instance.</p>
 <p>Examples:</p>
@@ -1206,7 +1207,7 @@ a single key-value pair, which will be turned into an <tt class="docutils litera
 <dl class="function">
 <dt id="nodes::toProjection">
 <em class="property">function </em><tt class="descname">toProjection</tt><big>(</big><em>relation</em>, <em>field</em><big>)</big><a class="headerlink" href="#nodes::toProjection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new <a class="reference internal" href="#nodes::Projection" title="nodes::Projection"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Projection</span></tt></a> instance.</p>
+<dd><p>Create a new <tt class="xref coffee coffee-class docutils literal"><span class="pre">Projection</span></tt> instance.</p>
 <p>The first argument is optional and specifies a table (or alias) name.
 Alternatively, you can specify the relation name and field with a single
 dot-separated string:</p>
@@ -1220,7 +1221,7 @@ dot-separated string:</p>
 <dt id="nodes::sqlFunction">
 <em class="property">function </em><tt class="descname">sqlFunction</tt><big>(</big><em>name</em>, <em>args</em><big>)</big><a class="headerlink" href="#nodes::sqlFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new SQL function call node. For example:</p>
-<p>count = sqlFunction(&#8216;count&#8217;, new ValueNode(&#8216;*&#8217;))</p>
+<p>count = sqlFunction(&#8216;count&#8217;, [new ValueNode(&#8216;*&#8217;)])</p>
 </dd></dl>
 
 <dl class="function">

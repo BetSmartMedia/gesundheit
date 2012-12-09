@@ -119,39 +119,28 @@ class ParenthesizedNodeSet extends NodeSet
   render: ->
     "(" + super + ")"
 
+class AbstractAlias extends Node
+  constructor: (@obj, @alias) ->
+  copy: -> new @constructor copy(@obj), @alias
+  render: (dialect) ->
+    dialect.maybeParens(dialect.render(@obj)) + " AS " + dialect.quote(@alias)
 
 # End of generic base classes
+
 
 class SqlFunction extends Node
   ### Includes :class:`nodes::ComparableMixin` ###
   constructor: (@name, @arglist) ->
   copy: -> new @constructor @name, copy(@arglist)
   render: (dialect) -> "#{@name}#{dialect.render @arglist}"
+  as: (alias) -> new Alias @, alias
 
-class Alias extends Node
-  constructor: (@obj, @alias) ->
-  copy: -> new @constructor copy(@obj), @alias
-  render: (dialect) ->
-    dialect.maybeParens(dialect.render(@obj)) + " AS " + @alias
-
-class RelationAlias extends Alias
-  ### An aliased :class:`nodes::Relation` ###
-  ref: -> @alias
-  project: (name) -> new Projection @, name
-  render: (dialect, parents) ->
-    if parents.some((n) -> n instanceof Projection)
-      dialect.quote(@alias)
-    else
-      super
-
-class ProjectionAlias extends Alias
-  ### An aliased :class:`nodes::Projection` ###
-  render: (dialect, parents) ->
-    if parents.some((n) -> n instanceof ProjectionSet)
-      super
-    else
-      dialect.quote(@alias)
-  
+  @Alias = class Alias extends AbstractAlias
+    render: (dialect) ->
+      if parents.some((node) -> node instanceof Where)
+        dialect.quote(@alias)
+      else
+        super
 
 class Parameter extends ValueNode
   ###
@@ -167,13 +156,26 @@ class Relation extends Identifier
   ###
   ref: ->
     ###
-    Return the table name. This is a common interface with :class:`nodes::RelationAlias`.
+    Return the table name. Aliased tables return the alias name.
     ###
     @value
 
   project: (field) ->
     ### Return a new :class:`nodes::Projection` of `field` from this table. ###
     new Projection @, toField(field)
+
+  as: (alias) ->
+    new Alias @, alias
+
+  @Alias = class Alias extends AbstractAlias
+    ### An aliased :class:`nodes::Relation` ###
+    ref: -> @alias
+    project: (field) -> Relation::project.call @, field
+    render: (dialect, parents) ->
+      if parents.some((n) -> n instanceof Projection)
+        dialect.quote(@alias)
+      else
+        super
 
 class Field extends Identifier
   ### A column name ###
@@ -183,10 +185,19 @@ class Projection extends FixedNodeSet
   Includes :class:`nodes::ComparableMixin`
   ###
   constructor: (@source, @field) -> super [@source, @field], '.'
+  rel: -> @source
   copy: -> new @constructor copy(@source), @field
-  render: (dialect) ->
-    dialect.render(@source) + '.' + dialect.render(@field)
+  as: (alias) ->
+    new Alias @, alias
 
+  @Alias = class Alias extends AbstractAlias
+    ### An aliased :class:`nodes::Projection` ###
+    rel: -> @obj.rel()
+    render: (dialect, parents) ->
+      if parents.some((n) -> n instanceof ProjectionSet)
+        super
+      else
+        dialect.quote(@alias)
 
 class Limit extends IntegerNode
   render: ->
@@ -237,13 +248,7 @@ class SelectProjectionSet extends ProjectionSet
     Recurse over child nodes, removing all Projection nodes that match the
     predicate.
     ###
-    orig = @nodes
-    @nodes = []
-    for node of orig
-      if node instanceof Projection
-        if not predicate node then @nodes.push node
-      else if node instanceof Alias
-        if not predicate node.obj then @nodes.push node
+    @nodes = @nodes.filter((n) -> not predicate(n))
 
   render: (dialect) ->
     if not @nodes.length
@@ -482,6 +487,7 @@ class ComparableMixin
 
 for k, v of ComparableMixin::
   Projection::[k] = v
+  Projection.Alias::[k] = v
   SqlFunction::[k] = v
 
 toParam = (it) ->
@@ -518,11 +524,11 @@ toRelation = (it) ->
   **Throws Errors** if the input is not valid.
   ###
   switch it.constructor
-    when Relation, Alias then it
+    when Relation, Relation.Alias then it
     when String then new Relation it
     when Object
       if alias = getAlias it
-        new RelationAlias(new Relation(it[alias]), alias)
+        toRelation(it[alias]).as(alias)
       else
         throw new Error "Can't make relation out of #{it}"
     else
@@ -657,9 +663,6 @@ module.exports = {
   Statement
   ParenthesizedNodeSet
   SqlFunction
-  Alias
-  RelationAlias
-  ProjectionAlias
   Parameter
   Relation
   Field

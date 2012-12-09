@@ -21,9 +21,10 @@ These functions are the same ones re-exported by the main gesundheit module
 engine/transaction objects (where they bind queries to the engine/transaction
 they are called on).
 
-Each one accepts an optional visitor callback as a final parameter that will be
-passed to the :meth:`~queries/base::BaseQuery.visit` method of the newly created
-query.
+Each one accepts a table name or alias object (anything handled by
+:func:`nodes::toRelation`), one or more extra parameters, and an optional
+visitor callback as a final parameter that will be called with it's ``this``
+context set to the newly constructed query instance.
 ###
 
 {Tuple}     = require './../nodes'

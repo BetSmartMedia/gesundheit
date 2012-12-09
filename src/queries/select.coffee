@@ -118,12 +118,8 @@ module.exports = class SelectQuery extends SUDQuery
 
   groupBy: (fields...) ->
     ### Add a GROUP BY to the query. ###
-    rel = @q.relations.active
-    for field in fields
-      if field.constructor == String
-        @q.groupBy.addNode rel.project field
-      else
-        @q.groupBy.addNode field
+    @q.groupBy.addNode(@project(field)) for field in fields
+    null
 
 fluidize SelectQuery,
   'distinct', 'fields', 'agg', 'join', 'ensureJoin', 'focus', 'groupBy'

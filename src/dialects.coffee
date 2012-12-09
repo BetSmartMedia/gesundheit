@@ -4,31 +4,25 @@ a particular DBMS. They are rarely used directly, instead a query is usually bou
 to an `engine <Engines>`_ that will delegate rendering to it's dialect instance.
 ###
 
-fs = require('fs')
-
-prefixIfNotEmpty = (prefix) ->
-  (node) ->
-    children = @renderNodeSet node
-    if children then prefix + children else ''
+read = require('fs').readFileSync
+kwFile = __dirname + '/sql_keywords.txt'
+keywords = read(kwFile, 'ascii').split('\n').filter(Boolean)
 
 class BaseDialect
-  ###
-  A dialect that isn't specific to a particular DBMS, but used as a base for both
-  MySQL and Postgres.
-  ###
+  constructor: ->
+    @path = []
+
   render: (node) ->
-    type = node.__proto__
-    name = type.constructor.name
-    until @['render'+name]
-      if 'Object' == name or not type
-        throw new Error "Couldn't find a renderer for #{node.constructor.name}"
-      type = type.__proto__
-      name = type.constructor.name
-    @['render'+name](node)
+    @path.push(node)
+    name = node?.__proto__?.constructor?.name
+    if name and custom = @['render' + name]
+      string = custom.call(@, node)
+    else
+      string = node.render(@, @path)
+    @path.pop(node)
+    return string
 
   renderString: (s) -> s
-
-  renderIdentifier: (n) -> @quote(n.value)
 
   quote: (s) ->
     if s?.match(/\s|"|\./) or @isKeyword(s)
@@ -36,70 +30,12 @@ class BaseDialect
     else
       s
 
-  keywords = fs.readFileSync(__dirname + '/sql_keywords.txt', 'ascii').split('\n').filter(Boolean)
-
-  isKeyword: (s) ->
-    keywords.indexOf(s.toUpperCase()) isnt -1
-
-  renderProjection: (p) ->
-    if p.source?.alias?
-      @quote(p.source.alias) + '.' + @render(p.field)
-    else
-      @renderNodeSet(p)
-
-  renderNodeSet: (set) ->
-    set.nodes.map((n) => @render n).filter((n) -> n).join(set.glue)
-   
-  renderParenthesizedNodeSet: (set) ->
-    "(" + @renderNodeSet(set) + ")"
-
-  renderAlias: (node) ->
-    "#{@maybeParens @render node.obj} AS #{@render node.alias}"
+  isKeyword: (word) ->
+    keywords.indexOf(word.toUpperCase()) isnt -1
 
   maybeParens: (it) -> if /\s/.exec it then "(#{it})" else it
 
-  renderDistinct: (set) ->
-    if not set.enable
-      ''
-    else if set.nodes.length
-      "DISTINCT(#{@renderNodeSet set})"
-    else
-      'DISTINCT'
-
-  renderSelectProjectionSet: (set) ->
-    if not set.nodes.length
-      '*'
-    else
-      @renderNodeSet set
-
-  renderSqlFunction: (node) -> "#{@render node.name}#{@render node.arglist}"
-
-  renderValueNode: (node) -> node.value
-
-  renderParameter: (node) -> '?'
-
-  renderSelect: prefixIfNotEmpty 'SELECT '
-  renderUpdate: prefixIfNotEmpty 'UPDATE '
-  renderInsert: prefixIfNotEmpty 'INSERT INTO '
-  renderInsertData: prefixIfNotEmpty 'VALUES '
-  renderDelete: prefixIfNotEmpty 'DELETE '
-  renderUpdateSet: prefixIfNotEmpty 'SET '
-  renderRelationSet: prefixIfNotEmpty 'FROM '
-  renderWhere: prefixIfNotEmpty 'WHERE '
-  renderGroupBy: prefixIfNotEmpty 'GROUP BY '
-  renderOrderBySet: prefixIfNotEmpty 'ORDER BY '
-  renderReturning: prefixIfNotEmpty 'RETURNING '
-
-  renderLimit: (node) ->
-    if node.value then "LIMIT " + node.value else ""
-
-  renderOffset: (node) ->
-    if node.value then "OFFSET " + node.value else ""
-
-  renderBinary: (node) ->
-    @render(node.left) + ' ' + @renderOp(node.op) + ' ' + @render(node.right)
-
-  renderOp: (op) ->
+  operator: (op) ->
     switch op.toLowerCase()
       when 'ne', '!=', '<>' then '!='
       when 'eq', '='   then '='
@@ -125,7 +61,7 @@ class AnyDBDialect extends BaseDialect
     "$#{@paramCount++}"
 
 class PostgresDialect extends AnyDBDialect
-  renderOp: (op) ->
+  operator: (op) ->
     switch op.toLowerCase()
       when 'hasKey' then '?'
       when '->' then '->'

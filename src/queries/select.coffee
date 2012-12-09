@@ -1,7 +1,8 @@
 fluidize = require '../fluid'
 SUDQuery = require './sud'
 { Node,
-  Alias,
+  RelationAlias,
+  ProjectionAlias,
   getAlias,
   Select,
   And,
@@ -41,7 +42,7 @@ module.exports = class SelectQuery extends SUDQuery
     for f in fields
       if alias = getAlias f
         f = f[alias]
-        @q.projections.addNode new Alias proj(f), alias
+        @q.projections.addNode new RelationAlias proj(f), alias
       else
         @q.projections.addNode proj(f)
 
@@ -62,7 +63,7 @@ module.exports = class SelectQuery extends SUDQuery
       fun = fun[alias]
     funcNode = sqlFunction fun, fields
     if alias
-      @q.projections.addNode new Alias funcNode, alias
+      @q.projections.addNode new ProjectionAlias funcNode, alias
     else
       @q.projections.addNode funcNode
 

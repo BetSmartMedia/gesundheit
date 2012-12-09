@@ -1,7 +1,7 @@
 BaseQuery = require './base'
 nodes = require '../nodes'
 fluidize = require '../fluid'
-{Node, And, Or, OrderBy, Projection, CONST_NODES, toField} = nodes
+{Node, And, Or, Ordering, Projection, CONST_NODES, toField} = nodes
 
 module.exports = class SUDQuery extends BaseQuery
   ###
@@ -128,7 +128,7 @@ module.exports = class SUDQuery extends BaseQuery
 
   order: (args...) ->
     ###
-    Add an ORDER BY to the query.
+    Add one or more ORDER BY clauses to the query.
 
     Each ordering can either be a string, in which case it must be a valid-ish
     SQL snippet like 'some_table.some_field DESC', (the field name and direction
@@ -141,13 +141,13 @@ module.exports = class SUDQuery extends BaseQuery
       switch orderBy.constructor
         when String
           orderings.push orderBy.split ' '
-        when OrderBy
+        when Ordering
           @q.orderBy.addNode orderBy
         when Object
           for name, dir of orderBy
             orderings.push [name, dir]
         else
-          throw new Error "Can't turn #{orderBy} into an OrderBy object"
+          throw new Error "Can't turn #{orderBy} into an ordering"
 
     for [field, direction] in orderings
       direction = switch (direction || '').toLowerCase()
@@ -155,7 +155,7 @@ module.exports = class SUDQuery extends BaseQuery
         when 'desc', 'descending' then 'DESC'
         when '' then ''
         else throw new Error "Unsupported ordering direction #{direction}"
-      @q.orderBy.addNode new OrderBy(@project(field), direction)
+      @q.orderBy.addNode new Ordering(@project(field), direction)
 
   limit: (l) ->
     ### Set the LIMIT on this query ###

@@ -17,6 +17,7 @@ class ValueNode extends Node
       throw new Error("Invalid #{@constructor.name}: #{@value}") unless @valid()
   copy: -> new @constructor @value
   valid: -> true
+  render: -> @value
 
 class IntegerNode extends ValueNode
   valid: -> not isNaN @value = parseInt @value
@@ -25,6 +26,8 @@ class Identifier extends ValueNode
   ###
   An identifier is a column or relation name that may need to be quoted.
   ###
+  render: (dialect) ->
+    dialect.quote(@value)
 
 CONST_NODES = {}
 CONST_NODES[name] = new ValueNode name.replace '_', ' ' for name in [
@@ -73,15 +76,21 @@ class NodeSet extends Node
         params.push node.value
     params
 
+  render: (dialect) ->
+    @nodes.map((n) -> dialect.render(n)).filter((n) -> n).join(@glue)
+   
+
 class FixedNodeSet extends NodeSet
   # A NodeSet that disables the ``addNode`` method after construction.
   constructor: (nodes, glue) ->
     super nodes, glue
     @addNode = null
 
-class FixedNamedNodeSet extends FixedNodeSet
+class Statement extends FixedNodeSet
   # A FixedNodeSet that instantiates a set of nodes defined by the class member
   # ``@structure`` when it it instantiated.
+  @prefix = ''
+
   constructor: ->
     nodes = for [k, type] in @constructor.structure
       @[k] = new type
@@ -93,8 +102,17 @@ class FixedNamedNodeSet extends FixedNodeSet
       c[k] = c.nodes[i]
     return c
 
+  render: ->
+    if string = super
+      @constructor.prefix + string
+    else
+      ''
+
 class ParenthesizedNodeSet extends NodeSet
   ### A NodeSet wrapped in parenthesis. ###
+  render: ->
+    "(" + super + ")"
+
 
 # End of generic base classes
 
@@ -102,20 +120,32 @@ class SqlFunction extends Node
   ### Includes :class:`nodes::ComparableMixin` ###
   constructor: (@name, @arglist) ->
   copy: -> new @constructor @name, copy(@arglist)
+  render: (dialect) -> "#{@name}#{dialect.render @arglist}"
 
 class Alias extends Node
-  ###
-  Example::
-
-     table = new Relation('my_table_with_a_long_name')
-     alias = new Alias(table, 'mtwaln')
-
-  ###
   constructor: (@obj, @alias) ->
   copy: -> new @constructor copy(@obj), @alias
-  project: (name) -> new Projection @, name
-  field: -> @project arguments
+  render: (dialect) ->
+    dialect.maybeParens(dialect.render(@obj)) + " AS " + @alias
+
+class RelationAlias extends Alias
+  ### An aliased :class:`nodes::Relation` ###
   ref: -> @alias
+  project: (name) -> new Projection @, name
+  render: (dialect, parents) ->
+    if parents.some((n) -> n instanceof Projection)
+      dialect.quote(@alias)
+    else
+      super
+
+class ProjectionAlias extends Alias
+  ### An aliased :class:`nodes::Projection` ###
+  render: (dialect, parents) ->
+    if parents.some((n) -> n instanceof ProjectionSet)
+      super
+    else
+      dialect.quote(@alias)
+  
 
 class Parameter extends ValueNode
   ###
@@ -123,6 +153,7 @@ class Parameter extends ValueNode
   (e.g. ``$1``) and it's value will be collected by
   :meth:`nodes::NodeSet.params`
   ###
+  render: (dialect) -> "?"
 
 class Relation extends Identifier
   ###
@@ -130,7 +161,7 @@ class Relation extends Identifier
   ###
   ref: ->
     ###
-    Return the table name. This is a common interface with :class:`nodes:Alias`.
+    Return the table name. This is a common interface with :class:`nodes::RelationAlias`.
     ###
     @value
 
@@ -147,9 +178,17 @@ class Projection extends FixedNodeSet
   ###
   constructor: (@source, @field) -> super [@source, @field], '.'
   copy: -> new @constructor copy(@source), @field
+  render: (dialect) ->
+    dialect.render(@source) + '.' + dialect.render(@field)
+
 
 class Limit extends IntegerNode
+  render: ->
+    if @value then "LIMIT #{@value}" else ""
+
 class Offset extends IntegerNode
+  render: ->
+    if @value then "OFFSET #{@value}" else ""
 
 class Binary extends FixedNodeSet
   constructor: (@left, @op, @right) -> super [@left, @op, @right], ' '
@@ -161,6 +200,9 @@ class Binary extends FixedNodeSet
   or: ->
     new Or [@, args...]
 
+  render: (dialect) ->
+    [dialect.render(@left), dialect.operator(@op), dialect.render(@right)].join(' ')
+
 class Tuple extends ParenthesizedNodeSet
   glue: ', '
 
@@ -169,9 +211,19 @@ class ProjectionSet extends NodeSet
   glue: ', '
 
 class Returning extends ProjectionSet
+  render: ->
+    if string = super then "RETURNING #{string}" else ""
 
 class Distinct extends ProjectionSet
   constructor: (@enable=false) -> super
+
+  render: (dialect) ->
+    if not @enable
+      ''
+    else if @nodes.length
+      "DISTINCT(#{super})"
+    else
+      'DISTINCT'
 
 class SelectProjectionSet extends ProjectionSet
   prune: (predicate) ->
@@ -186,6 +238,13 @@ class SelectProjectionSet extends ProjectionSet
         if not predicate node then @nodes.push node
       else if node instanceof Alias
         if not predicate node.obj then @nodes.push node
+
+  render: (dialect) ->
+    if not @nodes.length
+      '*'
+    else
+      super
+
 
 #######
 class RelationSet extends NodeSet
@@ -219,6 +278,9 @@ class RelationSet extends NodeSet
   switch: (name) ->
     @active = @get(name)
 
+  render: (dialect) ->
+    if string = super then "FROM #{string}" else ""
+
 class Join extends FixedNodeSet
   constructor: (@type, @relation) ->
     nodes = [@type, 'JOIN', @relation]
@@ -241,6 +303,8 @@ class Join extends FixedNodeSet
 #####
 class Where extends NodeSet
   glue: ' AND '
+  render: (dialect) ->
+    if string = super then "WHERE #{string}" else ""
 
 class Or extends ParenthesizedNodeSet
   glue: ' OR '
@@ -267,41 +331,52 @@ class And extends ParenthesizedNodeSet
 
 class GroupBy extends NodeSet
   constructor: (gs) -> super gs, ', '
+  render: (dialect) ->
+    if string = super then "GROUP BY #{string}" else ""
 
-class OrderBySet extends NodeSet
+class OrderBy extends NodeSet
   constructor: (os) -> super os, ', '
+  render: (dialect) ->
+    if string = super then "ORDER BY #{string}" else ""
 
-class OrderBy extends FixedNodeSet
-  constructor: (projection, direction) -> super [projection, direction]
+class Ordering extends FixedNodeSet
+  constructor: (projection, direction) ->
+    super [projection, direction]
 
 class UpdateSet extends NodeSet
   constructor: (nodes) -> super nodes, ', '
+  render: (dialect) ->
+    if string = super then "SET #{string}" else ""
 
-class Select extends FixedNamedNodeSet
+class Select extends Statement
   ###
   The root node of a SELECT query
   ###
+  @prefix = 'SELECT '
+  
   @structure = [
     ['distinct',    Distinct]
     ['projections', SelectProjectionSet]
     ['relations',   RelationSet]
     ['where',       Where]
     ['groupBy',     GroupBy]
-    ['orderBy',     OrderBySet]
+    ['orderBy',     OrderBy]
     ['limit',       Limit]
     ['offset',      Offset]
   ]
 
   constructor: (rel) -> super(); @relations.start rel if rel
 
-class Update extends FixedNamedNodeSet
+class Update extends Statement
   ###
   The root node of an UPDATE query
   ###
+  @prefix = 'UPDATE '
+
   @structure = [
     ['relation',  Relation]
     ['updates',   UpdateSet]
-    ['orderBy',   OrderBySet]
+    ['orderBy',   OrderBy]
     ['limit',     Limit]
     ['fromList',  RelationSet] # Optional FROM portion
     ['where',     Where]
@@ -311,11 +386,15 @@ class Update extends FixedNamedNodeSet
 
 class InsertData extends NodeSet
   glue: ', '
+  render: (dialect) ->
+    if string = super then "VALUES #{string}" else ""
 
-class Insert extends FixedNamedNodeSet
+class Insert extends Statement
   ###
   The root node of an INSERT query
   ###
+  @prefix = 'INSERT INTO '
+
   @structure = [
     ['relation',  Relation]
     ['columns',   Tuple]
@@ -352,14 +431,15 @@ class Insert extends FixedNamedNodeSet
     @addRowArray array
 
 
-class Delete extends FixedNamedNodeSet
+class Delete extends Statement
   ###
   The root node of a DELETE query
   ###
+  @prefix = 'DELETE '
   @structure = [
     ['relations', RelationSet]
     ['where',     Where]
-    ['orderBy',   OrderBySet]
+    ['orderBy',   OrderBy]
     ['limit',     Limit]
   ]
 
@@ -434,7 +514,7 @@ toRelation = (it) ->
     when String then new Relation it
     when Object
       if alias = getAlias it
-        new Alias(new Relation(it[alias]), alias)
+        new RelationAlias(new Relation(it[alias]), alias)
       else
         throw new Error "Can't make relation out of #{it}"
     else
@@ -560,14 +640,15 @@ module.exports = {
   toParam
 
   Node
-  Alias
+  RelationAlias
+  ProjectionAlias
   And
   Or
   Join
-  OrderBy
+  Ordering
   Projection
   Tuple
-  FixedNamedNodeSet
+  Statement
 
   Select
   Update

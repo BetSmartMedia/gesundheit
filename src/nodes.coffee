@@ -136,7 +136,7 @@ class SqlFunction extends Node
   as: (alias) -> new Alias @, alias
 
   @Alias = class Alias extends AbstractAlias
-    render: (dialect) ->
+    render: (dialect, parents) ->
       if parents.some((node) -> node instanceof Where)
         dialect.quote(@alias)
       else

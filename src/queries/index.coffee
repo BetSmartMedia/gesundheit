@@ -43,6 +43,10 @@ INSERT = (table, fieldsOrRow) ->
     of the object will define the columns that are inserted.
   :param visitor: (Optional) a function that will be called with it's context
     set to the newly constructed query object.
+
+  .. warning::
+    The column names passed in ``fields`` will be printed into the query
+    **unescaped** so do **not** use arbitrary input here. This is hopefully only temporary.
   ###
   if Array.isArray fieldsOrRow
     fields = fieldsOrRow

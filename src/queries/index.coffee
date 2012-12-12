@@ -27,7 +27,6 @@ visitor callback as a final parameter that will be called with it's ``this``
 context set to the newly constructed query instance.
 ###
 
-{Tuple}     = require './../nodes'
 InsertQuery = require './insert'
 SelectQuery = require './select'
 UpdateQuery = require './update'
@@ -45,17 +44,12 @@ INSERT = (table, fieldsOrRow) ->
   :param visitor: (Optional) a function that will be called with it's context
     set to the newly constructed query object.
   ###
-  if fieldsOrRow and typeof fieldsOrRow is 'object'
-    if Array.isArray fieldsOrRow
-      fields = fieldsOrRow
-    else
-      row = fieldsOrRow
-      fields = Object.keys(row)
-  unless fields?.length
-    throw new Error "Column list is required when constructing an INSERT"
-  iq = new InsertQuery @, {table}
-  # TODO this is gross
-  iq.q.columns = iq.q.nodes[1] = new Tuple fields
+  if Array.isArray fieldsOrRow
+    fields = fieldsOrRow
+  else if typeof fieldsOrRow is 'object'
+    row = fieldsOrRow
+    fields = Object.keys(row)
+  iq = new InsertQuery @, {table, fields}
   iq.addRow(row) if row
   return iq
 

@@ -20,16 +20,11 @@ module.exports = class BaseQuery extends EventEmitter
       Any object that can be converted by :func:`nodes::toRelation`.
     ###
     @bind(engine)
-    if table = opts.table
-      table = toRelation table
-    @q = new @constructor.rootNode table
+    @q = opts.rootNode or new @constructor.rootNode opts
 
   copy: ->
     ### Instantiate a new query with a deep copy of this ones AST ###
-    c = new @constructor @engine
-    c.q = @q.copy()
-    c.bind(@engine)
-    return c
+    new @constructor @engine, rootNode: @q.copy()
 
   visit: (fn) ->
     ###

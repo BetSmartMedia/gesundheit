@@ -9,7 +9,7 @@ test('Relation Node', function (t) {
 })
 
 test("Update Node", function (t) {
-  var n = new nodes.Update(nodes.toRelation('t1'))
+  var n = new nodes.Update({table: 't1'})
   t.equal(n.relation.ref(), 't1', "it has a relation with the right name")
   var n = n.copy()
   t.equal(n.relation.ref(), 't1', "copying it keeps the original relation name")

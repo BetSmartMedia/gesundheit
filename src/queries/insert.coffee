@@ -2,7 +2,7 @@ fluidize = require '../fluid'
 
 BaseQuery = require './base'
 SelectQuery = require './select'
-{Insert, Tuple} = require '../nodes'
+{Insert, toField} = require '../nodes'
 
 module.exports = class InsertQuery extends BaseQuery
   ###
@@ -22,9 +22,6 @@ module.exports = class InsertQuery extends BaseQuery
 
   from: (query) ->
     ### Insert from a select query. ###
-    switch query.constructor
-      when SelectQuery then @q.source = @q.nodes[2] = query.q
-      when Select then @q.source = query
-      else throw new Error "Can only insert from a SELECT"
+    @q.from(query.q or query)
 
 fluidize InsertQuery, 'addRow', 'addRows', 'from'

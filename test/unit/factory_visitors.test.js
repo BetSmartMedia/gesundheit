@@ -14,8 +14,8 @@ require('tap').test(function (t) {
   )
 
   t.deepEqual(
-    g.insert('t1', ['a', 'b'], function () { this.addRow([1, 2]) }).compile(),
-    ["INSERT INTO t1 (a, b) VALUES (?, ?)", [1, 2]]
+    g.insert('t1', ['col_a', 'col_b'], function () { this.addRow([1, 2]) }).compile(),
+    ["INSERT INTO t1 (col_a, col_b) VALUES (?, ?)", [1, 2]]
   )
 
   t.deepEqual(

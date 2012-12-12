@@ -43,6 +43,7 @@ module.exports = class SelectQuery extends SUDQuery
         @q.projections.addNode proj(f).as(alias)
       else
         @q.projections.addNode proj(f)
+    null
 
   agg: (fun, fields...) ->
     ###
@@ -90,8 +91,6 @@ module.exports = class SelectQuery extends SUDQuery
       throw new Error "Invalid join type #{type}, try the constant types exported in the base module (e.g. INNER)."
     join = new Join type, rel
     @q.relations.addNode join
-    @q.relations.registerName rel
-    @q.relations.switch rel
     # must switch to the new relation before making clauses
     if opts.on then join.on(new And(@_makeClauses opts.on))
     if opts.fields?

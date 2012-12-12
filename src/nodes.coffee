@@ -51,19 +51,20 @@ JOIN_TYPES[name] = new JoinType(name.replace('_', ' ')) for name in [
 
 class NodeSet extends Node
   ### A set of nodes joined together by ``@glue`` ###
-  constructor: (@nodes=[], glue=' ') ->
+  constructor: (nodes, glue=' ') ->
     ###
     :param @nodes: A list of child nodes.
     :param glue: A string that will be used to join the nodes when rendering
     ###
-    @glue ||= glue
+    @nodes = []
+    @addNode(node) for node in nodes if nodes
+    @glue ?= glue
 
   copy: ->
     ###
     Make a deep copy of this node and it's children
     ###
-    c = new @constructor
-    c.nodes = copy @nodes
+    c = new @constructor @nodes.map(copy), @glue
     return c
 
   addNode: (node) ->
@@ -72,14 +73,11 @@ class NodeSet extends Node
 
   params: ->
     ###
-    Recurse over nested NodeSet instances, collecting parameter values.
+    Recurse over child nodes, collecting parameter values.
     ###
     params = []
-    for node in @nodes
-      if node.params?
-        params = params.concat node.params()
-      else if node.constructor is Parameter
-        params.push node.value
+    for node in @nodes when node.params?
+      params = params.concat node.params()
     params
 
   render: (dialect) ->
@@ -88,31 +86,53 @@ class NodeSet extends Node
 
 class FixedNodeSet extends NodeSet
   # A NodeSet that disables the ``addNode`` method after construction.
-  constructor: (nodes, glue) ->
-    super nodes, glue
+  constructor: ->
+    super
     @addNode = null
 
-class Statement extends FixedNodeSet
-  # A FixedNodeSet that instantiates a set of nodes defined by the class member
-  # ``@structure`` when it it instantiated.
+class Statement extends Node
+  # A Statement lazily constructs child nodes.
   @prefix = ''
 
-  constructor: ->
-    nodes = for [k, type] in @constructor.structure
-      @[k] = new type
-    super nodes
+  # Define the names and type of each lazily built child node
+  @structure = (structure) ->
+    @_nodeOrder = []
+    structure.forEach ([k, type]) =>
+      @_nodeOrder.push k
+      @::__defineGetter__ k, -> @_private[k] or= new type
+      @::__defineSetter__ k, (v) -> @_private[k] = v
+
+  constructor: (opts) ->
+    @_private = {}
+    @initialize(opts) if opts
+
+  initialize: (opts) ->
+    @initialize = null
 
   copy: ->
-    c = super()
-    for i, [k, _] of @constructor.structure
-      c[k] = c.nodes[i]
+    c = new @constructor
+    for k, node of @_private
+      c[k] = copy node
+    c.initialize = null
     return c
 
-  render: ->
-    if string = super
-      @constructor.prefix + string
+  render: (dialect) ->
+    parts = for k in @constructor._nodeOrder when node = @_private[k]
+      dialect.render(node)
+    if parts.length
+      @constructor.prefix + parts.join(' ')
     else
       ''
+
+  params: ->
+    ###
+    Collect parameters from child nodes.
+    ###
+    params = []
+    for node in (@_private[k] for k in @constructor._nodeOrder) when node?.params
+      params = params.concat node.params()
+    params
+
 
 class ParenthesizedNodeSet extends NodeSet
   ### A NodeSet wrapped in parenthesis. ###
@@ -149,6 +169,7 @@ class Parameter extends ValueNode
   :meth:`nodes::NodeSet.params`
   ###
   render: (dialect) -> "?"
+  params: -> [@value]
 
 class Relation extends Identifier
   ###
@@ -186,7 +207,7 @@ class Projection extends FixedNodeSet
   ###
   constructor: (@source, @field) -> super [@source, @field], '.'
   rel: -> @source
-  copy: -> new @constructor copy(@source), @field
+  copy: -> new @constructor copy(@source), copy(@field)
   as: (alias) ->
     new Alias @, alias
 
@@ -234,6 +255,8 @@ class Returning extends ProjectionSet
 class Distinct extends ProjectionSet
   constructor: (@enable=false) -> super
 
+  copy: -> new @constructor @enable, copy(@nodes)
+
   render: (dialect) ->
     if not @enable
       ''
@@ -262,29 +285,27 @@ class RelationSet extends NodeSet
   ###
   Manages a set of relations and exposes methods to find them by alias.
   ###
-  start: (@first) ->
-    @byName = {}
-    @nodes.unshift @first
-    @byName[@first.ref()] = @active = @first
-    delete @start
-
-  registerName: (node) -> @byName[node.ref()] = node
+  addNode: (node) ->
+    unless @first
+      @relsByName = {}
+      @nodes.push node
+      @first = @active = @relsByName[node.ref()] = node
+    else
+      super
+      @active = @relsByName[node.ref()] = node.relation
 
   copy: ->
-    c = super()
-    if first = c.nodes.shift() then c.start first
-    for node in c.nodes
-      rel = node.relation || node
-      c.registerName rel
-    if first then c.active = c.get @active
+    c = super
+    if @active?.ref?() isnt c.active?.ref?()
+      c.switch(@active.ref())
     return c
 
   get: (name, strict=true) ->
     name = name.ref() unless 'string' == typeof name
-    rel = @byName[name]
-    if not rel and strict
-      throw new Error "No such relation #{name} in #{Object.keys @byName}"
-    return rel
+    found = @relsByName[name]
+    if strict and not found
+      throw new Error "No such relation #{name} in #{Object.keys @relsByName}"
+    return found
 
   switch: (name) ->
     @active = @get(name)
@@ -306,12 +327,12 @@ class Join extends FixedNodeSet
     @relation.ref()
 
   copy: ->
-    c = super
-    c.type = c.nodes[0]
-    c.relation = c.nodes[2]
+    c = new @constructor copy(@type), copy(@relation)
+    for clause in @nodes.slice(4)
+      c.on(clause)
     return c
 
-#####
+
 class Where extends NodeSet
   glue: ' AND '
   render: (dialect) ->
@@ -341,7 +362,7 @@ class And extends ParenthesizedNodeSet
     new Or [@, args...]
 
 class GroupBy extends NodeSet
-  constructor: (gs) -> super gs, ', '
+  glue: ', '
   render: (dialect) ->
     if string = super then "GROUP BY #{string}" else ""
 
@@ -360,7 +381,7 @@ class Select extends Statement
   ###
   @prefix = 'SELECT '
   
-  @structure = [
+  @structure [
     ['distinct',    Distinct]
     ['projections', SelectProjectionSet]
     ['relations',   RelationSet]
@@ -371,20 +392,25 @@ class Select extends Statement
     ['offset',      Offset]
   ]
 
-  constructor: (rel) -> super(); @relations.start rel if rel
+  initialize: (opts) ->
+    @projections  # ensure we have an (empty) projection set
+    if opts.table
+      @relations.addNode toRelation(opts.table)
 
 class Update extends Statement
   ###
   The root node of an UPDATE query
   ###
-  @prefix = 'UPDATE '
 
   class UpdateSet extends NodeSet
+    # must be pre-defined for the call to @structure below
     constructor: (nodes) -> super nodes, ', '
     render: (dialect) ->
       if string = super then "SET #{string}" else ""
 
-  @structure = [
+  @prefix = 'UPDATE '
+
+  @structure [
     ['relation',  Relation]
     ['updates',   UpdateSet]
     ['orderBy',   OrderBy]
@@ -394,44 +420,52 @@ class Update extends Statement
     ['returning', Returning]
   ]
 
-  constructor: (rel) -> super(); @relation = @nodes[0] = rel if rel
+  initialize: (opts) ->
+    @relation = toRelation(opts.table)
+
 
 class Insert extends Statement
   ###
   The root node of an INSERT query
   ###
-  @prefix = 'INSERT INTO '
 
   class InsertData extends NodeSet
+    # must be pre-defined for the call to @structure below
     glue: ', '
     render: (dialect) ->
       if string = super then "VALUES #{string}" else ""
 
-  @structure = [
+  @prefix = 'INSERT INTO '
+
+  @structure [
     ['relation',  Relation]
     ['columns',   Tuple]
-    ['source',    InsertData]
+    ['data',      InsertData]
     ['returning', Returning]
   ]
 
-  constructor: (rel) -> super(); @relation = @nodes[0] = rel if rel
+  initialize: (opts) ->
+    unless opts.fields?.length
+      throw new Error "Column list is required when constructing an INSERT"
+    @columns = new Tuple opts.fields.map(toField)
+    @relation = toRelation(opts.table)
 
   addRow: (row) ->
-    if @source.constructor == Select
+    if @data instanceof Select
       throw new Error "Cannot add rows when inserting from a SELECT"
-    if row.constructor == Array then @addRowArray row
+    if Array.isArray(row) then @addRowArray row
     else @addRowObject row
 
   addRowArray: (row) ->
     if not count = @columns.nodes.length
       throw new Error "Must set column list before inserting arrays"
     if row.length != count
-      fields = (n for n in @columns.nodes)
+      fields = (n.value for n in @columns.nodes)
       throw new Error "Wrong number of values in array, expected #{fields}"
 
     params = for v in row
       if v instanceof Node then v else new Parameter v
-    @source.addNode new Tuple params
+    @data.addNode new Tuple params
 
   addRowObject: (row) ->
     ###
@@ -439,9 +473,16 @@ class Insert extends Statement
     isn't set yet. If it `is` set, then only keys matching the existing column
     list will be inserted.
     ###
-    array = for f in @columns.nodes
-      if row[f]? or row[f] is null then row[f] else CONST_NODES.DEFAULT
-    @addRowArray array
+    @addRowArray @columns.nodes.map(valOrDefault.bind(row))
+
+  valOrDefault = (field) ->
+    key = field.value
+    if @hasOwnProperty(key) then @[key] else CONST_NODES.DEFAULT
+
+  from: (query) ->
+    unless query instanceof Select
+      throw new Error "Can only insert from a SELECT"
+    @data = query
 
 
 class Delete extends Statement
@@ -449,14 +490,15 @@ class Delete extends Statement
   The root node of a DELETE query
   ###
   @prefix = 'DELETE '
-  @structure = [
+  @structure [
     ['relations', RelationSet]
     ['where',     Where]
     ['orderBy',   OrderBy]
     ['limit',     Limit]
   ]
 
-  constructor: (rel) -> super(); @relations.start rel if rel
+  initialize: (opts) ->
+    @relations.addNode(toRelation(opts.table))
 
 class ComparableMixin
   ###

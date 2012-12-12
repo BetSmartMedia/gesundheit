@@ -447,7 +447,7 @@ class Insert extends Statement
   initialize: (opts) ->
     unless opts.fields?.length
       throw new Error "Column list is required when constructing an INSERT"
-    @columns = new Tuple opts.fields.map(toField)
+    @columns = new Tuple opts.fields
     @relation = toRelation(opts.table)
 
   addRow: (row) ->
@@ -460,8 +460,7 @@ class Insert extends Statement
     if not count = @columns.nodes.length
       throw new Error "Must set column list before inserting arrays"
     if row.length != count
-      fields = (n.value for n in @columns.nodes)
-      throw new Error "Wrong number of values in array, expected #{fields}"
+      throw new Error "Wrong number of values in array, expected #{@columns.nodes}"
 
     params = for v in row
       if v instanceof Node then v else new Parameter v
@@ -475,8 +474,8 @@ class Insert extends Statement
     ###
     @addRowArray @columns.nodes.map(valOrDefault.bind(row))
 
-  valOrDefault = (field) ->
-    key = field.value
+  valOrDefault = (key) ->
+    #key = field.value
     if @hasOwnProperty(key) then @[key] else CONST_NODES.DEFAULT
 
   from: (query) ->

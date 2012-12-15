@@ -147,6 +147,27 @@ class AbstractAlias extends Node
 
 # End of generic base classes
 
+class TextNode extends Node
+  constructor: (@text, @bindVals=[]) ->
+
+  paramRegexp = /\$([\w]+)\b/g
+
+  render: (dialect) ->
+    @text.replace paramRegexp, (_, name) =>
+      if name of @bindVals
+        dialect.render(new Parameter(@bindVals[name]))
+      else
+        throw new Error "Parameter #{name} not present in #{@bindVals}"
+
+  params: ->
+    if Array.isArray(@bindVals)
+      @bindVals
+    else
+      (v for k, v of @bindVals)
+
+  as: (alias) ->
+    new AbstractAlias @, alias
+
 
 class SqlFunction extends Node
   ### Includes :class:`nodes::ComparableMixin` ###
@@ -527,9 +548,10 @@ class ComparableMixin
     new Binary @, op, toParam other
 
 for k, v of ComparableMixin::
+  TextNode::[k] = v
+  SqlFunction::[k] = v
   Projection::[k] = v
   Projection.Alias::[k] = v
-  SqlFunction::[k] = v
 
 toParam = (it) ->
   ###
@@ -624,7 +646,6 @@ getAlias = (o) ->
     return keys[0] if keys.length == 1
   return null
 
-paramRegexp = /\$([\w]+)\b/g
 text = (rawSQL, bindVals) ->
   ###
   Construct a node with a raw SQL string and (optionally) parameters. Useful for
@@ -656,19 +677,7 @@ text = (rawSQL, bindVals) ->
   issue on `Github <https://github.com/BetSmartMedia/gesundheit>`_ with details
   on your use case so gesundheit can support it more elegantly.
   ###
-  nodes = []
-  lastIndex = 0
-  while match = paramRegexp.exec rawSQL
-    if match.index > lastIndex
-      nodes.push new ValueNode rawSQL.substring(lastIndex, match.index)
-    nodes.push new Parameter bindVals[match[1]]
-    lastIndex = paramRegexp.lastIndex
-
-  if lastIndex is 0
-    new ValueNode rawSQL
-  else
-    nodes.push new ValueNode rawSQL.substring(lastIndex)
-    new FixedNodeSet nodes, ''
+  new TextNode(rawSQL, bindVals)
 
 binaryOp = (left, op, right) ->
   ###
@@ -703,6 +712,7 @@ module.exports = {
   FixedNodeSet
   Statement
   ParenthesizedNodeSet
+  TextNode
   SqlFunction
   Parameter
   Relation

@@ -73,10 +73,23 @@ module.exports = class BaseQuery extends EventEmitter
     Execute the query using ``@engine`` and return a `QueryAdapter`.
 
     :param cb: An (optional) node-style callback that will be called with any
-      errors and/or the query results. If no callback is given, a new EventEmitter
-      will be returned that emits either an 'error' or 'result' event.
+      errors and/or the query results. If no callback is given, an `AnyDB Query`_
+      will be returned.
+
+    .. _AnyDB Query: https://github.com/grncdr/node-any-db/blob/master/DESIGN.md#query-adapters
     ###
-    @engine.query.apply(@engine, @compile().concat(cb))
+    try
+      args = @compile()
+      args.push(cb)
+    catch err
+      # create a useless emitter to return
+      emitter = new EventEmitter
+      emitter.buffer = (->)
+      process.nextTick ->
+        if cb then cb(err) else emitter.emit('error', err)
+      return emitter
+
+    @engine.query.apply(@engine, args)
 
   toString: ->
     @render()

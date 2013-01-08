@@ -25,5 +25,17 @@ require('tap').test('INSERT queries', function (t) {
     ["INSERT INTO t1 (col_a, col_b) SELECT t2.x, t2.y FROM t2 WHERE t2.x > ?", [50]],
     "can source from a SELECT query"
   )
+
+  t.deepEqual(
+    q.copy().addRow({col_a: 1, col_b: 2}).returning('col_a', 'col_b').compile(),
+    ["INSERT INTO t1 (col_a, col_b) VALUES (?, ?) RETURNING col_a, col_b", [1, 2]],
+    "can set RETURNING columns"
+  )
+
+  t.deepEqual(
+    q.copy().addRow({col_a: 1, col_b: 2}).returning('*').compile(),
+    ["INSERT INTO t1 (col_a, col_b) VALUES (?, ?) RETURNING *", [1, 2]],
+    "can use star for RETURNING"
+  )
   t.end()
 })

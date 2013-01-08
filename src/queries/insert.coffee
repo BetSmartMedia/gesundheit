@@ -24,4 +24,8 @@ module.exports = class InsertQuery extends BaseQuery
     ### Insert from a select query. ###
     @q.from(query.q or query)
 
-fluidize InsertQuery, 'addRow', 'addRows', 'from'
+  returning: (cols...) ->
+    @q.addReturning cols
+
+
+fluidize InsertQuery, 'addRow', 'addRows', 'from', 'returning'

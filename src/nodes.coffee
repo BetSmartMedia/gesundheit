@@ -504,6 +504,11 @@ class Insert extends Statement
       throw new Error "Can only insert from a SELECT"
     @data = query
 
+  addReturning: (cols) ->
+    for col in cols
+      @returning.addNode toField(col)
+    return
+
 
 class Delete extends Statement
   ###

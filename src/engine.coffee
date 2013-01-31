@@ -56,7 +56,7 @@ class Engine
     and ``rollback`` methods instead of ``close``. (In fact it's an `Any-DB
     Transaction`_ that has had the query factory functions mixed in to it).
 
-    .. _Any-DB Transaction: https://github.com/grncdr/node-any-db/blob/master/DESIGN.md#transaction
+    .. _Any-DB Transaction: https://github.com/grncdr/node-any-db#transaction
     ###
     tx = queries.mixinFactoryMethods(@pool.begin(callback))
     tx.engine = @

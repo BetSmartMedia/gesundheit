@@ -56,10 +56,11 @@ module.exports = class SelectQuery extends SUDQuery
     Example::
 
       select('t1', function (q) { q.agg('count', q.p('id')) }) # SELECT count(id) FROM t1
-    
+      select('t1', function (q) { q.agg({counter: 'count'}, q.p('id')) }) # SELECT count(id) AS "counter" FROM t1
+
     ###
     if alias = getAlias fun
-      @q.projections.addNode sqlFunction(fun, fields).as(alias)
+      @q.projections.addNode sqlFunction(fun[alias], fields).as(alias)
     else
       @q.projections.addNode sqlFunction(fun, fields)
 

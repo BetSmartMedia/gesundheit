@@ -2,6 +2,7 @@ url      = require('url')
 anyDB    = require('any-db')
 queries  = require('./queries')
 dialects = require('./dialects')
+EventEmitter = require('events').EventEmitter
 
 module.exports = -> Engine.create.apply Engine, arguments
 

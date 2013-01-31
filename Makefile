@@ -1,7 +1,5 @@
 LIB_DIR = ./lib
 SRC_DIR = ./src
-UNIT_TESTS ?= ./test/unit/
-INTEGRATION_TESTS ?= ./test/integration/*.test.coffee
 PATH := $(shell npm bin):$(PATH)
 HEAD = $(shell git describe --contains --all HEAD)
 
@@ -17,12 +15,12 @@ unit: all
 	@node_modules/.bin/tap test/unit/
 
 .PHONY: integration
-integration: $(LIB_DIR)
+integration: all
 	@mysql -u root -e 'drop database gesundheit_test'
 	@mysql -u root -e 'create database gesundheit_test'
 	@psql -U postgres -c 'drop database gesundheit_test' 2>&1 >/dev/null
 	@psql -U postgres -c 'create database gesundheit_test' 2>&1 >/dev/null
-	@node_modules/.bin/tap test/integration/
+	@node_modules/.bin/tap test/integration/*.test.*
 
 .PHONY: clean
 clean:

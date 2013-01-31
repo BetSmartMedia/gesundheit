@@ -1,6 +1,6 @@
 #!/usr/bin/env coffee
 
-helpers = require('../helpers')
+helpers = require('./helpers')
 
 helpers.eachEngine "Transactions", (tx, t) ->
   t.plan(3)

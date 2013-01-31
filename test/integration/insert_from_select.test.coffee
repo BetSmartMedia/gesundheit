@@ -1,6 +1,6 @@
 #!/usr/bin/env coffee
 
-helpers = require('../helpers')
+helpers = require('./helpers')
 
 helpers.eachEngine "INSERT FROM", (db, t) ->
   t.plan(1)

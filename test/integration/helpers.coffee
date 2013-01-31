@@ -1,5 +1,5 @@
 {test}  = require('tap')
-g = require('../')
+g       = require('../../')
 
 DBNAME = 'gesundheit_test'
 
@@ -8,10 +8,11 @@ ENGINE_PARAMS =
     "mysql://root@localhost/#{DBNAME}"
     {
       max: 2
-      afterCreate: (conn, done) ->
+      onConnect: (conn, done) ->
         conn.query "SET autocommit = 0", (err) ->
           return done(err) if err
-          conn.query "SET storage_engine = INNODB", done
+          conn.query "SET storage_engine = INNODB", (err) ->
+            if err then done(err) else done(null, conn)
     }
   ]
   postgres: [

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Gesundheit! &mdash; gesundheit 0.6.1 documentation</title>
+    <title>Gesundheit! &mdash; gesundheit 0.6.2 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.6.1',
+        VERSION:     '0.6.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.6.1 documentation" href="#" />
+    <link rel="top" title="gesundheit 0.6.2 documentation" href="#" />
     <link rel="next" title="Gesundheit!" href="" /> 
   </head>
   <body>  
@@ -72,7 +72,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#module-dialects::">Dialects</a></li>
-<li><a class="reference internal" href="#id9">Nodes</a></li>
+<li><a class="reference internal" href="#id10">Nodes</a></li>
 </ul>
 <h3>Project Links</h3>
 <ul>
@@ -128,7 +128,7 @@ proper bound parameters and allowing for streaming of results.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-dialects::">Dialects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#id9">Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#id10">Nodes</a></li>
 </ul>
 </div>
 <ul class="simple">
@@ -250,6 +250,8 @@ own engine object to use:</p>
 <span class="nv">db = </span><span class="nx">gesundheit</span><span class="p">.</span><span class="nx">engine</span><span class="p">(</span><span class="s">&#39;mysql://localhost/test&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>The database URL above can point to any database supported by <a class="reference external" href="https://github.com/grncdr/node-any-db">Any-DB</a>, which
+includes MySQL, Postgres, and SQLite3.</p>
 <p>We can now use <tt class="docutils literal"><span class="pre">db</span></tt> as query factory, using any of <tt class="docutils literal"><span class="pre">select</span></tt>, <tt class="docutils literal"><span class="pre">insert</span></tt>,
 <tt class="docutils literal"><span class="pre">update</span></tt> or <tt class="docutils literal"><span class="pre">delete</span></tt> as methods:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">departments = </span><span class="nx">db</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;manager_id&#39;</span><span class="p">])</span>
@@ -789,6 +791,7 @@ as arguments to <tt class="docutils literal"><span class="pre">fun</span></tt></
 </table>
 <p>Example:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">select</span><span class="p">(</span><span class="s">&#39;t1&#39;</span><span class="p">,</span> <span class="nx">function</span> <span class="p">(</span><span class="nx">q</span><span class="p">)</span> <span class="p">{</span> <span class="nx">q</span><span class="p">.</span><span class="nx">agg</span><span class="p">(</span><span class="s">&#39;count&#39;</span><span class="p">,</span> <span class="nx">q</span><span class="p">.</span><span class="nx">p</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">))</span> <span class="p">})</span> <span class="c1"># SELECT count(id) FROM t1</span>
+<span class="nx">select</span><span class="p">(</span><span class="s">&#39;t1&#39;</span><span class="p">,</span> <span class="nx">function</span> <span class="p">(</span><span class="nx">q</span><span class="p">)</span> <span class="p">{</span> <span class="nx">q</span><span class="p">.</span><span class="nx">agg</span><span class="p">({</span><span class="nv">counter: </span><span class="s">&#39;count&#39;</span><span class="p">},</span> <span class="nx">q</span><span class="p">.</span><span class="nx">p</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">))</span> <span class="p">})</span> <span class="c1"># SELECT count(id) AS &quot;counter&quot; FROM t1</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -963,7 +966,7 @@ ConnectionPool</a></p>
 <em class="property">method </em><tt class="descname">Engine.begin</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#engine::Engine.begin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start a new transaction and return it.</p>
 <p>The returned object behaves exactly like a new engine, but has <tt class="docutils literal"><span class="pre">commit</span></tt>
-and <tt class="docutils literal"><span class="pre">rollback</span></tt> methods instead of <tt class="docutils literal"><span class="pre">close</span></tt>. (In fact it&#8217;s an <a class="reference external" href="https://github.com/grncdr/node-any-db/blob/master/DESIGN.md#transaction">Any-DB
+and <tt class="docutils literal"><span class="pre">rollback</span></tt> methods instead of <tt class="docutils literal"><span class="pre">close</span></tt>. (In fact it&#8217;s an <a class="reference external" href="https://github.com/grncdr/node-any-db#transaction">Any-DB
 Transaction</a> that has had the query factory functions mixed in to it).</p>
 </dd></dl>
 
@@ -997,8 +1000,8 @@ with <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</sp
 a particular DBMS. They are rarely used directly, instead a query is usually bound
 to an <a class="reference external" href="Engines">engine</a> that will delegate rendering to it&#8217;s dialect instance.</p>
 </div>
-<div class="section" id="id9">
-<h1>Nodes<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id10">
+<h1>Nodes<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="module-nodes::"></span><p>These are the classes that represent nodes in the AST for a SQL statement.
 Application code should very rarely have to deal with these classes directly;
 Instead, the APIs exposed by the various query manager classes are intended to
@@ -1241,7 +1244,7 @@ alias name if it is.</p>
 <em class="property">function </em><tt class="descname">text</tt><big>(</big><em>rawSQL</em>, <em>bindVals</em><big>)</big><a class="headerlink" href="#nodes::text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct a node with a raw SQL string and (optionally) parameters. Useful for
 when you want to construct a query that is difficult or impossible with the
-normal APIs. <a href="#id11"><span class="problematic" id="id12"><span id="id10"></span>[#]_</span></a></p>
+normal APIs. <a href="#id12"><span class="problematic" id="id13"><span id="id11"></span>[#]_</span></a></p>
 <p>To use bound parameters in the SQL string, use <tt class="docutils literal"><span class="pre">$</span></tt> prefixed names, and
 pass a <tt class="docutils literal"><span class="pre">bindVals</span></tt> argument with corresponding property names. For example,
 <a class="reference internal" href="#queries/sud::SUDQuery.where" title="queries/sud::SUDQuery.where"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.where</span></tt></a> doesn&#8217;t (currently) support the SQL

@@ -90,6 +90,9 @@ own engine object to use::
 
   db = gesundheit.engine('mysql://localhost/test')
 
+The database URL above can point to any database supported by Any-DB_, which
+includes MySQL, Postgres, and SQLite3.
+
 We can now use ``db`` as query factory, using any of ``select``, ``insert``,
 ``update`` or ``delete`` as methods::
 
@@ -101,6 +104,8 @@ set the global default engine for the module like so::
   gesundheit.defaultEngine = db
   # This is now equivalent to db.select(...)
   gesundheit.select('departments', ['name', 'manager_id'])
+
+.. _Any-DB: https://github.com/grncdr/node-any-db
 
 .. _using-aliases:
 

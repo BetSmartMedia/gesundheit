@@ -16,9 +16,9 @@ unit: all
 
 .PHONY: integration
 integration: all
-	@mysql -u root -e 'drop database gesundheit_test'
+	@mysql -u root -e 'drop database gesundheit_test' || true
 	@mysql -u root -e 'create database gesundheit_test'
-	@psql -U postgres -c 'drop database gesundheit_test' 2>&1 >/dev/null
+	@psql -U postgres -c 'drop database gesundheit_test' 2>&1 >/dev/null || true
 	@psql -U postgres -c 'create database gesundheit_test' 2>&1 >/dev/null
 	@node_modules/.bin/tap test/integration/*.test.*
 

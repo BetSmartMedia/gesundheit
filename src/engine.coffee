@@ -88,9 +88,7 @@ fakeEngine = ->
       if cb then process.nextTick(cb.bind(null, engine))
       engine
     query: (sql, params, cb) ->
-      return new EventEmitter
-      return unless cb
-      process.nextTick cb.bind(null, null, [sql, params])
+      throw new Error("Cannot query with fakeEngine. Do `gesundheit.defaultEngine = gesundheit.engine(url)` before querying")
     close: ->
 
   return engine

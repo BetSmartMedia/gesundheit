@@ -32,7 +32,8 @@
     "coffee-script": "~1.4.0",
     "pg": "*",
     "mysql": "~2.0.0-alpha6",
-    "tap": "~0.4.0"
+    "tap": "~0.4.0",
+    "sqlite3": "~2.1.5"
   },
   "author": "Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)",
   "optionalDependencies": {},

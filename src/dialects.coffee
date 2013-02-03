@@ -71,6 +71,15 @@ class MySQLDialect extends BaseDialect
 class SQLite3Dialect extends BaseDialect
   renderParameter: -> '?'
 
+  renderInsertData: (node) ->
+    if node.nodes.length < 2
+      node.render(@, @path)
+    else
+      node.glue = ' UNION ALL SELECT '
+      string = node.render(@, @path).replace('VALUES', 'SELECT').replace(/[()]/g, '')
+      node.glue = ', '
+      string
+
 module.exports =
   base: BaseDialect
   postgres: PostgresDialect

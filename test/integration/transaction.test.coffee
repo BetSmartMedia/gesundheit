@@ -2,15 +2,12 @@
 
 helpers = require('./helpers')
 
-helpers.eachEngine "Transactions", (tx, t) ->
+tables = people: {name: 'varchar(255)', location: 'varchar(255)'}
+
+helpers.eachEngine "Transactions", tables, (db, t) ->
   t.plan(3)
-
-  tx.engine.query """CREATE TABLE people (
-    name varchar(255),
-    location varchar(255),
-    PRIMARY KEY (name)
-  )""", ->
-
+  db.begin (err, tx) ->
+    throw err if err
     tx.insert("people", {name: 'Stephen', location: 'Montreal'}).execute()
     tx.select('people').execute (err, res) ->
       throw err if err

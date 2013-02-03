@@ -1,5 +1,6 @@
-{test}  = require('tap')
-g       = require('../../')
+fs     = require('fs')
+{test} = require('tap')
+g      = require('../../')
 
 DBNAME = 'gesundheit_test'
 
@@ -19,6 +20,10 @@ ENGINE_PARAMS =
     "postgres://postgres@localhost/#{DBNAME}"
     { max: 2 }
   ]
+  sqlite3: [
+    "sqlite3:///tmp/#{DBNAME}"
+    { max: 2 }
+  ]
 
 exports.eachEngine = (testName, engineNames, callback) ->
   ###
@@ -34,14 +39,12 @@ exports.eachEngine = (testName, engineNames, callback) ->
   i = 0
   do nextEngine = ->
     return process.nextTick(process.exit) unless engineName = engineNames[i++]
+
+    if engineName is 'sqlite3' and fs.existsSync SQLITE3_FILE
+      fs.unlinkSync SQLITE3_FILE
+
     test "#{testName} - #{engineName}", (t) ->
       db = g.engine.apply(null, ENGINE_PARAMS[engineName])
-      tx = db.begin (err, tx) ->
-        throw err if err
-        t.listeners('end').unshift ->
-          tx.rollback() if tx.state() is 'open'
-        callback tx, t
-      tx.log = console.error
-
       t.on 'end', db.close.bind(db)
       t.on 'end', nextEngine
+      callback db, t

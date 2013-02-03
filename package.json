@@ -39,7 +39,7 @@
   "optionalDependencies": {},
   "scripts": {
     "test": "make test",
-    "prepublish": "make all"
+    "release": "make release"
   },
   "license": "MIT"
 }

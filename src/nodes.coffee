@@ -178,10 +178,10 @@ class SqlFunction extends Node
 
   @Alias = class Alias extends AbstractAlias
     render: (dialect, parents) ->
-      if parents.some((node) -> node instanceof Where)
-        dialect.quote(@alias)
-      else
+      if parents.some((node) -> node instanceof ProjectionSet)
         super
+      else
+        dialect.quote(@alias)
 
 class Parameter extends ValueNode
   ###
@@ -555,6 +555,7 @@ class ComparableMixin
 for k, v of ComparableMixin::
   TextNode::[k] = v
   SqlFunction::[k] = v
+  SqlFunction.Alias::[k] = v
   Projection::[k] = v
   Projection.Alias::[k] = v
 

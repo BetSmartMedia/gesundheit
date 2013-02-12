@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Gesundheit! &mdash; gesundheit 0.6.3 documentation</title>
+    <title>Gesundheit! &mdash; gesundheit 0.6.4 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.6.3',
+        VERSION:     '0.6.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.6.3 documentation" href="#" />
+    <link rel="top" title="gesundheit 0.6.4 documentation" href="#" />
     <link rel="next" title="Gesundheit!" href="" /> 
   </head>
   <body>  
@@ -855,6 +855,13 @@ already part of the query an error will be thrown.</li>
 <dt id="queries/select::SelectQuery.groupBy">
 <em class="property">method </em><tt class="descname">SelectQuery.groupBy</tt><big>(</big><em>fields...</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.groupBy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a GROUP BY to the query.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/select::SelectQuery.having">
+<em class="property">method </em><tt class="descname">SelectQuery.having</tt><big>(</big><em>constraint</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.having" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method works similarly to <a class="reference internal" href="#queries/sud::SUDQuery.where" title="queries/sud::SUDQuery.where"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.where</span></tt></a>, but the
+constraints are added the <cite>HAVING</cite> portion of a SQL clause.</p>
 </dd></dl>
 
 </dd></dl>

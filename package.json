@@ -35,7 +35,7 @@
     "tap": "~0.4.0",
     "sqlite3": "~2.1.5"
   },
-  "author": "Stephen Sugden <stephen@betsmartmedia.com> (http://www.betsmartmedia.com)",
+  "author": "Stephen Sugden <glurgle@gmail.com> (http://www.betsmartmedia.com)",
   "optionalDependencies": {},
   "scripts": {
     "test": "make test",

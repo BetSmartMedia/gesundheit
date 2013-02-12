@@ -121,8 +121,15 @@ module.exports = class SelectQuery extends SUDQuery
     @q.groupBy.addNode(@project(field)) for field in fields
     null
 
+  having: (constraint) ->
+    ###
+    This method works similarly to :meth:`queries/sud::SUDQuery.where`, but the
+    constraints are added the `HAVING` portion of a SQL clause.
+    ###
+    @q.having.addNode(node) for node in @_makeClauses(constraint)
+
 fluidize SelectQuery,
-  'distinct', 'fields', 'agg', 'join', 'ensureJoin', 'focus', 'groupBy'
+  'distinct', 'fields', 'agg', 'join', 'ensureJoin', 'focus', 'groupBy', 'having'
 
 # Alias methods
 SelectQuery::field = SelectQuery::fields

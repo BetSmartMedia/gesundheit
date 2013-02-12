@@ -387,6 +387,11 @@ class GroupBy extends NodeSet
   render: (dialect) ->
     if string = super then "GROUP BY #{string}" else ""
 
+class Having extends NodeSet
+  glue: ' AND '
+  render: (dialect) ->
+    if string = super then "HAVING #{string}" else ""
+
 class OrderBy extends NodeSet
   constructor: (os) -> super os, ', '
   render: (dialect) ->
@@ -408,6 +413,7 @@ class Select extends Statement
     ['relations',   RelationSet]
     ['where',       Where]
     ['groupBy',     GroupBy]
+    ['having',      Having]
     ['orderBy',     OrderBy]
     ['limit',       Limit]
     ['offset',      Offset]

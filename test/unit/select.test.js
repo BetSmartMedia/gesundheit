@@ -1,5 +1,6 @@
 g = require('../../lib')
 select = g.select
+sqlFunction = g.sqlFunction
 LEFT_OUTER = g.LEFT_OUTER
 
 test = require('tap').test
@@ -119,15 +120,30 @@ test("SELECT queries", function (t) {
 
   })
 
+  t.test("GROUP BY and HAVING", function (t) {
+    var count = null
+    var q = select('t1', ['col2'], function () {
+      count = sqlFunction('COUNT', [this.p('col1')]).as('total')
+      this.fields(count)
+      this.groupBy("col2")
+    })
+
+    t.equal(q.render(),
+      "SELECT t1.col2, COUNT(t1.col1) AS total FROM t1 GROUP BY t1.col2",
+      "basic groupBy")
+
+    t.equal(q.copy().having(count.gt(12)).render(),
+      "SELECT t1.col2, COUNT(t1.col1) AS total FROM t1 GROUP BY t1.col2 HAVING total > ?",
+      "groupBy with HAVING")
+
+    t.end()
+  })
+
   t.test("misc. SELECT tricks", function (t) {
     var q = select('t1', ['col1', 'col2'])
     t.equal(q.render(),
       "SELECT t1.col1, t1.col2 FROM t1",
       "can pass fields to constructor a SELECT with fields")
-
-    t.equal(q.copy().groupBy("col2").render(),
-      "SELECT t1.col1, t1.col2 FROM t1 GROUP BY t1.col2",
-      "and doing a GROUP BY")
 
     t.equal(q.copy().distinct(true).render(),
       "SELECT DISTINCT t1.col1, t1.col2 FROM t1",

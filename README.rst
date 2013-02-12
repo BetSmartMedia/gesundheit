@@ -43,4 +43,4 @@ MIT
 Author
 -------
 
-Stephen Sugden <stephen@betsmartmedia.com>
+Stephen Sugden <glurgle@gmail.com>

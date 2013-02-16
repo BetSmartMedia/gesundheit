@@ -179,6 +179,7 @@ class SqlFunction extends Node
   copy: -> new @constructor @name, copy(@arglist)
   render: (dialect) -> "#{@name}#{dialect.render @arglist}"
   as: (alias) -> new Alias @, alias
+  params: -> @arglist.params()
 
   @Alias = class Alias extends AbstractAlias
     render: (dialect, parents) ->
@@ -650,7 +651,7 @@ sqlFunction = (name, args) ->
       count = sqlFunction('count', [new ValueNode('*')])
 
   ###
-  new SqlFunction name, new Tuple(args)
+  new SqlFunction name, new Tuple(args.map(toParam))
 
 getAlias = (o) ->
   ###
@@ -716,8 +717,9 @@ module.exports = {
   sqlFunction
   text
   toField
-  toRelation
   toParam
+  toProjection
+  toRelation
 
   Node
   ValueNode

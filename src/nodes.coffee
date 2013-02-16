@@ -144,6 +144,8 @@ class AbstractAlias extends Node
   copy: -> new @constructor copy(@obj), @alias
   render: (dialect) ->
     dialect.maybeParens(dialect.render(@obj)) + " AS " + dialect.quote(@alias)
+  params: ->
+    @obj.params?() or []
 
 # End of generic base classes
 
@@ -166,7 +168,9 @@ class TextNode extends Node
       (v for k, v of @bindVals)
 
   as: (alias) ->
-    new AbstractAlias @, alias
+    new Alias @, alias
+
+  @Alias = class Alias extends AbstractAlias
 
 
 class SqlFunction extends Node

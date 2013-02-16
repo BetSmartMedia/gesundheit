@@ -1,4 +1,4 @@
-g = require('../../lib')
+var g = require('../../lib')
 require('tap').test(function (t) {
   t.deepEqual(
     g.select('t1', function () { this.where({x: {gt: 1}}) }).compile(),

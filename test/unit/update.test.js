@@ -1,4 +1,4 @@
-update = require('../../lib').update
+var update = require('../../lib').update
 require('tap').test('UPDATE queries', function (t) {
 	var q = update('t1').copy().set({x: 45})
 

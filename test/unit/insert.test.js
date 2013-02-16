@@ -1,4 +1,4 @@
-g = require('../../lib')
+var g = require('../../lib')
 require('tap').test('INSERT queries', function (t) {
   t.throws(function(){ g.insert('t1') }, "constructor throws if no fields given")
   q = g.insert('t1', ['col_a', 'col_b'])

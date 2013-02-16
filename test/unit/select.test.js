@@ -1,9 +1,9 @@
-g = require('../../lib')
-select = g.select
-sqlFunction = g.sqlFunction
-LEFT_OUTER = g.LEFT_OUTER
+var g = require('../../lib')
+var select = g.select
+var sqlFunction = g.sqlFunction
+var LEFT_OUTER = g.LEFT_OUTER
 
-test = require('tap').test
+var test = require('tap').test
 
 test("SELECT queries", function (t) {
   t.equal(select('t1').render(), "SELECT * FROM t1", "simplest possible query")

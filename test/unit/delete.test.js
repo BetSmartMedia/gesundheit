@@ -1,4 +1,4 @@
-DELETE = require('../../lib').DELETE
+var DELETE = require('../../lib').DELETE
 
 require('tap').test("DELETE queries", function (t) {
   var q = DELETE('t1')

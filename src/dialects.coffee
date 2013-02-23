@@ -24,9 +24,12 @@ class BaseDialect
 
   renderString: (s) -> s
 
+  needsQuote = /\s|"|\./
+  doubleQuote = /"/g
+
   quote: (s) ->
-    if s?.match(/\s|"|\./) or @isKeyword(s)
-      return '"' + s.replace('"', '\\"') + '"'
+    if s?.match(needsQuote) or @isKeyword(s)
+      return '"' + s.replace(doubleQuote, '\\"') + '"'
     else
       s
 

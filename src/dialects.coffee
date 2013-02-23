@@ -7,6 +7,7 @@ to an `engine <Engines>`_ that will delegate rendering to it's dialect instance.
 read = require('fs').readFileSync
 kwFile = __dirname + '/sql_keywords.txt'
 keywords = read(kwFile, 'ascii').split('\n').filter(Boolean)
+{Select, Update, Delete, Insert} = require './nodes'
 
 class BaseDialect
   constructor: ->
@@ -22,14 +23,17 @@ class BaseDialect
     @path.pop(node)
     return string
 
-  renderString: (s) -> s
+  renderString: (s) ->
+    path = @path.map((p) -> p.constructor?.name).join(' > ')
+    @path = []
+    throw new Error "raw string rendered! " + path
 
   needsQuote = /\s|"|\./
   doubleQuote = /"/g
 
   quote: (s) ->
     if s?.match(needsQuote) or @isKeyword(s)
-      return '"' + s.replace(doubleQuote, '\\"') + '"'
+      '"' + s.replace(doubleQuote, '\\"') + '"'
     else
       s
 
@@ -53,7 +57,6 @@ class BaseDialect
       else throw new Error("Unsupported comparison operator: #{op}")
 
 class PostgresDialect extends BaseDialect
-  {Select, Update, Delete, Insert} = require './nodes'
 
   render: (node) ->
     if node.constructor in [Select, Update, Delete, Insert]
@@ -72,6 +75,14 @@ class PostgresDialect extends BaseDialect
 
 class MySQLDialect extends BaseDialect
   renderParameter: -> '?'
+
+  quote: (s) ->
+    ### Do not quote column names in insert column list ###
+    if @path.some((node) -> node instanceof Insert.ColumnList)
+      s
+    else
+      super
+
 
 class SQLite3Dialect extends BaseDialect
   renderParameter: -> '?'

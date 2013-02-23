@@ -1,6 +1,6 @@
 fluidize = require '../fluid'
 SUDQuery = require './sud'
-{Update, binaryOp, toParam} = require '../nodes'
+{Update, binaryOp, toField, toParam} = require '../nodes'
 
 module.exports = class UpdateQuery extends SUDQuery
   ###
@@ -18,7 +18,7 @@ module.exports = class UpdateQuery extends SUDQuery
     
     ###
     for field, value of data
-      @q.updates.addNode binaryOp field, '=', toParam value
+      @q.updates.addNode binaryOp toField(field), '=', toParam(value)
 
   setNodes: (nodes...) ->
     ### Directly push one or more nodes into the SET portion of this query ###

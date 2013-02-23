@@ -340,13 +340,16 @@ class RelationSet extends NodeSet
     if string = super then "FROM #{string}" else ""
 
 class Join extends FixedNodeSet
+  JOIN = new ValueNode 'JOIN'
+  ON = new ValueNode 'ON'
+
   constructor: (@type, @relation) ->
-    nodes = [@type, 'JOIN', @relation]
+    nodes = [@type, JOIN, @relation]
     super nodes
 
   on: (clause) ->
     if @nodes.length < 4
-      @nodes.push 'ON'
+      @nodes.push ON
     @nodes.push clause
 
   ref: ->
@@ -398,12 +401,13 @@ class Having extends NodeSet
     if string = super then "HAVING #{string}" else ""
 
 class OrderBy extends NodeSet
-  constructor: (os) -> super os, ', '
+  constructor: (orderings) -> super orderings, ', '
   render: (dialect) ->
     if string = super then "ORDER BY #{string}" else ""
 
 class Ordering extends FixedNodeSet
   constructor: (projection, direction) ->
+    direction = new ValueNode(direction) if typeof direction is 'string'
     super [projection, direction]
 
 class Select extends Statement
@@ -467,11 +471,13 @@ class Insert extends Statement
     render: (dialect) ->
       if string = super then "VALUES #{string}" else ""
 
+  @ColumnList = class ColumnList extends Tuple
+
   @prefix = 'INSERT INTO '
 
   @structure [
     ['relation',  Relation]
-    ['columns',   Tuple]
+    ['columns',   ColumnList]
     ['data',      InsertData]
     ['returning', Returning]
   ]
@@ -479,7 +485,7 @@ class Insert extends Statement
   initialize: (opts) ->
     unless opts.fields?.length
       throw new Error "Column list is required when constructing an INSERT"
-    @columns = new Tuple opts.fields
+    @columns = new ColumnList opts.fields.map(toField)
     @relation = toRelation(opts.table)
 
   addRow: (row) ->
@@ -506,8 +512,8 @@ class Insert extends Statement
     ###
     @addRowArray @columns.nodes.map(valOrDefault.bind(row))
 
-  valOrDefault = (key) ->
-    #key = field.value
+  valOrDefault = (field) ->
+    key = field.value
     if @hasOwnProperty(key) then @[key] else CONST_NODES.DEFAULT
 
   from: (query) ->

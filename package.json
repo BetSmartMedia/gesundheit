@@ -12,7 +12,7 @@
     "type": "git",
     "url": "git://github.com/BetSmartMedia/gesundheit.git"
   },
-  "version": "0.6.5",
+  "version": "0.6.6",
   "private": false,
   "main": "lib",
   "files": [

@@ -68,7 +68,7 @@ class PostgresDialect extends BaseDialect
       when '->' then '->'
       else super op
 
-  isKeyword: (s) -> s?
+  isKeyword: (s) -> s? and s isnt '*'
 
 class MySQLDialect extends BaseDialect
   renderParameter: -> '?'

@@ -14,12 +14,14 @@ require('tap').test(function (t) {
   )
 
   t.deepEqual(
-    g.insert('t1', ['col_a', 'col_b'], function () { this.addRow([1, 2]) }).compile(),
+    g.insert('t1', ['col_a', 'col_b'], function () {
+      this.addRow([1, 2])
+    }).compile(),
     ["INSERT INTO t1 (col_a, col_b) VALUES (?, ?)", [1, 2]]
   )
 
   t.deepEqual(
-    g.delete('t1', function() { this.where({x: 1}) }).compile(),
+    g['delete']('t1', function () { this.where({x: 1}) }).compile(),
     ["DELETE FROM t1 WHERE t1.x = ?", [1]]
   )
 

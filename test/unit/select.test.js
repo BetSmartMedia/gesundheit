@@ -8,9 +8,9 @@ var test = require('tap').test
 test("SELECT queries", function (t) {
   t.equal(select('t1').render(), "SELECT * FROM t1", "simplest possible query")
 
-	t.equal(select('case', ['when']).render(),
-		'SELECT "case"."when" FROM "case"',
-		"Quoting identifiers")
+  t.equal(select('case', ['when']).render(),
+    'SELECT "case"."when" FROM "case"',
+    "Quoting identifiers")
 
   t.test("ORDER BY clauses", function (t) {
     var q = select('t1')
@@ -46,7 +46,7 @@ test("SELECT queries", function (t) {
       ["SELECT * FROM t1 WHERE (t1.x < ? OR t1.y = ?)", [10, 10]],
       "and an 'OR' where clause is added")
       
-    t.deepEqual(q.copy().where({x: {"in": [1,2,3]}}).compile(),
+    t.deepEqual(q.copy().where({x: {"in": [1, 2, 3]}}).compile(),
       ["SELECT * FROM t1 WHERE t1.x IN (?, ?, ?)", [1, 2, 3]],
       "and an 'IN' where clause is added")
     
@@ -59,7 +59,7 @@ test("SELECT queries", function (t) {
       "SELECT * FROM t1 INNER JOIN t2",
       "default join")
 
-    t.throws(function(){ q.join("t1") }, "self-joins require alias")
+    t.throws(function () { q.join("t1") }, "self-joins require alias")
 
     t.throws(function () { q.table("blah") },
       "switching to an unjoined table throws an Error")
@@ -89,7 +89,8 @@ test("SELECT queries", function (t) {
 
     t.equals(q.copy().visit(function () {
         this.join("t2", {on: {x: this.p('t1', 'x'), y: this.p('t1', 'y')}})
-      }).render(), "SELECT * FROM t1 INNER JOIN t2 ON (t2.x = t1.x AND t2.y = t1.y)",
+      }).render(),
+      "SELECT * FROM t1 INNER JOIN t2 ON (t2.x = t1.x AND t2.y = t1.y)",
       "joining using a clause with multiple predicates")
 
 
@@ -133,7 +134,8 @@ test("SELECT queries", function (t) {
       "basic groupBy")
 
     t.equal(q.copy().having(count.gt(12)).render(),
-      "SELECT t1.col2, COUNT(t1.col1) AS total FROM t1 GROUP BY t1.col2 HAVING total > ?",
+      "SELECT t1.col2, COUNT(t1.col1) AS total " +
+      "FROM t1 GROUP BY t1.col2 HAVING total > ?",
       "groupBy with HAVING")
 
     t.end()
@@ -157,7 +159,8 @@ test("SELECT queries", function (t) {
       "SELECT * FROM t1 LIMIT 100",
       "setting a limit")
 
-    t.equals(select({t1: 'LongTableName'}, [{short: 'long_field_name'}]).render(),
+    t.equals(
+      select({t1: 'LongTableName'}, [{short: 'long_field_name'}]).render(),
       "SELECT t1.long_field_name AS short FROM LongTableName AS t1",
       "Object aliases in constructor work")
 

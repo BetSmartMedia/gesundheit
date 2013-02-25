@@ -36,3 +36,23 @@ test("Text Helper", function (t) {
 	t.type(n.eq, 'function', 'text nodes have an "eq" method')  // ComparableMixin
 	t.end()
 })
+
+test('exists/notExists helpers', function (t) {
+  var select = require('../../').select
+  t.equal(
+    select('t1')
+      .where(nodes.notExists(select('t1', ['id']).where({id: 3})))
+      .render(),
+    "SELECT * FROM t1 WHERE NOT EXISTS (SELECT t1.id FROM t1 WHERE t1.id = ?)",
+    "Can create NOT EXISTS conditions using subqueries"
+  )
+
+  t.equal(
+    select('t1')
+      .where(nodes.exists(select('t1', ['id']).where({id: 3})))
+      .render(),
+    "SELECT * FROM t1 WHERE EXISTS (SELECT t1.id FROM t1 WHERE t1.id = ?)",
+    "Can create EXISTS conditions using subqueries"
+  )
+  t.end()
+})

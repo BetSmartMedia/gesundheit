@@ -714,12 +714,28 @@ binaryOp = (left, op, right) ->
   ###
   new Binary left, op, right
 
+class Prefixed extends ValueNode
+  constructor: (@prefix, @node) ->
+  render: -> @prefix + @node.render.apply(@node, arguments)
+  params: -> @node.params?() or []
+
+exists = (subquery) ->
+  ### Create an ``EXISTS (<subquery>)`` node for `where` ###
+  new Prefixed('EXISTS ', new Tuple([subquery]))
+
+notExists = (subquery) ->
+  ### Create a ``NOT EXISTS (<subquery>)`` node for `where` ###
+  new Prefixed('NOT EXISTS ', new Tuple([subquery]))
+
+
 module.exports = {
   CONST_NODES
   JOIN_TYPES
 
   binaryOp
+  exists
   getAlias
+  notExists
   sqlFunction
   text
   toField

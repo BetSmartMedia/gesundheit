@@ -59,12 +59,13 @@ class BaseDialect
 class PostgresDialect extends BaseDialect
 
   render: (node) ->
-    if node.constructor in [Select, Update, Delete, Insert]
+    unless @path.length
       @paramCount = 1
     super node
 
   renderParameter: (node) ->
     "$#{@paramCount++}"
+
   operator: (op) ->
     switch op.toLowerCase()
       when 'hasKey' then '?'

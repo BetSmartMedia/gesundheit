@@ -721,11 +721,11 @@ class Prefixed extends ValueNode
 
 exists = (subquery) ->
   ### Create an ``EXISTS (<subquery>)`` node for `where` ###
-  new Prefixed('EXISTS ', new Tuple([subquery]))
+  new Prefixed('EXISTS ', new Tuple([subquery.q or subquery]))
 
 notExists = (subquery) ->
   ### Create a ``NOT EXISTS (<subquery>)`` node for `where` ###
-  new Prefixed('NOT EXISTS ', new Tuple([subquery]))
+  new Prefixed('NOT EXISTS ', new Tuple([subquery.q or subquery]))
 
 
 module.exports = {

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Gesundheit! &mdash; gesundheit 0.6.5 documentation</title>
+    <title>Gesundheit! &mdash; gesundheit 0.7.2 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.6.5',
+        VERSION:     '0.7.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.6.5 documentation" href="#" />
+    <link rel="top" title="gesundheit 0.7.2 documentation" href="#" />
     <link rel="next" title="Gesundheit!" href="" /> 
   </head>
   <body>  
@@ -1288,6 +1288,18 @@ on your use case so gesundheit can support it more elegantly.</p>
 </div>
 <p>This is for special cases, normally you want to use the methods from
 <a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nodes::exists">
+<em class="property">function </em><tt class="descname">exists</tt><big>(</big><em>subquery</em><big>)</big><a class="headerlink" href="#nodes::exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an <tt class="docutils literal"><span class="pre">EXISTS</span> <span class="pre">(&lt;subquery&gt;)</span></tt> node for <cite>where</cite></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nodes::notExists">
+<em class="property">function </em><tt class="descname">notExists</tt><big>(</big><em>subquery</em><big>)</big><a class="headerlink" href="#nodes::notExists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <tt class="docutils literal"><span class="pre">NOT</span> <span class="pre">EXISTS</span> <span class="pre">(&lt;subquery&gt;)</span></tt> node for <cite>where</cite></p>
 </dd></dl>
 
 </div>

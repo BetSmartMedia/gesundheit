@@ -14,6 +14,8 @@ class BaseDialect
     @path = []
 
   render: (node) ->
+    unless @path.length
+      @paramCount = 1
     @path.push(node)
     name = node?.__proto__?.constructor?.name
     if name and custom = @['render' + name]
@@ -56,15 +58,14 @@ class BaseDialect
       when 'is' then 'IS'
       else throw new Error("Unsupported comparison operator: #{op}")
 
+  renderParameter: (node) ->
+    "$#{@paramCount++}"
+
+
 class PostgresDialect extends BaseDialect
 
   render: (node) ->
-    unless @path.length
-      @paramCount = 1
     super node
-
-  renderParameter: (node) ->
-    "$#{@paramCount++}"
 
   operator: (op) ->
     switch op.toLowerCase()

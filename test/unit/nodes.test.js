@@ -47,7 +47,8 @@ test('exists/notExists helpers', function (t) {
     select('t1')
       .where(nodes.notExists(select('t1', ['id']).where({id: 3})))
       .render(),
-    "SELECT * FROM t1 WHERE NOT EXISTS (SELECT t1.id FROM t1 WHERE t1.id = ?)",
+    "SELECT * FROM t1 WHERE NOT EXISTS " +
+    "(SELECT t1.id FROM t1 WHERE t1.id = $1)",
     "Can create NOT EXISTS conditions using subqueries"
   )
 
@@ -55,7 +56,7 @@ test('exists/notExists helpers', function (t) {
     select('t1')
       .where(nodes.exists(select('t1', ['id']).where({id: 3})))
       .render(),
-    "SELECT * FROM t1 WHERE EXISTS (SELECT t1.id FROM t1 WHERE t1.id = ?)",
+    "SELECT * FROM t1 WHERE EXISTS (SELECT t1.id FROM t1 WHERE t1.id = $1)",
     "Can create EXISTS conditions using subqueries"
   )
   t.end()

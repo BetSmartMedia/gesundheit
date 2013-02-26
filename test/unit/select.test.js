@@ -35,19 +35,19 @@ test("SELECT queries", function (t) {
   t.test("WHERE clauses", function (t) {
     var q = select('t1')
     t.deepEqual(q.copy().where({x: 2}).compile(),
-      ["SELECT * FROM t1 WHERE t1.x = ?", [ 2 ]],
+      ["SELECT * FROM t1 WHERE t1.x = $1", [ 2 ]],
       "and a where clause is added")
 
     t.deepEqual(q.copy().where({x: {lt: 10}}).compile(),
-      ["SELECT * FROM t1 WHERE t1.x < ?", [ 10 ]],
+      ["SELECT * FROM t1 WHERE t1.x < $1", [ 10 ]],
       "and a 'lt' where clause is added")
 
     t.deepEqual(q.copy().or({x: {lt: 10}, y: 10}).compile(),
-      ["SELECT * FROM t1 WHERE (t1.x < ? OR t1.y = ?)", [10, 10]],
+      ["SELECT * FROM t1 WHERE (t1.x < $1 OR t1.y = $2)", [10, 10]],
       "and an 'OR' where clause is added")
       
     t.deepEqual(q.copy().where({x: {"in": [1, 2, 3]}}).compile(),
-      ["SELECT * FROM t1 WHERE t1.x IN (?, ?, ?)", [1, 2, 3]],
+      ["SELECT * FROM t1 WHERE t1.x IN ($1, $2, $3)", [1, 2, 3]],
       "and an 'IN' where clause is added")
     
     t.end()
@@ -135,7 +135,7 @@ test("SELECT queries", function (t) {
 
     t.equal(q.copy().having(count.gt(12)).render(),
       "SELECT t1.col2, COUNT(t1.col1) AS total " +
-      "FROM t1 GROUP BY t1.col2 HAVING total > ?",
+      "FROM t1 GROUP BY t1.col2 HAVING total > $1",
       "groupBy with HAVING")
 
     t.end()

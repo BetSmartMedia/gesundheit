@@ -38,7 +38,7 @@ test("Aliases", function (t) {
             'renders just the alias name outside of a ProjectionSet')
 
     var ps = new g.nodes.ProjectionSet([it])
-    t.equal(dialect.render(ps), 'MY_FUNC(?) AS my_alias',
+    t.equal(dialect.render(ps), 'MY_FUNC($1) AS my_alias',
             'renders full function and alias inside ProjectionSet')
     t.deepEqual(it.params(), [1])
   })

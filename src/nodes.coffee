@@ -12,7 +12,8 @@ you need to.
 class Node
   ### (Empty) base Node class ###
   render: (dialect) ->
-    throw new Error "#{@constructor} has no render method. Parents: #{dialect.path}"
+    message = "#{@constructor} has no render method. Parents: #{dialect.path}"
+    throw new Error message
 
 
 class ValueNode extends Node
@@ -122,14 +123,16 @@ class Statement extends Node
     if parts.length
       @constructor.prefix + parts.join(' ')
     else
-      ''
+      return ""
 
   params: ->
     ###
     Collect parameters from child nodes.
     ###
     params = []
-    for node in (@_private[k] for k in @constructor._nodeOrder) when node?.params
+    nodes = @_private
+    order = @constructor._nodeOrder
+    for node in (nodes[k] for k in order) when node?.params
       params = params.concat node.params()
     params
 
@@ -265,7 +268,10 @@ class Binary extends FixedNodeSet
     new Or [@, args...]
 
   render: (dialect) ->
-    [dialect.render(@left), dialect.operator(@op), dialect.render(@right)].join(' ')
+    [ dialect.render(@left)
+      dialect.operator(@op)
+      dialect.render(@right)
+    ].join(' ')
 
 class Tuple extends ParenthesizedNodeSet
   glue: ', '
@@ -275,6 +281,11 @@ class ProjectionSet extends NodeSet
   glue: ', '
 
 class Returning extends ProjectionSet
+  @extend = (klazz) ->
+    klazz::addReturning = (cols) ->
+      @returning.addNode(toField(col)) for col in cols
+      null
+
   render: ->
     if string = super then "RETURNING #{string}" else ""
 
@@ -456,6 +467,8 @@ class Update extends Statement
     ['returning', Returning]
   ]
 
+  Returning.extend(@)
+
   initialize: (opts) ->
     @relation = toRelation(opts.table)
 
@@ -482,6 +495,8 @@ class Insert extends Statement
     ['returning', Returning]
   ]
 
+  Returning.extend(@)
+
   initialize: (opts) ->
     unless opts.fields?.length
       throw new Error "Column list is required when constructing an INSERT"
@@ -498,7 +513,8 @@ class Insert extends Statement
     if not count = @columns.nodes.length
       throw new Error "Must set column list before inserting arrays"
     if row.length != count
-      throw new Error "Wrong number of values in array, expected #{@columns.nodes}"
+      message = "Wrong number of values in array, expected #{@columns.nodes}"
+      throw new Error message
 
     params = for v in row
       if v instanceof Node then v else new Parameter v
@@ -521,11 +537,6 @@ class Insert extends Statement
       throw new Error "Can only insert from a SELECT"
     @data = query
 
-  addReturning: (cols) ->
-    for col in cols
-      @returning.addNode toField(col)
-    return
-
 
 class Delete extends Statement
   ###
@@ -537,7 +548,10 @@ class Delete extends Statement
     ['where',     Where]
     ['orderBy',   OrderBy]
     ['limit',     Limit]
+    ['returning', Returning]
   ]
+
+  Returning.extend(@)
 
   initialize: (opts) ->
     @relations.addNode(toRelation(opts.table))
@@ -602,10 +616,8 @@ toRelation = (it) ->
 
   Examples::
 
-     toRelation('some_table')     # new Relation('some_table')
-     toRelation(st: 'some_table') # new Alias(Relation('some_table'), 'st')
-     toRelation(new Relation('some_table')) # returns same instance
-     toRelation(new Alias(new Relation('some_table'), 'al') # returns same instance
+     toRelation('table1')     == new Relation('table1')
+     toRelation(t1: 'table1') == new Alias(new Relation('table1'), 't1')
 
   **Throws Errors** if the input is not valid.
   ###
@@ -643,11 +655,12 @@ toProjection = (relation, field) ->
   Either argument can be an pre-constructed node object (of the correct type).
   ###
   if field?
-    new Projection(toRelation(relation), toField(field))
-  else if typeof relation is 'string' and (parts = relation.split('.')).length is 2
-    new Projection(toRelation(parts[0]), toField(parts[1]))
-  else
-    throw new Error("Can't make projection from object: #{relation}")
+    return new Projection(toRelation(relation), toField(field))
+  else if typeof relation is 'string'
+    parts = relation.split('.')
+    if parts.length is 2
+      return new Projection(toRelation(parts[0]), toField(parts[1]))
+  throw new Error("Can't make projection from object: #{relation}")
 
 
 sqlFunction = (name, args) ->

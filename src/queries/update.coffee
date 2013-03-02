@@ -13,8 +13,8 @@ module.exports = class UpdateQuery extends SUDQuery
     ###
     Add fields to the SET portion of this query.
 
-    :param data: An object mapping fields to values. The values will be passed to
-      :func:`nodes::toParam` to be converted into bound paramaeters.
+    :param data: An object mapping fields to values. The values will be passed
+      to :func:`nodes::toParam` to be converted into bound paramaeters.
     
     ###
     for field, value of data
@@ -26,4 +26,7 @@ module.exports = class UpdateQuery extends SUDQuery
 
   defaultRel: -> @q.relation
 
-fluidize UpdateQuery, 'set', 'setNodes'
+  returning: (cols...) ->
+    @q.addReturning cols
+
+fluidize UpdateQuery, 'set', 'setNodes', 'returning'

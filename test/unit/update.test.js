@@ -2,7 +2,6 @@ var update = require('../../lib').update
 require('tap').test('UPDATE queries', function (t) {
   var q = update('t1').copy().set({x: 45})
 
-  t.plan(5)
   t.deepEqual(q.compile(),
     ["UPDATE t1 SET x = $1", [45]],
     "and setting a column to a value")
@@ -23,5 +22,10 @@ require('tap').test('UPDATE queries', function (t) {
     ["UPDATE t1 SET x = $1 WHERE t1.x IS NULL", [45]],
     "and adding an IS NULL condition")
 
+  t.deepEqual(q.copy().returning('*').compile(),
+    ["UPDATE t1 SET x = $1 RETURNING *", [45]],
+    "and returning rows")
+
+  t.end()
 })
 

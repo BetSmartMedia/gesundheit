@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Gesundheit! &mdash; gesundheit 0.7.2 documentation</title>
+    <title>Gesundheit! &mdash; gesundheit 0.7.3 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.7.2',
+        VERSION:     '0.7.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.7.2 documentation" href="#" />
+    <link rel="top" title="gesundheit 0.7.3 documentation" href="#" />
     <link rel="next" title="Gesundheit!" href="" /> 
   </head>
   <body>  
@@ -896,8 +896,8 @@ simple updates of a single table.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> &#8211; An object mapping fields to values. The values will be passed to
-<a class="reference internal" href="#nodes::toParam" title="nodes::toParam"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toParam</span></tt></a> to be converted into bound paramaeters.</li>
+<li><strong>data</strong> &#8211; An object mapping fields to values. The values will be passed
+to <a class="reference internal" href="#nodes::toParam" title="nodes::toParam"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toParam</span></tt></a> to be converted into bound paramaeters.</li>
 </ul>
 </td>
 </tr>
@@ -930,7 +930,7 @@ simple updates of a single table.</p>
 <span class="target" id="module-queries/delete::"></span><dl class="class">
 <dt id="queries/delete::DeleteQuery">
 <em class="property">class </em><tt class="descname">DeleteQuery</tt><em class="property"> extends </em><a class="reference internal" href="#queries/sud::SUDQuery" title="queries/sud::SUDQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SUDQuery</span></tt></a><a class="headerlink" href="#queries/delete::DeleteQuery" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete queries don&#8217;t add any new methods to <tt class="docutils literal"><span class="pre">SUDQuery</span></tt></p>
+<dd><p>Delete queries only add a &#8216;returning&#8217; methods to <tt class="docutils literal"><span class="pre">SUDQuery</span></tt></p>
 </dd></dl>
 
 </div>
@@ -1210,10 +1210,8 @@ un-named sub queries,</li>
 <p>This accepts <cite>strings, `Relation`</cite> and <tt class="docutils literal"><span class="pre">Alias</span></tt> instances, and objects with
 a single key-value pair, which will be turned into an <tt class="docutils literal"><span class="pre">Alias</span></tt> instance.</p>
 <p>Examples:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">toRelation</span><span class="p">(</span><span class="s">&#39;some_table&#39;</span><span class="p">)</span>     <span class="c1"># new Relation(&#39;some_table&#39;)</span>
-<span class="nx">toRelation</span><span class="p">(</span><span class="nv">st: </span><span class="s">&#39;some_table&#39;</span><span class="p">)</span> <span class="c1"># new Alias(Relation(&#39;some_table&#39;), &#39;st&#39;)</span>
-<span class="nx">toRelation</span><span class="p">(</span><span class="k">new</span> <span class="nx">Relation</span><span class="p">(</span><span class="s">&#39;some_table&#39;</span><span class="p">))</span> <span class="c1"># returns same instance</span>
-<span class="nx">toRelation</span><span class="p">(</span><span class="k">new</span> <span class="nx">Alias</span><span class="p">(</span><span class="k">new</span> <span class="nx">Relation</span><span class="p">(</span><span class="s">&#39;some_table&#39;</span><span class="p">),</span> <span class="s">&#39;al&#39;</span><span class="p">)</span> <span class="c1"># returns same instance</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">toRelation</span><span class="p">(</span><span class="s">&#39;table1&#39;</span><span class="p">)</span>     <span class="o">==</span> <span class="k">new</span> <span class="nx">Relation</span><span class="p">(</span><span class="s">&#39;table1&#39;</span><span class="p">)</span>
+<span class="nx">toRelation</span><span class="p">(</span><span class="nv">t1: </span><span class="s">&#39;table1&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="k">new</span> <span class="nx">Alias</span><span class="p">(</span><span class="k">new</span> <span class="nx">Relation</span><span class="p">(</span><span class="s">&#39;table1&#39;</span><span class="p">),</span> <span class="s">&#39;t1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Throws Errors</strong> if the input is not valid.</p>

@@ -73,3 +73,6 @@ require('./queries').mixinFactoryMethods(exports, -> exports.defaultEngine)
 
 exports.begin = (args...) ->
   exports.defaultEngine.begin args...
+  
+exports.query = (args...) ->
+  exports.defaultEngine.query args...

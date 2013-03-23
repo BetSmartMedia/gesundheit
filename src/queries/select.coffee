@@ -1,4 +1,3 @@
-fluidize = require '../fluid'
 SUDQuery = require './sud'
 { Node,
   getAlias,
@@ -16,7 +15,7 @@ module.exports = class SelectQuery extends SUDQuery
   ###
   @rootNode = Select
 
-  fields: (fields...) ->
+  fields: (fields) ->
     ###
     Adds one or more fields to the query. Fields can be strings (in which case
     they will be passed to :meth:`queries/sud::SUDQuery.project`) or pre-
@@ -45,7 +44,7 @@ module.exports = class SelectQuery extends SUDQuery
         @q.projections.addNode proj(f)
     null
 
-  fun: (fun, args...) ->
+  fun: (fun, args) ->
     ###
     Adds a SQL function to the column list for the query. This can be an
     aggregate function if you also use :meth:`queries/select::groupBy`.
@@ -64,9 +63,9 @@ module.exports = class SelectQuery extends SUDQuery
 
     ###
     if alias = getAlias fun
-      @q.projections.addNode sqlFunction(fun[alias], fields).as(alias)
+      @q.projections.addNode sqlFunction(fun[alias], args).as(alias)
     else
-      @q.projections.addNode sqlFunction(fun, fields)
+      @q.projections.addNode sqlFunction(fun, args)
 
   distinct: (bool) ->
     ###
@@ -85,7 +84,7 @@ module.exports = class SelectQuery extends SUDQuery
       An object literal expressing join conditions. See
       :meth:`queries/select::SelectQuery::where` for more.
     :param opts.type: A join type constant (e.g. INNER, OUTER)
-    :param opts.fields: A list of fields to be projected from the newly joined table.
+    :param opts.fields: Columns to be selected from the newly joined table.
     ###
     rel = toRelation table
     if @q.relations.get rel.ref(), false
@@ -99,7 +98,7 @@ module.exports = class SelectQuery extends SUDQuery
     # must switch to the new relation before making clauses
     if opts.on then join.on(new And(@_makeClauses opts.on))
     if opts.fields?
-      @fields(opts.fields...)
+      @fields(opts.fields)
 
   ensureJoin: (table, opts={}) ->
     ###
@@ -120,7 +119,7 @@ module.exports = class SelectQuery extends SUDQuery
     ###
     @q.relations.switch alias
 
-  groupBy: (fields...) ->
+  groupBy: (fields) ->
     ### Add a GROUP BY to the query. ###
     @q.groupBy.addNode(@project(field)) for field in fields
     null
@@ -132,8 +131,17 @@ module.exports = class SelectQuery extends SUDQuery
     ###
     @q.having.addNode(node) for node in @_makeClauses(constraint)
 
-fluidize SelectQuery,
+
+fluid    = require '../decorators/fluid'
+variadic = require '../decorators/variadic'
+
+SelectQuery::[method] = variadic(SelectQuery::[method]) for method in [
+  'fields', 'groupBy'
+]
+
+SelectQuery::[method] = fluid(SelectQuery::[method]) for method in [
   'distinct', 'fields', 'agg', 'join', 'ensureJoin', 'focus', 'groupBy', 'having'
+]
 
 # Alias methods
 SelectQuery::field = SelectQuery::fields

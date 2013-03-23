@@ -1,4 +1,3 @@
-fluidize    = require '../fluid'
 returnable  = require './returnable'
 
 BaseQuery   = require './base'
@@ -27,4 +26,8 @@ module.exports = class InsertQuery extends BaseQuery
     ### Insert from a select query. ###
     @q.from(query.q or query)
 
-fluidize InsertQuery, 'addRow', 'addRows', 'from', 'returning'
+fluid = require '../decorators/fluid'
+
+InsertQuery::[method] = fluid(InsertQuery::[method]) for method in [
+  'addRow', 'addRows', 'from', 'returning'
+]

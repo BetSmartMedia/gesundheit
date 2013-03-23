@@ -1,6 +1,7 @@
+variadic = require '../decorators/variadic'
+fluid    = require '../decorators/fluid'
+
 module.exports = (klazz) ->
-  klazz::returning = (cols...) ->
-    if cols.length is 1 and Array.isArray(cols[0])
-      cols = cols
+  klazz::returning = fluid variadic (cols) ->
     @q.addReturning cols
     return @

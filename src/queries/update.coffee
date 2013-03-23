@@ -1,5 +1,4 @@
 returnable = require './returnable'
-fluidize   = require '../fluid'
 SUDQuery   = require './sud'
 {Update, binaryOp, toField, toParam} = require '../nodes'
 
@@ -23,10 +22,17 @@ module.exports = class UpdateQuery extends SUDQuery
     for field, value of data
       @q.updates.addNode binaryOp toField(field), '=', toParam(value)
 
-  setNodes: (nodes...) ->
+  setNodes: (nodes) ->
     ### Directly push one or more nodes into the SET portion of this query ###
     @q.updates.push nodes...
 
   defaultRel: -> @q.relation
 
-fluidize UpdateQuery, 'set', 'setNodes', 'returning'
+fluid    = require '../decorators/fluid'
+variadic = require '../decorators/variadic'
+
+UpdateQuery::setNodes = variadic(UpdateQuery::setNodes)
+
+UpdateQuery::[method] = fluid(UpdateQuery::[method]) for method in [
+  'set', 'setNodes', 'returning'
+]

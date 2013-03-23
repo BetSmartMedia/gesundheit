@@ -7,4 +7,3 @@ module.exports = class DeleteQuery extends SUDQuery
   @rootNode = Delete
 
   returnable @
-

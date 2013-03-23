@@ -1,6 +1,5 @@
 BaseQuery = require './base'
 nodes = require '../nodes'
-fluidize = require '../fluid'
 {Node, And, Or, Ordering, Column, CONST_NODES, toField} = nodes
 
 module.exports = class SUDQuery extends BaseQuery
@@ -118,15 +117,15 @@ module.exports = class SUDQuery extends BaseQuery
           clauses.push column.eq predicate
     clauses
 
-  or: (clauses...) ->
+  or: (clauses) ->
     ### Shortcut for ``.where({or: clauses})`` ###
     @where or: clauses
 
-  and: (clauses...) ->
+  and: (clauses) ->
     ### Shortcut for ``.where({and: clauses})`` ###
     @where and: clauses
 
-  order: (args...) ->
+  order: (args) ->
     ###
     Add one or more ORDER BY clauses to the query.
 
@@ -227,7 +226,16 @@ module.exports = class SUDQuery extends BaseQuery
     @q.relations.get alias
 
 
-fluidize SUDQuery, 'where', 'or', 'and', 'limit', 'offset', 'order'
+variadic = require '../decorators/variadic'
+fluid    = require '../decorators/fluid'
+
+SUDQuery::[method] = variadic(SUDQuery::[method]) for method in [
+  'and', 'or', 'order'
+]
+
+SUDQuery::[method] = fluid(SUDQuery::[method]) for method in [
+  'where', 'or', 'and', 'limit', 'offset', 'order'
+]
 
 SUDQuery::p = SUDQuery::project
 SUDQuery::c = SUDQuery::column

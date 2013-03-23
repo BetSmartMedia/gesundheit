@@ -2,7 +2,6 @@
 {EventEmitter} = require 'events'
 {toRelation}   = require '../nodes'
 assert         = require 'assert'
-fluidize       = require '../fluid'
 
 
 module.exports = class BaseQuery extends EventEmitter
@@ -94,4 +93,7 @@ module.exports = class BaseQuery extends EventEmitter
   toString: ->
     @render()
 
-fluidize BaseQuery, 'bind', 'visit'
+
+fluid = require '../decorators/fluid'
+
+BaseQuery::[method] = fluid(BaseQuery::[method]) for method in ['bind', 'visit']

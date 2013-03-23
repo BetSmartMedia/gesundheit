@@ -18,15 +18,15 @@ module.exports = class SUDQuery extends BaseQuery
     The first kind of constraint is a comparison node as produced by the
     :class:`nodes::ComparableMixin` methods on projected fields::
 
-      q.where(q.p('field1').eq(42))
-      q.where(q.p('field2').gt(42))
+      q.where(q.c('field1').eq(42))
+      q.where(q.c('field2').gt(42))
       # WHERE t1.field1 = 42 AND t1.field2 > 42
 
     We used an implied table name above, which is always the last table added to
     the query or focused with  :meth:`queries/sud::SUDQuery.focus`. If you want
     to specify constraints on multiple tables at once (or just be more explicit)
     you can also specify the relation for a field by prepending it to the field
-    name (e.g. ``q.p('t1.field1')``. See :meth:`queries/sud::SUDQuery.project`
+    name (e.g. ``q.c('t1.field1')``. See :meth:`queries/sud::SUDQuery.project`
     for details.
 
     The second kind of constraint is an object literal where each key is a field
@@ -60,9 +60,9 @@ module.exports = class SUDQuery extends BaseQuery
     You can also acheive the same effect by chaining method calls on comparison
     nodes::
 
-      a = q.p('a')
-      b = q.p('b')
-      c = q.p('c')
+      a = q.c('a')
+      b = q.c('b')
+      c = q.c('c')
       q.where(a.eq(1).or(b.eq(2).and(c.eq(3))))
       # WHERE (t1.a = 1 OR (t1.b = 2 AND t1.c = 3))
 
@@ -193,7 +193,7 @@ module.exports = class SUDQuery extends BaseQuery
 
     ``project`` is also aliased as ``p`` for those who value brevity::
 
-         q.where(q.p('departments.name').eq('development'))
+         q.where(q.c('departments.name').eq('development'))
 
     .. note:: this means you *must* specify a relation name if you have a field
       name with a dot in it, if you have dots in your column names, sorry.

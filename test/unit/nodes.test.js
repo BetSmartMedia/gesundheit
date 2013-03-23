@@ -61,3 +61,27 @@ test('exists/notExists helpers', function (t) {
   )
   t.end()
 })
+
+test('tuple helper', function (t) {
+  var dialect = new (require('../../lib/dialects').base)()
+  var subject = nodes.tuple([42, nodes.toField('bar')])
+
+
+  t.equal(
+    nodes.Binary,
+    subject.compare('IN', [[1, 2], [3, 4]]).constructor,
+    "tuples are comparable")
+
+  t.test('constructor and rendering', function (t) {
+    t.deepEqual(
+      subject.nodes.map(function (it) { return it.constructor }),
+      [nodes.Parameter, nodes.Field],
+      'Calls toParams on input')
+    t.deepEqual(subject.params(), [42], "Has params")
+    t.equal(subject.render(dialect), "($1, bar)", "Renders correctly")
+    t.end()
+  })
+
+  t.end()
+})
+

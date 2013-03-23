@@ -594,6 +594,7 @@ for k, v of ComparableMixin::
   SqlFunction.Alias::[k] = v
   Column::[k] = v
   Column.Alias::[k] = v
+  Tuple::[k] = v
 
 toParam = (it) ->
   ###
@@ -746,6 +747,13 @@ notExists = (subquery) ->
   ### Create a ``NOT EXISTS (<subquery>)`` node for `where` ###
   new Prefixed('NOT EXISTS ', new Tuple([subquery.q or subquery]))
 
+tuple = (input) ->
+  ###
+  Create a new Tuple from an array of nodes. Any item in the array that is
+  **not** an `instanceof Node` will be turned into a parameter with
+  :func:`nodes::toParam`.
+  ###
+  new Tuple input.map(toParam)
 
 module.exports = {
   CONST_NODES
@@ -762,6 +770,7 @@ module.exports = {
   toColumn
   toProjection
   toRelation
+  tuple
 
   Node
   ValueNode

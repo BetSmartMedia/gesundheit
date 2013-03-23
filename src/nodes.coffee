@@ -145,6 +145,7 @@ class ParenthesizedNodeSet extends NodeSet
 class AbstractAlias extends Node
   constructor: (@obj, @alias) ->
   copy: -> new @constructor copy(@obj), @alias
+  ref: -> @alias
   render: (dialect) ->
     dialect.maybeParens(dialect.render(@obj)) + " AS " + dialect.quote(@alias)
   params: ->
@@ -179,15 +180,20 @@ class TextNode extends Node
 class SqlFunction extends Node
   ### Includes :class:`nodes::ComparableMixin` ###
   constructor: (@name, @arglist) ->
+  ref:  -> @name
   copy: -> new @constructor @name, copy(@arglist)
-  render: (dialect) -> "#{@name}#{dialect.render @arglist}"
+  render: (dialect) ->
+    "#{@name}#{dialect.render @arglist}"
   as: (alias) -> new Alias @, alias
   params: -> @arglist.params()
 
   @Alias = class Alias extends AbstractAlias
+    columnOrRelationSet = (node) ->
+      node instanceof ColumnSet or node instanceof RelationSet
+
     render: (dialect, parents) ->
-      if parents.some((node) -> node instanceof ColumnSet)
-        super
+      if parents.some(columnOrRelationSet)
+        dialect.render(@obj) + " AS " + dialect.quote(@alias)
       else
         dialect.quote(@alias)
 
@@ -219,7 +225,6 @@ class Relation extends Identifier
 
   @Alias = class Alias extends AbstractAlias
     ### An aliased :class:`nodes::Relation` ###
-    ref: -> @alias
     project: (field) -> Relation::project.call @, field
     render: (dialect, parents) ->
       if parents.some((n) -> n instanceof Column)
@@ -622,7 +627,7 @@ toRelation = (it) ->
   **Throws Errors** if the input is not valid.
   ###
   switch it.constructor
-    when Relation, Relation.Alias then it
+    when Relation, Relation.Alias, SqlFunction, SqlFunction.Alias then it
     when String then new Relation it
     when Object
       if alias = getAlias it

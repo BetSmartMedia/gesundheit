@@ -107,6 +107,7 @@ test("SELECT queries", function (t) {
 
     t.end()
   })
+
   t.test("ensureJoin", function (t) {
     var q = select('t1', ['*'])
     t.plan(2)
@@ -164,6 +165,15 @@ test("SELECT queries", function (t) {
       "SELECT t1.long_field_name AS short FROM LongTableName AS t1",
       "Object aliases in constructor work")
 
+    t.equals(
+      select(sqlFunction('myfunc', [1, 2])).render(),
+      "SELECT * FROM myfunc($1, $2)",
+      "Can select from a SQL function call")
+
+    t.deepEquals(
+      select(sqlFunction('myfunc', [1, 2]).as('foo')).compile(),
+      ["SELECT * FROM myfunc($1, $2) AS foo", [1, 2]],
+      "Can select from an aliased SQL function call")
     t.end()
   })
 

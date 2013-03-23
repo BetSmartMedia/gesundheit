@@ -188,11 +188,13 @@ class SqlFunction extends Node
   params: -> @arglist.params()
 
   @Alias = class Alias extends AbstractAlias
-    columnOrRelationSet = (node) ->
-      node instanceof ColumnSet or node instanceof RelationSet
+    shouldRenderFull = (parents) ->
+      return false if parents.some((it) -> it instanceof Column)
+      parents.some (node) ->
+        node instanceof ColumnSet or node instanceof RelationSet
 
     render: (dialect, parents) ->
-      if parents.some(columnOrRelationSet)
+      if shouldRenderFull(parents)
         dialect.render(@obj) + " AS " + dialect.quote(@alias)
       else
         dialect.quote(@alias)

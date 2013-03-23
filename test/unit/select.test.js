@@ -142,6 +142,25 @@ test("SELECT queries", function (t) {
     t.end()
   })
 
+  t.test('Selecting from function calls', function (t) {
+    t.equals(
+      select(sqlFunction('myfunc', [1, 2])).render(),
+      "SELECT * FROM myfunc($1, $2)",
+      "Can select from a SQL function call")
+
+    t.deepEquals(
+      select(sqlFunction('myfunc', [1, 2]).as('foo')).compile(),
+      ["SELECT * FROM myfunc($1, $2) AS foo", [1, 2]],
+      "Can select from an aliased SQL function call")
+
+    t.equals(
+      select(sqlFunction('exx', [1]).as('exx'), ['lc']).render(),
+      'SELECT exx.lc FROM exx($1) AS exx',
+      "Can select subset of columns from SQL function call")
+
+    t.end()
+  })
+
   t.test("misc. SELECT tricks", function (t) {
     var q = select('t1', ['col1', 'col2'])
     t.equal(q.render(),
@@ -165,15 +184,6 @@ test("SELECT queries", function (t) {
       "SELECT t1.long_field_name AS short FROM LongTableName AS t1",
       "Object aliases in constructor work")
 
-    t.equals(
-      select(sqlFunction('myfunc', [1, 2])).render(),
-      "SELECT * FROM myfunc($1, $2)",
-      "Can select from a SQL function call")
-
-    t.deepEquals(
-      select(sqlFunction('myfunc', [1, 2]).as('foo')).compile(),
-      ["SELECT * FROM myfunc($1, $2) AS foo", [1, 2]],
-      "Can select from an aliased SQL function call")
     t.end()
   })
 

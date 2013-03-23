@@ -186,7 +186,7 @@ class SqlFunction extends Node
 
   @Alias = class Alias extends AbstractAlias
     render: (dialect, parents) ->
-      if parents.some((node) -> node instanceof ProjectionSet)
+      if parents.some((node) -> node instanceof ColumnSet)
         super
       else
         dialect.quote(@alias)
@@ -211,8 +211,8 @@ class Relation extends Identifier
     @value
 
   project: (field) ->
-    ### Return a new :class:`nodes::Projection` of `field` from this table. ###
-    new Projection @, toField(field)
+    ### Return a new :class:`nodes::Column` of `field` from this table. ###
+    new Column @, toField(field)
 
   as: (alias) ->
     new Alias @, alias
@@ -222,7 +222,7 @@ class Relation extends Identifier
     ref: -> @alias
     project: (field) -> Relation::project.call @, field
     render: (dialect, parents) ->
-      if parents.some((n) -> n instanceof Projection)
+      if parents.some((n) -> n instanceof Column)
         dialect.quote(@alias)
       else
         super
@@ -230,7 +230,7 @@ class Relation extends Identifier
 class Field extends Identifier
   ### A column name ###
 
-class Projection extends FixedNodeSet
+class Column extends FixedNodeSet
   ###
   Includes :class:`nodes::ComparableMixin`
   ###
@@ -241,10 +241,10 @@ class Projection extends FixedNodeSet
     new Alias @, alias
 
   @Alias = class Alias extends AbstractAlias
-    ### An aliased :class:`nodes::Projection` ###
+    ### An aliased :class:`nodes::Column` ###
     rel: -> @obj.rel()
     render: (dialect, parents) ->
-      if parents.some((n) -> n instanceof ProjectionSet)
+      if parents.some((n) -> n instanceof ColumnSet)
         super
       else
         dialect.quote(@alias)
@@ -276,11 +276,11 @@ class Binary extends FixedNodeSet
 class Tuple extends ParenthesizedNodeSet
   glue: ', '
 
-class ProjectionSet extends NodeSet
+class ColumnSet extends NodeSet
   ### The list of projected columns in a query ###
   glue: ', '
 
-class Returning extends ProjectionSet
+class Returning extends ColumnSet
   @extend = (klazz) ->
     klazz::addReturning = (cols) ->
       @returning.addNode(toField(col)) for col in cols
@@ -289,7 +289,7 @@ class Returning extends ProjectionSet
   render: ->
     if string = super then "RETURNING #{string}" else ""
 
-class Distinct extends ProjectionSet
+class Distinct extends ColumnSet
   constructor: (@enable=false) -> super
 
   copy: -> new @constructor @enable, copy(@nodes)
@@ -302,10 +302,10 @@ class Distinct extends ProjectionSet
     else
       'DISTINCT'
 
-class SelectProjectionSet extends ProjectionSet
+class SelectColumnSet extends ColumnSet
   prune: (predicate) ->
     ###
-    Recurse over child nodes, removing all Projection nodes that match the
+    Recurse over child nodes, removing all Column nodes that match the
     predicate.
     ###
     @nodes = @nodes.filter((n) -> not predicate(n))
@@ -429,7 +429,7 @@ class Select extends Statement
   
   @structure [
     ['distinct',    Distinct]
-    ['projections', SelectProjectionSet]
+    ['projections', SelectColumnSet]
     ['relations',   RelationSet]
     ['where',       Where]
     ['groupBy',     GroupBy]
@@ -587,8 +587,8 @@ for k, v of ComparableMixin::
   TextNode::[k] = v
   SqlFunction::[k] = v
   SqlFunction.Alias::[k] = v
-  Projection::[k] = v
-  Projection.Alias::[k] = v
+  Column::[k] = v
+  Column.Alias::[k] = v
 
 toParam = (it) ->
   ###
@@ -642,26 +642,27 @@ toField = (it) ->
     throw new Error "Can't make a field out of #{it}"
 
 
-toProjection = (relation, field) ->
+toColumn = (relation, field) ->
   ###
-  Create a new :class:`nodes::Projection` instance.
+  Create a new :class:`nodes::Column` instance.
 
   The first argument is optional and specifies a table (or alias) name.
   Alternatively, you can specify the relation name and field with a single
   dot-separated string::
 
-    toProjection('departments.name') == toProjection('departments', 'name')
+    toColumn('departments.name') == toColumn('departments', 'name')
 
   Either argument can be an pre-constructed node object (of the correct type).
   ###
   if field?
-    return new Projection(toRelation(relation), toField(field))
+    return new Column(toRelation(relation), toField(field))
   else if typeof relation is 'string'
     parts = relation.split('.')
     if parts.length is 2
-      return new Projection(toRelation(parts[0]), toField(parts[1]))
+      return new Column(toRelation(parts[0]), toField(parts[1]))
   throw new Error("Can't make projection from object: #{relation}")
 
+toProjection = toColumn
 
 sqlFunction = (name, args) ->
   ###
@@ -753,6 +754,7 @@ module.exports = {
   text
   toField
   toParam
+  toColumn
   toProjection
   toRelation
 
@@ -770,15 +772,15 @@ module.exports = {
   Parameter
   Relation
   Field
-  Projection
+  Column
   Limit
   Offset
   Binary
   Tuple
-  ProjectionSet
+  ColumnSet
   Returning
   Distinct
-  SelectProjectionSet
+  SelectColumnSet
   RelationSet
   Join
   Where

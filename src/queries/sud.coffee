@@ -1,7 +1,7 @@
 BaseQuery = require './base'
 nodes = require '../nodes'
 fluidize = require '../fluid'
-{Node, And, Or, Ordering, Projection, CONST_NODES, toField} = nodes
+{Node, And, Or, Ordering, Column, CONST_NODES, toField} = nodes
 
 module.exports = class SUDQuery extends BaseQuery
   ###
@@ -38,11 +38,11 @@ module.exports = class SUDQuery extends BaseQuery
       # WHERE t1.field1 = 42 AND t1.field2 > 42
 
     Internally this constructs the comparison nodes for you using a simple
-    transformation: each key is passed to :meth:`project` (meaning you can specify the
-    relation name as part of the key if you so desire) and each value is either
-    used as the argument to :meth:`nodes::ComparableMixin.eq` or (in the case of
-    object literals) converted into one or more calls to the corresponding
-    comparison methods.
+    transformation: each key is passed to :meth:`project` (meaning you can
+    specify the relation name as part of the key if you so desire) and each
+    value is either used as the argument to :meth:`nodes::ComparableMixin.eq`
+    or (in the case of object literals) converted into one or more calls to
+    the corresponding comparison methods.
 
     To compare two fields, use a projection as the value to be compared::
 
@@ -108,7 +108,7 @@ module.exports = class SUDQuery extends BaseQuery
       else if field is 'or'
         clauses.push new Or @_makeClauses(predicate)
       else
-        column = @project field
+        column = @column field
         if predicate is null
           clauses.push column.compare 'IS', CONST_NODES.NULL
         else if predicate.constructor is Object
@@ -168,9 +168,13 @@ module.exports = class SUDQuery extends BaseQuery
   defaultRel: ->
     @q.relations.active
 
-  project: (relation, field) ->
+  project: ->
+    ### Backwards compatible alias for :meth:`queries/sud::SUDQuery.column` ###
+    @column.apply(@, arguments)
+
+  column: (relation, field) ->
     ###
-    Return a :class:`nodes::Projection` node representing ``<relation>.<field>``.
+    Return a :class:`nodes::Column` node representing ``<relation>.<field>``.
 
     The first argument is optional and specifies a table or alias name referring
     to a relation already joined to this query. If you don't specify a relation,
@@ -180,13 +184,13 @@ module.exports = class SUDQuery extends BaseQuery
       q.project('departments.name') == q.project('departments', 'name')
 
     The returned object has a methods from :class:`nodes::ComparableMixin` that
-    can create new comparison nodes usable in join conditions and where clauses::
+    create new comparison nodes usable in join conditions and where clauses::
 
       # Find developers over the age of 45
       s = select('people', ['name'])
-      s.join('departments', on: {id: s.project('people', 'department_id')})
-      s.where(s.project('departments', 'name').eq('development'))
-      s.where(s.project('people', 'age').gte(45))
+      s.join('departments', on: {id: s.column('people', 'department_id')})
+      s.where(s.column('departments', 'name').eq('development'))
+      s.where(s.column('people', 'age').gte(45))
 
     ``project`` is also aliased as ``p`` for those who value brevity::
 
@@ -199,18 +203,18 @@ module.exports = class SUDQuery extends BaseQuery
     if field?
       field = toField(field)
       if typeof relation is 'string'
-        new Projection @q.relations.get(relation), field
+        new Column @q.relations.get(relation), field
       else
         # Make sure this relation is part of our query
         relation = @q.relations.get(toRelation(relation).ref())
-        new Projection relation, field
+        new Column relation, field
     else if typeof relation is 'string'
       parts = relation.split '.'
       if parts.length is 2
-        new Projection @q.relations.get(parts[0]), toField(parts[1])
+        new Column @q.relations.get(parts[0]), toField(parts[1])
       else
-        new Projection @defaultRel(), toField(relation)  # Actually the field
-    else if relation instanceof Projection
+        new Column @defaultRel(), toField(relation)  # Actually the field
+    else if relation instanceof Column
       proj = relation
       # Check that the source of this projection is in our query
       @q.relations.get(proj.source?.ref())

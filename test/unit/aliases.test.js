@@ -26,7 +26,7 @@ test("Aliases", function (t) {
     t.equal(dialect.render(it), 'my_alias',
             'renders just the alias name outside of a ProjectionSet')
 
-    var ps = new g.nodes.ProjectionSet([it])
+    var ps = new g.nodes.ColumnSet([it])
     t.equal(dialect.render(ps), 'some_table.some_column AS my_alias',
             'renders full projection and alias inside ProjectionSet')
   })
@@ -37,7 +37,7 @@ test("Aliases", function (t) {
     t.equal(dialect.render(it), 'my_alias',
             'renders just the alias name outside of a ProjectionSet')
 
-    var ps = new g.nodes.ProjectionSet([it])
+    var ps = new g.nodes.ColumnSet([it])
     t.equal(dialect.render(ps), 'MY_FUNC($1) AS my_alias',
             'renders full function and alias inside ProjectionSet')
     t.deepEqual(it.params(), [1])

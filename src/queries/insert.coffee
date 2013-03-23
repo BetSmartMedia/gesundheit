@@ -1,6 +1,7 @@
-fluidize = require '../fluid'
+fluidize    = require '../fluid'
+returnable  = require './returnable'
 
-BaseQuery = require './base'
+BaseQuery   = require './base'
 SelectQuery = require './select'
 {Insert, toField} = require '../nodes'
 
@@ -10,6 +11,8 @@ module.exports = class InsertQuery extends BaseQuery
   multiple tables.
   ###
   @rootNode = Insert
+
+  returnable @
 
   addRows: (rows...) ->
     ### Add multiple rows of data to the insert statement. ###
@@ -23,9 +26,5 @@ module.exports = class InsertQuery extends BaseQuery
   from: (query) ->
     ### Insert from a select query. ###
     @q.from(query.q or query)
-
-  returning: (cols...) ->
-    @q.addReturning cols
-
 
 fluidize InsertQuery, 'addRow', 'addRows', 'from', 'returning'

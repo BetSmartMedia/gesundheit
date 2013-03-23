@@ -1,5 +1,6 @@
-fluidize = require '../fluid'
-SUDQuery = require './sud'
+returnable = require './returnable'
+fluidize   = require '../fluid'
+SUDQuery   = require './sud'
 {Update, binaryOp, toField, toParam} = require '../nodes'
 
 module.exports = class UpdateQuery extends SUDQuery
@@ -8,6 +9,8 @@ module.exports = class UpdateQuery extends SUDQuery
   simple updates of a single table.
   ###
   @rootNode = Update
+
+  returnable @
 
   set: (data) ->
     ###
@@ -25,8 +28,5 @@ module.exports = class UpdateQuery extends SUDQuery
     @q.updates.push nodes...
 
   defaultRel: -> @q.relation
-
-  returning: (cols...) ->
-    @q.addReturning cols
 
 fluidize UpdateQuery, 'set', 'setNodes', 'returning'

@@ -45,18 +45,22 @@ module.exports = class SelectQuery extends SUDQuery
         @q.projections.addNode proj(f)
     null
 
-  agg: (fun, fields...) ->
+  fun: (fun, args...) ->
     ###
-    Adds one or more aggregated fields to the query
+    Adds a SQL function to the column list for the query. This can be an
+    aggregate function if you also use :meth:`queries/select::groupBy`.
 
-    :param fun: name of SQL aggregation function.
-    :param fields: Fields to be projected from the current table and passed
-      as arguments to ``fun``
+    :param fun: name of SQL function.
+    :param args: arguments that will be passed to the function. Any argument
+      that is not a `Node` object will be converted into a bound parameter.
 
     Example::
 
-      select('t1', function (q) { q.agg('count', q.p('id')) }) # SELECT count(id) FROM t1
-      select('t1', function (q) { q.agg({counter: 'count'}, q.p('id')) }) # SELECT count(id) AS "counter" FROM t1
+      # SELECT count(id) FROM t1
+      select('t1', function (q) { q.agg('count', q.c('id')) })
+
+      # SELECT count(id) AS "counter" FROM t1
+      select('t1', function (q) { q.agg({counter: 'count'}, q.c('id')) })
 
     ###
     if alias = getAlias fun
@@ -133,3 +137,4 @@ fluidize SelectQuery,
 
 # Alias methods
 SelectQuery::field = SelectQuery::fields
+SelectQuery::agg = SelectQuery::fun

@@ -230,3 +230,4 @@ module.exports = class SUDQuery extends BaseQuery
 fluidize SUDQuery, 'where', 'or', 'and', 'limit', 'offset', 'order'
 
 SUDQuery::p = SUDQuery::project
+SUDQuery::c = SUDQuery::column

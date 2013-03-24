@@ -10,7 +10,8 @@ Gesundheit!
   :start-after: ===============================================
   :end-before: Here's a quick example
 
-Contents:
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2

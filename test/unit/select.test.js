@@ -153,9 +153,9 @@ test("SELECT queries", function (t) {
       ["SELECT * FROM myfunc($1, $2) AS foo", [1, 2]],
       "Can select from an aliased SQL function call")
 
-    t.equals(
-      select(sqlFunction('exx', [1]).as('exx'), ['lc']).render(),
-      'SELECT exx.lc FROM exx($1) AS exx',
+    t.deepEquals(
+      select(sqlFunction('exx', [1]).as('exx'), ['lc']).compile(),
+      ['SELECT exx.lc FROM exx($1) AS exx', [1]],
       "Can select subset of columns from SQL function call")
 
     t.end()

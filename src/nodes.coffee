@@ -72,13 +72,14 @@ class NodeSet extends Node
     ### Add a new Node to the end of this set ###
     @nodes.push node
 
-  params: ->
+  params: (parents=[]) ->
     ###
     Recurse over child nodes, collecting parameter values.
     ###
     params = []
+    parents = parents.concat [@]
     for node in @nodes when node.params?
-      params = params.concat node.params()
+      params = params.concat node.params(parents)
     params
 
   render: (dialect) ->
@@ -125,15 +126,16 @@ class Statement extends Node
     else
       return ""
 
-  params: ->
+  params: (parents=[]) ->
     ###
     Collect parameters from child nodes.
     ###
     params = []
+    parents = parents.concat [@]
     nodes = @_private
     order = @constructor._nodeOrder
     for node in (nodes[k] for k in order) when node?.params
-      params = params.concat node.params()
+      params = params.concat node.params(parents)
     params
 
 
@@ -148,7 +150,8 @@ class AbstractAlias extends Node
   ref: -> @alias
   render: (dialect) ->
     dialect.maybeParens(dialect.render(@obj)) + " AS " + dialect.quote(@alias)
-  params: ->
+  params: (parents=[]) ->
+    parents = parents.concat [@]
     @obj.params?() or []
 
 # End of generic base classes
@@ -166,10 +169,7 @@ class TextNode extends Node
         throw new Error "Parameter #{name} not present in #{@bindVals}"
 
   params: ->
-    if Array.isArray(@bindVals)
-      @bindVals
-    else
-      (v for k, v of @bindVals)
+    @bindVals
 
   as: (alias) ->
     new Alias @, alias
@@ -185,7 +185,7 @@ class SqlFunction extends Node
   render: (dialect) ->
     "#{@name}#{dialect.render @arglist}"
   as: (alias) -> new Alias @, alias
-  params: -> @arglist.params()
+  params: (parents) -> @arglist.params()
 
   @Alias = class Alias extends AbstractAlias
     shouldRenderFull = (parents) ->
@@ -198,6 +198,12 @@ class SqlFunction extends Node
         dialect.render(@obj) + " AS " + dialect.quote(@alias)
       else
         dialect.quote(@alias)
+
+    params: (parents=[]) ->
+      if parents.length is 0 or shouldRenderFull(parents)
+        super
+      else
+        []
 
 class Parameter extends ValueNode
   ###

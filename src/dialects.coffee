@@ -1,7 +1,7 @@
 ###
-Dialects are responsible for rendering an AST to a SQL string compatible with
+Dialects are responsible for compileing an AST to a SQL string compatible with
 a particular DBMS. They are rarely used directly, instead a query is usually bound
-to an `engine <Engines>`_ that will delegate rendering to it's dialect instance.
+to an `engine <Engines>`_ that will delegate compileing to it's dialect instance.
 ###
 
 read = require('fs').readFileSync
@@ -11,24 +11,26 @@ keywords = read(kwFile, 'ascii').split('\n').filter(Boolean)
 
 class BaseDialect
   constructor: ->
-    @path = []
+    @reset()
 
-  render: (node) ->
-    unless @path.length
-      @paramCount = 1
+  reset: ->
+    @path = []
+    @params = []
+
+  compile: (node) ->
     @path.push(node)
     name = node?.__proto__?.constructor?.name
-    if name and custom = @['render' + name]
+    if name and custom = @['compile' + name]
       string = custom.call(@, node)
     else
-      string = node.render(@, @path)
+      string = node.compile(@, @path)
     @path.pop(node)
     return string
 
-  renderString: (s) ->
+  compileString: (s) ->
     path = @path.map((p) -> p.constructor?.name).join(' > ')
     @path = []
-    throw new Error "raw string rendered! " + path
+    throw new Error "raw string compiled! " + path
 
   needsQuote = /\s|"|\./
   doubleQuote = /"/g
@@ -58,15 +60,12 @@ class BaseDialect
       when 'is' then 'IS'
       else throw new Error("Unsupported comparison operator: #{op}")
 
-  renderParameter: (node) ->
-    "$#{@paramCount++}"
+  parameter: (value) ->
+    @params.push(value)
+    "$#{@params.length}"
 
 
 class PostgresDialect extends BaseDialect
-
-  render: (node) ->
-    super node
-
   operator: (op) ->
     switch op.toLowerCase()
       when 'hasKey' then '?'
@@ -76,7 +75,9 @@ class PostgresDialect extends BaseDialect
   isKeyword: (s) -> s? and s isnt '*'
 
 class MySQLDialect extends BaseDialect
-  renderParameter: -> '?'
+  parameter: ->
+    super
+    '?'
 
   quote: (s) ->
     ### Do not quote column names in insert column list ###
@@ -87,14 +88,14 @@ class MySQLDialect extends BaseDialect
 
 
 class SQLite3Dialect extends BaseDialect
-  renderParameter: -> '?'
+  compileParameter: -> '?'
 
-  renderInsertData: (node) ->
+  compileInsertData: (node) ->
     if node.nodes.length < 2
-      node.render(@, @path)
+      node.compile(@, @path)
     else
       node.glue = ' UNION ALL SELECT '
-      string = node.render(@, @path).replace('VALUES', 'SELECT').replace(/[()]/g, '')
+      string = node.compile(@, @path).replace('VALUES', 'SELECT').replace(/[()]/g, '')
       node.glue = ', '
       string
 

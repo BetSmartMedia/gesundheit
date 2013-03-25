@@ -60,14 +60,16 @@ class Engine
     ###
     tx = queries.mixinFactoryMethods(@pool.begin(callback))
     tx.engine = @
-    tx.render = @dialect.render.bind(@dialect)
+    tx.compile = @dialect.compile.bind(@dialect)
     tx
 
-  render: (root) ->
+  compile: (root) ->
     ###
-    Render an AST to a SQL string
+    Render an AST to a SQL string and collect parameters
     ###
-    @dialect.render(root)
+    @dialect.reset()
+    text = @dialect.compile(root)
+    [text, @dialect.params.slice()]
 
   close: ->
     ###
@@ -83,7 +85,11 @@ fakeEngine = ->
   ###
   dialect = new dialects.base
   engine =
-    render: dialect.render.bind(dialect)
+    compile: (node) ->
+      dialect.reset()
+      text = dialect.compile(node)
+      [text, dialect.params]
+
     begin: (cb) ->
       if cb then process.nextTick(cb.bind(null, engine))
       engine

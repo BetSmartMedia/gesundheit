@@ -12,7 +12,7 @@ require('tap').test('INSERT queries', function (t) {
   t.deepEqual(
     q.copy().addRow({col_a: 2, col_b: 50}).compile(),
     ["INSERT INTO t1 (col_a, col_b) VALUES ($1, $2)", [2, 50]],
-    "can add col_a single row")
+    "can add a single row")
 
   t.deepEqual(
     q.copy().addRows([[1, 2], [3, 4]]).compile(),

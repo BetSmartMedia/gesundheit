@@ -33,7 +33,7 @@ class Engine
 
     ctor = dialects[driverName]
     if not ctor?
-      console.error('no such driver', driverName)
+      throw new Error('no such driver: ' + driverName)
     dialect = new ctor
     pool = anyDB.createPool(dbUrl, poolOptions)
     new Engine driverName, dbUrl, pool, dialect
@@ -60,14 +60,14 @@ class Engine
     ###
     tx = queries.mixinFactoryMethods(@pool.begin(callback))
     tx.engine = @
-    tx.render = @dialect.render.bind(@dialect)
+    tx.compile = @dialect.compile.bind(@dialect)
     tx
 
-  render: (root) ->
+  compile: (root) ->
     ###
-    Render an AST to a SQL string
+    Render an AST to a SQL string and collect parameters
     ###
-    @dialect.render(root)
+    @dialect.compile(root)
 
   close: ->
     ###
@@ -83,7 +83,9 @@ fakeEngine = ->
   ###
   dialect = new dialects.base
   engine =
-    render: dialect.render.bind(dialect)
+    compile: (node) ->
+      dialect.compile(node)
+
     begin: (cb) ->
       if cb then process.nextTick(cb.bind(null, engine))
       engine

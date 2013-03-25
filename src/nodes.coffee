@@ -11,8 +11,8 @@ you need to.
 
 class Node
   ### (Empty) base Node class ###
-  render: (dialect) ->
-    message = "#{@constructor} has no render method. Parents: #{dialect.path}"
+  compile: (dialect) ->
+    message = "#{@constructor} has no compile method. Parents: #{dialect.path}"
     throw new Error message
 
 
@@ -23,7 +23,7 @@ class ValueNode extends Node
       throw new Error("Invalid #{@constructor.name}: #{@value}") unless @valid()
   copy: -> new @constructor @value
   valid: -> true
-  render: -> @value
+  compile: -> @value
 
 class IntegerNode extends ValueNode
   ### A :class:`nodes::ValueNode` that validates it's input is an integer. ###
@@ -33,7 +33,7 @@ class Identifier extends ValueNode
   ###
   An identifier is a column or relation name that may need to be quoted.
   ###
-  render: (dialect) ->
+  compile: (dialect) ->
     dialect.quote(@value)
 
 CONST_NODES = {}
@@ -55,7 +55,7 @@ class NodeSet extends Node
   constructor: (nodes, glue=' ') ->
     ###
     :param @nodes: A list of child nodes.
-    :param glue: A string that will be used to join the nodes when rendering
+    :param glue: A string that will be used to join the nodes when compileing
     ###
     @nodes = []
     @addNode(node) for node in nodes if nodes
@@ -72,18 +72,9 @@ class NodeSet extends Node
     ### Add a new Node to the end of this set ###
     @nodes.push node
 
-  params: (parents=[]) ->
-    ###
-    Recurse over child nodes, collecting parameter values.
-    ###
-    params = []
-    parents = parents.concat [@]
-    for node in @nodes when node.params?
-      params = params.concat node.params(parents)
-    params
-
-  render: (dialect) ->
-    @nodes.map((n) -> dialect.render(n)).filter((n) -> n).join(@glue)
+  compile: (dialect) ->
+    compile = dialect.compile.bind(dialect)
+    @nodes.map(compile).filter(Boolean).join(@glue)
    
 
 class FixedNodeSet extends NodeSet
@@ -118,41 +109,25 @@ class Statement extends Node
     c.initialize = null
     return c
 
-  render: (dialect) ->
+  compile: (dialect) ->
     parts = for k in @constructor._nodeOrder when node = @_private[k]
-      dialect.render(node)
+      dialect.compile(node)
     if parts.length
       @constructor.prefix + parts.join(' ')
     else
       return ""
 
-  params: (parents=[]) ->
-    ###
-    Collect parameters from child nodes.
-    ###
-    params = []
-    parents = parents.concat [@]
-    nodes = @_private
-    order = @constructor._nodeOrder
-    for node in (nodes[k] for k in order) when node?.params
-      params = params.concat node.params(parents)
-    params
-
-
 class ParenthesizedNodeSet extends NodeSet
   ### A NodeSet wrapped in parenthesis. ###
-  render: ->
+  compile: ->
     "(" + super + ")"
 
 class AbstractAlias extends Node
   constructor: (@obj, @alias) ->
   copy: -> new @constructor copy(@obj), @alias
   ref: -> @alias
-  render: (dialect) ->
-    dialect.maybeParens(dialect.render(@obj)) + " AS " + dialect.quote(@alias)
-  params: (parents=[]) ->
-    parents = parents.concat [@]
-    @obj.params?() or []
+  compile: (dialect) ->
+    dialect.maybeParens(dialect.compile(@obj)) + " AS " + dialect.quote(@alias)
 
 # End of generic base classes
 
@@ -161,15 +136,12 @@ class TextNode extends Node
 
   paramRegexp = /\$([\w]+)\b/g
 
-  render: (dialect) ->
+  compile: (dialect) ->
     @text.replace paramRegexp, (_, name) =>
       if name of @bindVals
-        dialect.render(new Parameter(@bindVals[name]))
+        dialect.parameter(@bindVals[name])
       else
-        throw new Error "Parameter #{name} not present in #{@bindVals}"
-
-  params: ->
-    @bindVals
+        throw new Error "Parameter #{name} not present in #{JSON.stringify(@bindVals)}"
 
   as: (alias) ->
     new Alias @, alias
@@ -182,10 +154,9 @@ class SqlFunction extends Node
   constructor: (@name, @arglist) ->
   ref:  -> @name
   copy: -> new @constructor @name, copy(@arglist)
-  render: (dialect) ->
-    "#{@name}#{dialect.render @arglist}"
+  compile: (dialect) ->
+    "#{@name}#{dialect.compile @arglist}"
   as: (alias) -> new Alias @, alias
-  params: (parents) -> @arglist.params()
 
   @Alias = class Alias extends AbstractAlias
     shouldRenderFull = (parents) ->
@@ -193,26 +164,19 @@ class SqlFunction extends Node
       parents.some (node) ->
         node instanceof ColumnSet or node instanceof RelationSet
 
-    render: (dialect, parents) ->
+    compile: (dialect, parents) ->
       if shouldRenderFull(parents)
-        dialect.render(@obj) + " AS " + dialect.quote(@alias)
+        dialect.compile(@obj) + " AS " + dialect.quote(@alias)
       else
         dialect.quote(@alias)
-
-    params: (parents=[]) ->
-      if parents.length is 0 or shouldRenderFull(parents)
-        super
-      else
-        []
 
 class Parameter extends ValueNode
   ###
   Like a ValueNode, but will render as a bound parameter place-holder
-  (e.g. ``$1``) and it's value will be collected by
-  :meth:`nodes::NodeSet.params`
+  (e.g. ``$1``) and it's value will be collected by the dialect when compiling.
   ###
-  render: (dialect) -> "?"
-  params: -> [@value]
+  compile: (dialect) ->
+    dialect.parameter(@value)
 
 class Relation extends Identifier
   ###
@@ -234,7 +198,7 @@ class Relation extends Identifier
   @Alias = class Alias extends AbstractAlias
     ### An aliased :class:`nodes::Relation` ###
     project: (field) -> Relation::project.call @, field
-    render: (dialect, parents) ->
+    compile: (dialect, parents) ->
       if parents.some((n) -> n instanceof Column)
         dialect.quote(@alias)
       else
@@ -256,18 +220,18 @@ class Column extends FixedNodeSet
   @Alias = class Alias extends AbstractAlias
     ### An aliased :class:`nodes::Column` ###
     rel: -> @obj.rel()
-    render: (dialect, parents) ->
+    compile: (dialect, parents) ->
       if parents.some((n) -> n instanceof ColumnSet)
         super
       else
         dialect.quote(@alias)
 
 class Limit extends IntegerNode
-  render: ->
+  compile: ->
     if @value then "LIMIT #{@value}" else ""
 
 class Offset extends IntegerNode
-  render: ->
+  compile: ->
     if @value then "OFFSET #{@value}" else ""
 
 class Binary extends FixedNodeSet
@@ -280,10 +244,10 @@ class Binary extends FixedNodeSet
   or: ->
     new Or [@, args...]
 
-  render: (dialect) ->
-    [ dialect.render(@left)
+  compile: (dialect) ->
+    [ dialect.compile(@left)
       dialect.operator(@op)
-      dialect.render(@right)
+      dialect.compile(@right)
     ].join(' ')
 
 class Tuple extends ParenthesizedNodeSet
@@ -299,7 +263,7 @@ class Returning extends ColumnSet
       @returning.addNode(toField(col)) for col in cols
       null
 
-  render: ->
+  compile: ->
     if string = super then "RETURNING #{string}" else ""
 
 class Distinct extends ColumnSet
@@ -307,7 +271,7 @@ class Distinct extends ColumnSet
 
   copy: -> new @constructor @enable, copy(@nodes)
 
-  render: (dialect) ->
+  compile: (dialect) ->
     if not @enable
       ''
     else if @nodes.length
@@ -323,7 +287,7 @@ class SelectColumnSet extends ColumnSet
     ###
     @nodes = @nodes.filter((n) -> not predicate(n))
 
-  render: (dialect) ->
+  compile: (dialect) ->
     if not @nodes.length
       '*'
     else
@@ -360,7 +324,7 @@ class RelationSet extends NodeSet
   switch: (name) ->
     @active = @get(name)
 
-  render: (dialect) ->
+  compile: (dialect) ->
     if string = super then "FROM #{string}" else ""
 
 class Join extends FixedNodeSet
@@ -388,7 +352,7 @@ class Join extends FixedNodeSet
 
 class Where extends NodeSet
   glue: ' AND '
-  render: (dialect) ->
+  compile: (dialect) ->
     if string = super then "WHERE #{string}" else ""
 
 class Or extends ParenthesizedNodeSet
@@ -416,17 +380,17 @@ class And extends ParenthesizedNodeSet
 
 class GroupBy extends NodeSet
   glue: ', '
-  render: (dialect) ->
+  compile: (dialect) ->
     if string = super then "GROUP BY #{string}" else ""
 
 class Having extends NodeSet
   glue: ' AND '
-  render: (dialect) ->
+  compile: (dialect) ->
     if string = super then "HAVING #{string}" else ""
 
 class OrderBy extends NodeSet
   constructor: (orderings) -> super orderings, ', '
-  render: (dialect) ->
+  compile: (dialect) ->
     if string = super then "ORDER BY #{string}" else ""
 
 class Ordering extends FixedNodeSet
@@ -465,7 +429,7 @@ class Update extends Statement
   class UpdateSet extends NodeSet
     # must be pre-defined for the call to @structure below
     constructor: (nodes) -> super nodes, ', '
-    render: (dialect) ->
+    compile: (dialect) ->
       if string = super then "SET #{string}" else ""
 
   @prefix = 'UPDATE '
@@ -494,7 +458,7 @@ class Insert extends Statement
   class InsertData extends NodeSet
     # must be pre-defined for the call to @structure below
     glue: ', '
-    render: (dialect) ->
+    compile: (dialect) ->
       if string = super then "VALUES #{string}" else ""
 
   @ColumnList = class ColumnList extends Tuple
@@ -531,6 +495,7 @@ class Insert extends Statement
 
     params = for v in row
       if v instanceof Node then v else new Parameter v
+
     @data.addNode new Tuple params
 
   addRowObject: (row) ->
@@ -539,6 +504,7 @@ class Insert extends Statement
     isn't set yet. If it `is` set, then only keys matching the existing column
     list will be inserted.
     ###
+    debugger
     @addRowArray @columns.nodes.map(valOrDefault.bind(row))
 
   valOrDefault = (field) ->
@@ -576,22 +542,24 @@ class ComparableMixin
   ###
   eq:  (other) ->
     ### ``this = other`` ###
-    new Binary @, '=',  toParam other
+    @compare '=',  other
   ne: (other) ->
-    ### ``this <> other`` ###
-    new Binary @, '<>', toParam other
+    ### ``this != other`` ###
+    @compare '!=', other
   gt: (other) ->
     ### ``this > other`` ###
-    new Binary @, '>',  toParam other
+    @compare '>',  other
   lt: (other) ->
     ### ``this < other`` ###
-    new Binary @, '<',  toParam other
+    @compare '<',  other
   lte: (other) ->
     ### ``this <= other`` ###
-    new Binary @, '<=', toParam other
+    @compare '<=', other
   gte: (other) ->
     ### ``this >= other`` ###
-    new Binary @, '>=', toParam other
+    @compare '>=', other
+  like: (other) ->
+    @compare 'LIKE', other
   compare: (op, other) ->
     ### ``this op other`` **DANGER** `op` is **NOT** escaped! ###
     new Binary @, op, toParam other
@@ -744,8 +712,7 @@ binaryOp = (left, op, right) ->
 
 class Prefixed extends ValueNode
   constructor: (@prefix, @node) ->
-  render: -> @prefix + @node.render.apply(@node, arguments)
-  params: -> @node.params?() or []
+  compile: -> @prefix + @node.compile.apply(@node, arguments)
 
 exists = (subquery) ->
   ### Create an ``EXISTS (<subquery>)`` node for `where` ###

@@ -53,19 +53,19 @@ module.exports = class BaseQuery extends EventEmitter
       @engine.extendQuery?(@)
 
     assert @engine?.query, "Engine has no query method: #{inspect @engine}"
-    assert @engine?.render, "Engine has no render method: #{inspect @engine}"
+    assert @engine?.compile, "Engine has no compile method: #{inspect @engine}"
 
   render: ->
     ###
     Render the query to a SQL string.
     ###
-    @engine.render @q
+    @compile()[0]
 
   compile: ->
     ###
     Compile this query object, returning a SQL string and parameter array.
     ###
-    [@render(), @q.params()]
+    @engine.compile(@q)
 
   execute: (cb) ->
     ###
@@ -83,7 +83,6 @@ module.exports = class BaseQuery extends EventEmitter
     catch err
       # create a useless emitter to return
       emitter = new EventEmitter
-      emitter.buffer = (->)
       process.nextTick ->
         if cb then cb(err) else emitter.emit('error', err)
       return emitter

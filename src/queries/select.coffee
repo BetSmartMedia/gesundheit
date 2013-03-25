@@ -18,8 +18,8 @@ module.exports = class SelectQuery extends SUDQuery
   fields: (fields) ->
     ###
     Adds one or more fields to the query. Fields can be strings (in which case
-    they will be passed to :meth:`queries/sud::SUDQuery.project`) or pre-
-    constructed nodes. (Such as those returned by ``project``).
+    they will be passed to :meth:`queries/sud::SUDQuery.column`) or pre-
+    constructed nodes. (Such as those returned by ``column``).
 
     If no fields are given, clears all fields from the currently focused table.
 

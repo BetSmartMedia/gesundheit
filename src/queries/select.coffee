@@ -44,7 +44,7 @@ module.exports = class SelectQuery extends SUDQuery
         @q.projections.addNode proj(f)
     null
 
-  fun: (fun, args) ->
+  func: (fun, args) ->
     ###
     Adds a SQL function to the column list for the query. This can be an
     aggregate function if you also use :meth:`queries/select::groupBy`.
@@ -140,9 +140,9 @@ SelectQuery::[method] = variadic(SelectQuery::[method]) for method in [
 ]
 
 SelectQuery::[method] = fluid(SelectQuery::[method]) for method in [
-  'distinct', 'fields', 'agg', 'join', 'ensureJoin', 'focus', 'groupBy', 'having'
+  'distinct', 'fields', 'func', 'join', 'ensureJoin', 'focus', 'groupBy', 'having'
 ]
 
 # Alias methods
 SelectQuery::field = SelectQuery::fields
-SelectQuery::agg = SelectQuery::fun
+SelectQuery::agg = SelectQuery::fun = SelectQuery::fun

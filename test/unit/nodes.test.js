@@ -1,4 +1,5 @@
-var nodes = require('../../lib/nodes')
+var nodes    = require('../../lib/nodes')
+var dialects = require('../../lib/dialects')
 
 var test = require('tap').test
 
@@ -18,26 +19,38 @@ test("Update Node", function (t) {
 })
 
 test("Text Helper", function (t) {
-  var n = nodes.text("x BETWEEN 1 AND 10")
-  t.equal(n.constructor, nodes.TextNode, 'creates a TextNode without params')
-  t.deepEqual(n.params(), [], "TextNode::params returns empty array")
-  n = nodes.text("x BETWEEN $0 AND $1", [1, 10])
-  t.equal(n.constructor, nodes.TextNode, 'creates a TextNode with params')
-  t.deepEqual(n.params(), [1, 10],
-              "TextNode::params returns correct parameters")
-  var dialect = {
-    render: function (p) {
-      t.equal(p.constructor, nodes.Parameter,
-              'creates Parameter nodes for bindVals')
-      return '&'
-    }
-  }
-  t.equal(n.render(dialect), 'x BETWEEN & AND &',
-          'Placeholders are replaced using dialect')
-  t.bindVals = []
-  t.throws(n.render(dialect), 'exception thrown when parameters are missing')
-  t.type(n.as, 'function', 'text nodes have an "as" method')
-  t.type(n.eq, 'function', 'text nodes have an "eq" method') // ComparableMixin
+  t.test("expected interface", function (t) {
+    var n = nodes.text("x BETWEEN 1 AND 10")
+    t.equal(n.constructor, nodes.TextNode, 'creates a TextNode')
+    t.type(n.as, 'function', 'text nodes have an "as" method')
+    t.type(n.eq, 'function', 'text nodes have an "eq" method') // Comparable
+    t.end()
+  })
+
+  t.test("positional params", function (t) {
+    var n = nodes.text("x BETWEEN $0 AND $1", [1, 10])
+    var d = new dialects.base()
+    t.equal(d.compile(n), "x BETWEEN $1 AND $2")
+    t.deepEqual(d.params, [1, 10])
+    t.end()
+  })
+
+  t.test("named params", function (t) {
+    var n = nodes.text("x BETWEEN $start AND $end", {end: 10, start: 5})
+    var d = new dialects.base()
+    t.equal(d.compile(n), "x BETWEEN $1 AND $2")
+    t.deepEqual(d.params, [5, 10])
+    t.end()
+  })
+
+  t.test("with missing bind vals", function (t) {
+    var n = nodes.text("x = $0")
+    var d = new dialects.base()
+    t.throws(function () { d.compile(n) },
+      'exception thrown when parameters are missing')
+    t.end()
+  })
+
   t.end()
 })
 
@@ -63,7 +76,6 @@ test('exists/notExists helpers', function (t) {
 })
 
 test('tuple helper', function (t) {
-  var dialect = new (require('../../lib/dialects').base)()
   var subject = nodes.tuple([42, nodes.toField('bar')])
 
 
@@ -73,12 +85,13 @@ test('tuple helper', function (t) {
     "tuples are comparable")
 
   t.test('constructor and rendering', function (t) {
+    var dialect = new dialects.base()
     t.deepEqual(
       subject.nodes.map(function (it) { return it.constructor }),
       [nodes.Parameter, nodes.Field],
       'Calls toParams on input')
-    t.deepEqual(subject.params(), [42], "Has params")
-    t.equal(subject.render(dialect), "($1, bar)", "Renders correctly")
+    t.equal(dialect.compile(subject), "($1, bar)", "Renders correctly")
+    t.deepEquals(dialect.params, [42], "Has params")
     t.end()
   })
 

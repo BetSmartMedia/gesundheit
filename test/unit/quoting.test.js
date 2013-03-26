@@ -10,7 +10,7 @@ test('Quoting identifiers', function (t) {
   t.test('Postgres quotes all identifiers', function (t) {
     var pgDialect = new g.dialects.postgres()
     var projection = g.toProjection('CamelCaseTable.CamelCaseColumn')
-    t.equal('"CamelCaseTable"."CamelCaseColumn"', pgDialect.render(projection))
+    t.equal('"CamelCaseTable"."CamelCaseColumn"', pgDialect.compile(projection))
     t.end()
   })
   t.end()

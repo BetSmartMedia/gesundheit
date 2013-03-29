@@ -21,6 +21,7 @@
   "files": [
     "package.json",
     "README.rst",
+    "src",
     "lib",
     "Makefile",
     "doc/*.rst"

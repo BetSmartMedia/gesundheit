@@ -34,14 +34,14 @@ module.exports = class SelectQuery extends SUDQuery
       @q.projections.prune((p) -> p.rel() is rel)
       return
 
-    proj = (o) => if o instanceof Node then o else @project(o)
+    col = (o) => if o instanceof Node then o else @column(o)
 
     for f in fields
       if alias = getAlias f
         f = f[alias]
-        @q.projections.addNode proj(f).as(alias)
+        @q.projections.addNode col(f).as(alias)
       else
-        @q.projections.addNode proj(f)
+        @q.projections.addNode col(f)
     null
 
   func: (fun, args) ->
@@ -56,10 +56,10 @@ module.exports = class SelectQuery extends SUDQuery
     Example::
 
       # SELECT count(id) FROM t1
-      select('t1', function (q) { q.agg('count', q.c('id')) })
+      select('t1', function (q) { q.func('count', q.c('id')) })
 
       # SELECT count(id) AS "counter" FROM t1
-      select('t1', function (q) { q.agg({counter: 'count'}, q.c('id')) })
+      select('t1', function (q) { q.func({counter: 'count'}, q.c('id')) })
 
     ###
     if alias = getAlias fun
@@ -121,7 +121,7 @@ module.exports = class SelectQuery extends SUDQuery
 
   groupBy: (fields) ->
     ### Add a GROUP BY to the query. ###
-    @q.groupBy.addNode(@project(field)) for field in fields
+    @q.groupBy.addNode(@column(field)) for field in fields
     null
 
   having: (constraint) ->

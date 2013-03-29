@@ -1,6 +1,6 @@
 module.exports = (fn, msg) ->
   ->
-    console.warn('DEPRECATED: ', msg)
+    console.warn('DEPRECATED: ', msg, new Error().stack.split('\n').slice(1).join('\n'))
     fn.apply(@, arguments)
 
 module.exports.rename = (fn, oldName, newName) ->

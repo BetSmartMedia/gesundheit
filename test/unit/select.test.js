@@ -82,13 +82,13 @@ test("SELECT queries", function (t) {
   t.test("more advanced joins", function (t) {
     var q = select('t1')
     t.equal(q.copy().visit(function () {
-        this.join("t2", {on: {x: this.p('t1', 'y')}})
+        this.join("t2", {on: {x: this.c('t1', 'y')}})
       }).render(),
       "SELECT * FROM t1 INNER JOIN t2 ON (t2.x = t1.y)",
       "join using a clause")
 
     t.equals(q.copy().visit(function () {
-        this.join("t2", {on: {x: this.p('t1', 'x'), y: this.p('t1', 'y')}})
+        this.join("t2", {on: {x: this.c('t1', 'x'), y: this.c('t1', 'y')}})
       }).render(),
       "SELECT * FROM t1 INNER JOIN t2 ON (t2.x = t1.x AND t2.y = t1.y)",
       "joining using a clause with multiple predicates")
@@ -111,11 +111,11 @@ test("SELECT queries", function (t) {
   t.test("ensureJoin", function (t) {
     var q = select('t1', ['*'])
     t.plan(2)
-    q.ensureJoin('t2', {on: {id: q.p('t1', 't2_id')}, fields: ['*']})
+    q.ensureJoin('t2', {on: {id: q.c('t1', 't2_id')}, fields: ['*']})
     t.equal(q.render(),
       "SELECT t1.*, t2.* FROM t1 INNER JOIN t2 ON (t2.id = t1.t2_id)",
       "... first join")
-    q.ensureJoin('t2', {on: {id: q.p('t1', 't2_id')}, fields: ['*']})
+    q.ensureJoin('t2', {on: {id: q.c('t1', 't2_id')}, fields: ['*']})
     t.equal(q.render(),
       "SELECT t1.*, t2.* FROM t1 INNER JOIN t2 ON (t2.id = t1.t2_id)",
       "... same join")
@@ -125,7 +125,7 @@ test("SELECT queries", function (t) {
   t.test("GROUP BY and HAVING", function (t) {
     var count = null
     var q = select('t1', ['col2'], function () {
-      count = sqlFunction('COUNT', [this.p('col1')]).as('total')
+      count = sqlFunction('COUNT', [this.c('col1')]).as('total')
       this.fields(count)
       this.groupBy("col2")
     })

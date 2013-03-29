@@ -154,7 +154,7 @@ module.exports = class SUDQuery extends BaseQuery
         when 'desc', 'descending' then 'DESC'
         when '' then ''
         else throw new Error "Unsupported ordering direction #{direction}"
-      @q.orderBy.addNode new Ordering(@project(field), direction)
+      @q.orderBy.addNode new Ordering(@column(field), direction)
 
   limit: (l) ->
     ### Set the LIMIT on this query ###

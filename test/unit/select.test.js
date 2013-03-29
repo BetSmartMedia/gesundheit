@@ -105,6 +105,11 @@ test("SELECT queries", function (t) {
       "SELECT * FROM t1 LEFT OUTER JOIN t2",
       "a different join type")
 
+    t.equal(
+        select('t1').join('t2', {fields: ['col1', 'col2']}).render(),
+        "SELECT t2.col1, t2.col2 FROM t1 INNER JOIN t2",
+        "joins with fields override star projection")
+
     t.end()
   })
 

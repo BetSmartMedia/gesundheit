@@ -73,7 +73,8 @@ class NodeSet extends Node
     @nodes.push node
 
   compile: (dialect) ->
-    @nodes.map((n) -> dialect.compile(n)).filter((n) -> n).join(@glue)
+    compile = dialect.compile.bind(dialect)
+    @nodes.map(compile).filter(Boolean).join(@glue)
    
 
 class FixedNodeSet extends NodeSet
@@ -503,6 +504,7 @@ class Insert extends Statement
     isn't set yet. If it `is` set, then only keys matching the existing column
     list will be inserted.
     ###
+    debugger
     @addRowArray @columns.nodes.map(valOrDefault.bind(row))
 
   valOrDefault = (field) ->
@@ -540,22 +542,24 @@ class ComparableMixin
   ###
   eq:  (other) ->
     ### ``this = other`` ###
-    new Binary @, '=',  toParam other
+    @compare '=',  other
   ne: (other) ->
-    ### ``this <> other`` ###
-    new Binary @, '<>', toParam other
+    ### ``this != other`` ###
+    @compare '!=', other
   gt: (other) ->
     ### ``this > other`` ###
-    new Binary @, '>',  toParam other
+    @compare '>',  other
   lt: (other) ->
     ### ``this < other`` ###
-    new Binary @, '<',  toParam other
+    @compare '<',  other
   lte: (other) ->
     ### ``this <= other`` ###
-    new Binary @, '<=', toParam other
+    @compare '<=', other
   gte: (other) ->
     ### ``this >= other`` ###
-    new Binary @, '>=', toParam other
+    @compare '>=', other
+  like: (other) ->
+    @compare 'LIKE', other
   compare: (op, other) ->
     ### ``this op other`` **DANGER** `op` is **NOT** escaped! ###
     new Binary @, op, toParam other

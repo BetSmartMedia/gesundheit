@@ -30,16 +30,14 @@ test("Text Helper", function (t) {
   t.test("positional params", function (t) {
     var n = nodes.text("x BETWEEN $0 AND $1", [1, 10])
     var d = new dialects.base()
-    t.equal(d.compile(n), "x BETWEEN $1 AND $2")
-    t.deepEqual(d.params, [1, 10])
+    t.deepEqual(d.compile(n), ["x BETWEEN $1 AND $2", [1, 10]])
     t.end()
   })
 
   t.test("named params", function (t) {
     var n = nodes.text("x BETWEEN $start AND $end", {end: 10, start: 5})
     var d = new dialects.base()
-    t.equal(d.compile(n), "x BETWEEN $1 AND $2")
-    t.deepEqual(d.params, [5, 10])
+    t.deepEqual(d.compile(n), ["x BETWEEN $1 AND $2", [5, 10]])
     t.end()
   })
 
@@ -90,8 +88,7 @@ test('tuple helper', function (t) {
       subject.nodes.map(function (it) { return it.constructor }),
       [nodes.Parameter, nodes.Field],
       'Calls toParams on input')
-    t.equal(dialect.compile(subject), "($1, bar)", "Renders correctly")
-    t.deepEquals(dialect.params, [42], "Has params")
+    t.deepEquals(dialect.compile(subject), ["($1, bar)", [42]], "Has params")
     t.end()
   })
 

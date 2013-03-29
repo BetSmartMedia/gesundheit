@@ -13,7 +13,7 @@ helpers.eachEngine "Multi-row insert", tables, (db, t) ->
     {first: 5, second: 6}
   ]
 
-  db.insert('multi_insert', ['first', 'second']).addRows(rows...).execute (err) ->
+  db.insert('multi_insert', ['first', 'second']).addRows(rows).execute (err) ->
     throw err if err
     db.select('multi_insert', ['*']).execute (err, res) ->
       throw err if err

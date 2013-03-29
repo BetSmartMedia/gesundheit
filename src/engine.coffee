@@ -33,7 +33,7 @@ class Engine
 
     ctor = dialects[driverName]
     if not ctor?
-      console.error('no such driver', driverName)
+      throw new Error('no such driver: ' + driverName)
     dialect = new ctor
     pool = anyDB.createPool(dbUrl, poolOptions)
     new Engine driverName, dbUrl, pool, dialect
@@ -67,9 +67,7 @@ class Engine
     ###
     Render an AST to a SQL string and collect parameters
     ###
-    @dialect.reset()
-    text = @dialect.compile(root)
-    [text, @dialect.params.slice()]
+    @dialect.compile(root)
 
   close: ->
     ###
@@ -86,9 +84,7 @@ fakeEngine = ->
   dialect = new dialects.base
   engine =
     compile: (node) ->
-      dialect.reset()
-      text = dialect.compile(node)
-      [text, dialect.params]
+      dialect.compile(node)
 
     begin: (cb) ->
       if cb then process.nextTick(cb.bind(null, engine))

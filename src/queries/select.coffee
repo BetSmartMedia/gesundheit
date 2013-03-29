@@ -132,8 +132,9 @@ module.exports = class SelectQuery extends SUDQuery
     @q.having.addNode(node) for node in @_makeClauses(constraint)
 
 
-fluid    = require '../decorators/fluid'
-variadic = require '../decorators/variadic'
+fluid     = require '../decorators/fluid'
+variadic  = require '../decorators/variadic'
+deprecate = require '../decorators/deprecate'
 
 SelectQuery::[method] = variadic(SelectQuery::[method]) for method in [
   'fields', 'groupBy'
@@ -143,6 +144,8 @@ SelectQuery::[method] = fluid(SelectQuery::[method]) for method in [
   'distinct', 'fields', 'func', 'join', 'ensureJoin', 'focus', 'groupBy', 'having'
 ]
 
-# Alias methods
+# Aliased methods
 SelectQuery::field = SelectQuery::fields
-SelectQuery::agg = SelectQuery::fun = SelectQuery::fun
+
+# Deprecated methods
+SelectQuery::agg = deprecate.rename SelectQuery::func, ".agg", ".func"

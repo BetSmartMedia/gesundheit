@@ -180,7 +180,7 @@ module.exports = class SUDQuery extends BaseQuery
     the table added or focused last will be used. Alternatively, you can specify
     the relation name and field with a single dot-separated string::
 
-      q.project('departments.name') == q.project('departments', 'name')
+      q.column('departments.name') == q.column('departments', 'name')
 
     The returned object has a methods from :class:`nodes::ComparableMixin` that
     create new comparison nodes usable in join conditions and where clauses::
@@ -226,8 +226,9 @@ module.exports = class SUDQuery extends BaseQuery
     @q.relations.get alias
 
 
-variadic = require '../decorators/variadic'
-fluid    = require '../decorators/fluid'
+deprecate = require '../decorators/deprecate'
+variadic  = require '../decorators/variadic'
+fluid     = require '../decorators/fluid'
 
 SUDQuery::[method] = variadic(SUDQuery::[method]) for method in [
   'and', 'or', 'order'
@@ -237,5 +238,9 @@ SUDQuery::[method] = fluid(SUDQuery::[method]) for method in [
   'where', 'or', 'and', 'limit', 'offset', 'order'
 ]
 
-SUDQuery::p = SUDQuery::project
+for method in ['p', 'project']
+  SUDQuery::[method] = deprecate.rename(
+    SUDQuery::column, method, ".column or .c"
+  )
+
 SUDQuery::c = SUDQuery::column

@@ -13,14 +13,17 @@ module.exports = class InsertQuery extends BaseQuery
 
   returnable @
 
-  addRows: (rows...) ->
+  addRows: (rows, variadic) ->
     ### Add multiple rows of data to the insert statement. ###
+    if variadic?
+      console.warn("DEPRECATED: InsertQuery::addRows will not be variadic in a future release.")
+      rows = Array::slice.call(arguments)
     for row in rows
       @q.addRow row
 
   addRow: (row) ->
     ### Add a single row ###
-    @addRows row
+    @q.addRow row
 
   from: (query) ->
     ### Insert from a select query. ###

@@ -12,7 +12,7 @@ test: unit integration
 
 .PHONY: unit
 unit: all
-	@node_modules/.bin/tap test/unit/
+	@node_modules/.bin/tap --stderr test/unit/
 
 .PHONY: integration
 integration: all
@@ -20,7 +20,7 @@ integration: all
 	@mysql -u root -e 'create database gesundheit_test'
 	@psql -U postgres -c 'drop database if exists gesundheit_test' 2>&1 >/dev/null
 	@psql -U postgres -c 'create database gesundheit_test' 2>&1 >/dev/null
-	@node_modules/.bin/tap test/integration/*.test.*
+	@node_modules/.bin/tap --stderr test/integration/*.test.*
 
 .PHONY: clean
 clean:

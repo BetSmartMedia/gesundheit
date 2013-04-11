@@ -145,6 +145,8 @@ class TextNode extends Node
 
   as: (alias) ->
     new Alias @, alias
+    
+  copy: -> new @constructor(@text, copy(@bindVals))
 
   @Alias = class Alias extends AbstractAlias
 

@@ -47,6 +47,7 @@ class BaseDialect
       when 'like' then 'LIKE'
       when 'ilike' then 'ILIKE'
       when 'in' then 'IN'
+      when 'notin' then 'NOT IN'
       when 'is' then 'IS'
       else throw new Error("Unsupported comparison operator: #{op}")
 

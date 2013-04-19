@@ -45,11 +45,15 @@ test("SELECT queries", function (t) {
     t.deepEqual(q.copy().or({x: {lt: 10}, y: 10}).compile(),
       ["SELECT * FROM t1 WHERE (t1.x < $1 OR t1.y = $2)", [10, 10]],
       "and an 'OR' where clause is added")
-      
+
     t.deepEqual(q.copy().where({x: {"in": [1, 2, 3]}}).compile(),
       ["SELECT * FROM t1 WHERE t1.x IN ($1, $2, $3)", [1, 2, 3]],
       "and an 'IN' where clause is added")
-    
+
+    t.deepEqual(q.copy().where({x: {"notIn": [1, 2, 3]} }).compile(),
+      ["SELECT * FROM t1 WHERE t1.x NOT IN ($1, $2, $3)", [1, 2, 3]],
+      "and an 'NOT IN' where clause is added")
+
     t.end()
   })
 

@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/BetSmartMedia/gesundheit/issues"
   },
-  "version": "0.8.1",
+  "version": "0.8.2",
   "private": false,
   "main": "lib",
   "files": [

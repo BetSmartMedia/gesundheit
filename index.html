@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Gesundheit! &mdash; gesundheit 0.8.1 documentation</title>
+    <title>Gesundheit! &mdash; gesundheit 0.8.2 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.8.1',
+        VERSION:     '0.8.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.8.1 documentation" href="#" />
+    <link rel="top" title="gesundheit 0.8.2 documentation" href="#" />
     <link rel="next" title="Gesundheit!" href="" /> 
   </head>
   <body>  
@@ -167,8 +167,8 @@ interface yourself.</dd>
 &#8216;LEFT&#8217;, &#8216;RIGHT&#8217;, &#8216;INNER&#8217;, &#8216;LEFT_OUTER&#8217;, &#8216;RIGHT_OUTER&#8217;, &#8216;FULL_OUTER&#8217;
 &#8216;NATURAL&#8217;, &#8216;CROSS&#8217;</dd>
 <dt><strong>AST helper functions</strong></dt>
-<dd><p class="first">These come from the <a class="reference external" href="Nodes">nodes</a> module and are often useful when
-constructing queries that the query manager classes don&#8217;t cover as well:</p>
+<dd><p class="first">These come from the <a class="reference external" href="#module-nodes::">nodes</a> module and are often useful
+when constructing complicated queries:</p>
 <blockquote class="last">
 <div><dl class="docutils">
 <dt><a class="reference internal" href="#nodes::toParam" title="nodes::toParam"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toParam</span></tt></a></dt>
@@ -774,8 +774,8 @@ such as <cite>fields</cite> and <cite>groupBy</cite></p>
 <dt id="queries/select::SelectQuery.fields">
 <em class="property">method </em><tt class="descname">SelectQuery.fields</tt><big>(</big><em>fields</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.fields" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds one or more fields to the query. Fields can be strings (in which case
-they will be passed to <a class="reference internal" href="#queries/sud::SUDQuery.project" title="queries/sud::SUDQuery.project"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.project</span></tt></a>) or pre-
-constructed nodes. (Such as those returned by <tt class="docutils literal"><span class="pre">project</span></tt>).</p>
+they will be passed to <a class="reference internal" href="#queries/sud::SUDQuery.column" title="queries/sud::SUDQuery.column"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.column</span></tt></a>) or pre-
+constructed nodes. (Such as those returned by <tt class="docutils literal"><span class="pre">column</span></tt>).</p>
 <p>If no fields are given, clears all fields from the currently focused table.</p>
 <p>To alias a field, use an object with a single key where the key is the alias
 name and the value is a string or node:</p>
@@ -994,9 +994,9 @@ Transaction</a> that has had the query factory functions mixed in to it).</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="engine::Engine.render">
-<em class="property">method </em><tt class="descname">Engine.render</tt><big>(</big><em>root</em><big>)</big><a class="headerlink" href="#engine::Engine.render" title="Permalink to this definition">¶</a></dt>
-<dd><p>Render an AST to a SQL string</p>
+<dt id="engine::Engine.compile">
+<em class="property">method </em><tt class="descname">Engine.compile</tt><big>(</big><em>root</em><big>)</big><a class="headerlink" href="#engine::Engine.compile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render an AST to a SQL string and collect parameters</p>
 </dd></dl>
 
 <dl class="method">
@@ -1019,9 +1019,10 @@ with <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</sp
 </div>
 <div class="section" id="module-dialects::">
 <span id="dialects"></span><h1>Dialects<a class="headerlink" href="#module-dialects::" title="Permalink to this headline">¶</a></h1>
-<p>Dialects are responsible for rendering an AST to a SQL string compatible with
-a particular DBMS. They are rarely used directly, instead a query is usually bound
-to an <a class="reference external" href="Engines">engine</a> that will delegate rendering to it&#8217;s dialect instance.</p>
+<p>Dialects are responsible for compiling an AST to a SQL string compatible with
+a particular DBMS. They are rarely used directly, instead a query is usually
+bound to an <a class="reference external" href="Engines">engine</a> that will delegate compiling to it&#8217;s dialect
+instance.</p>
 </div>
 <div class="section" id="id10">
 <h1>Nodes<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h1>
@@ -1069,7 +1070,7 @@ you need to.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>&#64;nodes</strong> &#8211; A list of child nodes.</li>
-<li><strong>glue</strong> &#8211; A string that will be used to join the nodes when rendering</li>
+<li><strong>glue</strong> &#8211; A string that will be used to join the nodes when compileing</li>
 </ul>
 </td>
 </tr>
@@ -1089,12 +1090,6 @@ you need to.</p>
 <dd><p>Add a new Node to the end of this set</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="nodes::NodeSet.params">
-<em class="property">method </em><tt class="descname">NodeSet.params</tt><big>(</big><em>parents</em><big>)</big><a class="headerlink" href="#nodes::NodeSet.params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Recurse over child nodes, collecting parameter values.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="class">
@@ -1107,8 +1102,7 @@ you need to.</p>
 <dt id="nodes::Parameter">
 <em class="property">class </em><tt class="descname">Parameter</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::ValueNode" title="nodes::ValueNode"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ValueNode</span></tt></a><a class="headerlink" href="#nodes::Parameter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Like a ValueNode, but will render as a bound parameter place-holder
-(e.g. <tt class="docutils literal"><span class="pre">$1</span></tt>) and it&#8217;s value will be collected by
-<a class="reference internal" href="#nodes::NodeSet.params" title="nodes::NodeSet.params"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">NodeSet.params</span></tt></a></p>
+(e.g. <tt class="docutils literal"><span class="pre">$1</span></tt>) and it&#8217;s value will be collected by the dialect when compiling.</p>
 </dd></dl>
 
 <dl class="class">
@@ -1169,7 +1163,7 @@ methods will yield a new AST node comparing the invocant to the argument.</p>
 <dl class="method">
 <dt id="nodes::ComparableMixin.ne">
 <em class="property">method </em><tt class="descname">ComparableMixin.ne</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#nodes::ComparableMixin.ne" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">this</span> <span class="pre">&lt;&gt;</span> <span class="pre">other</span></tt></p>
+<dd><p><tt class="docutils literal"><span class="pre">this</span> <span class="pre">!=</span> <span class="pre">other</span></tt></p>
 </dd></dl>
 
 <dl class="method">

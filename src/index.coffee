@@ -29,8 +29,8 @@ cases will be covered by using the following properties of the main module:
     'NATURAL', 'CROSS'
 
   **AST helper functions**
-    These come from the `nodes <Nodes>`_ module and are often useful when
-    constructing queries that the query manager classes don't cover as well:
+    These come from the `nodes <#module-nodes::>`_ module and are often useful
+    when constructing complicated queries:
 
       :func:`nodes::toParam`
         Convert any object to a parameter placeholder.

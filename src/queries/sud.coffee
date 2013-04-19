@@ -140,13 +140,14 @@ module.exports = class SUDQuery extends BaseQuery
       switch orderBy.constructor
         when String
           orderings.push orderBy.split ' '
-        when Ordering
-          @q.orderBy.addNode orderBy
         when Object
           for name, dir of orderBy
             orderings.push [name, dir]
         else
-          throw new Error "Can't turn #{orderBy} into an ordering"
+          if orderBy instanceof Node
+            @q.orderBy.addNode orderBy
+          else
+            throw new Error "Can't turn #{orderBy} into an ordering"
 
     for [field, direction] in orderings
       direction = switch (direction || '').toLowerCase()

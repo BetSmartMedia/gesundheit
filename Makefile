@@ -2,6 +2,7 @@ LIB_DIR = ./lib
 SRC_DIR = ./src
 PATH := $(shell npm bin):$(PATH)
 HEAD = $(shell git describe --contains --all HEAD)
+PACKAGE_VERSION = $(shell node -e 'console.log(require("./package.json").version)')
 
 .PHONY: all
 all: $(LIB_DIR)
@@ -36,5 +37,5 @@ pages:
 release: clean test pages
 	git checkout gh-pages
 	cp -R doc/_build/html/ ./
-	[[ -z `git status -suno` ]] || git commit -a -m v$(npm_package_version)
+	[[ -z `git status -suno` ]] || git commit -a -m v$(PACKAGE_VERSION)
 	git checkout $(HEAD)

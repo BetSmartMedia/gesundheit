@@ -75,7 +75,7 @@ class NodeSet extends Node
   compile: (dialect) ->
     compile = dialect.compile.bind(dialect)
     @nodes.map(compile).filter(Boolean).join(@glue)
-   
+
 
 class FixedNodeSet extends NodeSet
   # A NodeSet that disables the ``addNode`` method after construction.
@@ -145,7 +145,7 @@ class TextNode extends Node
 
   as: (alias) ->
     new Alias @, alias
-    
+
   copy: -> new @constructor(@text, copy(@bindVals))
 
   @Alias = class Alias extends AbstractAlias
@@ -405,7 +405,7 @@ class Select extends Statement
   The root node of a SELECT query
   ###
   @prefix = 'SELECT '
-  
+
   @structure [
     ['distinct',    Distinct]
     ['projections', SelectColumnSet]
@@ -506,7 +506,6 @@ class Insert extends Statement
     isn't set yet. If it `is` set, then only keys matching the existing column
     list will be inserted.
     ###
-    debugger
     @addRowArray @columns.nodes.map(valOrDefault.bind(row))
 
   valOrDefault = (field) ->

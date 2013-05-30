@@ -95,3 +95,10 @@ test('tuple helper', function (t) {
   t.end()
 })
 
+test('g.func function factory', function (t) {
+  var f = nodes.func('F')
+    , c = f('a', 'b', 'c')
+    , d = new dialects.base()
+  t.deepEqual(d.compile(c), ["F($1, $2, $3)", ['a', 'b', 'c']])
+  t.end()
+})

@@ -651,10 +651,25 @@ sqlFunction = (name, args) ->
   ###
   Create a new SQL function call node. For example::
 
-      count = sqlFunction('count', [new ValueNode('*')])
+      count = g.sqlFunction('count', [g.text('*')])
 
   ###
   new SqlFunction name, new Tuple(args.map(toParam))
+
+func = (name) ->
+  ###
+  Create a factory for calling the given SQL function. Example::
+
+    count = g.func('count')
+    count(g.text('*'))
+
+  The returned factory accepts any number of parameters::
+
+    substringIndex = g.func('SUBSTRING_INDEX')
+    substringIndex(g.text('mycol'), '-', 1)  # SUBSTRING_INDEX(mycol, '-', 1)
+  ###
+  (args...) ->
+    sqlFunction name, args
 
 getAlias = (o) ->
   ###
@@ -737,6 +752,7 @@ module.exports = {
 
   binaryOp
   exists
+  func
   getAlias
   notExists
   sqlFunction

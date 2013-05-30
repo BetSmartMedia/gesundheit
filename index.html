@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Gesundheit! &mdash; gesundheit 0.8.3 documentation</title>
+    <title>Gesundheit! &mdash; gesundheit 0.8.5 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.8.3',
+        VERSION:     '0.8.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.8.3 documentation" href="#" />
+    <link rel="top" title="gesundheit 0.8.5 documentation" href="#" />
     <link rel="next" title="Gesundheit!" href="" /> 
   </head>
   <body>  
@@ -1244,7 +1244,22 @@ dot-separated string:</p>
 <dt id="nodes::sqlFunction">
 <em class="property">function </em><tt class="descname">sqlFunction</tt><big>(</big><em>name</em>, <em>args</em><big>)</big><a class="headerlink" href="#nodes::sqlFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new SQL function call node. For example:</p>
-<p>count = sqlFunction(&#8216;count&#8217;, [new ValueNode(&#8216;*&#8217;)])</p>
+<p>count = g.sqlFunction(&#8216;count&#8217;, [g.text(&#8216;*&#8217;)])</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nodes::func">
+<em class="property">function </em><tt class="descname">func</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#nodes::func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a factory for calling the given SQL function. Example:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">count = </span><span class="nx">g</span><span class="p">.</span><span class="nx">func</span><span class="p">(</span><span class="s">&#39;count&#39;</span><span class="p">)</span>
+<span class="nx">count</span><span class="p">(</span><span class="nx">g</span><span class="p">.</span><span class="nx">text</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The returned factory accepts any number of parameters:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">substringIndex = </span><span class="nx">g</span><span class="p">.</span><span class="nx">func</span><span class="p">(</span><span class="s">&#39;SUBSTRING_INDEX&#39;</span><span class="p">)</span>
+<span class="nx">substringIndex</span><span class="p">(</span><span class="nx">g</span><span class="p">.</span><span class="nx">text</span><span class="p">(</span><span class="s">&#39;mycol&#39;</span><span class="p">),</span> <span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># SUBSTRING_INDEX(mycol, &#39;-&#39;, 1)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="function">

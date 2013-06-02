@@ -5,10 +5,15 @@ bound to an `engine <Engines>`_ that will delegate compiling to it's dialect
 instance.
 ###
 
-read = require('fs').readFileSync
-kwFile = __dirname + '/sql_keywords.txt'
-keywords = read(kwFile, 'ascii').split('\n').filter(Boolean)
 {Select, Update, Delete, Insert, Relation, Field} = require './nodes'
+
+if process.browser
+  keywords = []
+else
+  keywords = require('fs')
+    .readFileSync(__dirname + '/sql_keywords.txt')
+    .toString()
+    .split('\n').filter(Boolean)
 
 class BaseDialect
 
@@ -61,6 +66,7 @@ class BaseDialect
       if allowOverride and name and custom = @dialect['render' + name]
         string = custom.call(@, node)
       else
+        debugger unless node?.compile
         string = node.compile(@, @path)
       @path.pop(node)
       return string
@@ -107,7 +113,8 @@ class PrettyDialect extends BaseDialect
 class PostgresDialect extends BaseDialect
   operator: (op) ->
     switch op.toLowerCase()
-      when 'hasKey' then '?'
+      when 'hasKey', '?' then '?'
+      when 'contains', '@>' then '@>'
       when '->' then '->'
       else super op
 

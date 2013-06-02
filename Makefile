@@ -8,6 +8,9 @@ PACKAGE_VERSION = $(shell node -e 'console.log(require("./package.json").version
 all: $(LIB_DIR)
 	@cp $(SRC_DIR)/sql_keywords.txt $(LIB_DIR)/
 
+bundle: clean all
+	node_modules/.bin/browserify -s gesundheit lib/index.js > bundle.js
+
 .PHONY: test
 test: unit integration
 

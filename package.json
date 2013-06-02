@@ -32,13 +32,18 @@
   "peerDependencies": {
     "any-db": "1.x"
   },
+  "browser": {
+    "any-db": false
+  },
   "devDependencies": {
     "coffee-script": "~1.4.0",
     "any-db": "1.x",
     "any-db-postgres": "1.x",
     "any-db-sqlite3": "1.x",
     "any-db-mysql": "1.x",
-    "tap": "~0.4.0"
+    "tap": "~0.4.0",
+    "browserify": "2.x.x",
+    "coffeeify": "~0.5.1"
   },
   "author": "Stephen Sugden <glurgle@gmail.com> (http://www.betsmartmedia.com)",
   "optionalDependencies": {},

@@ -1,5 +1,5 @@
 BaseQuery = require './base'
-nodes = require '../nodes'
+nodes     = require '../nodes'
 {Node, And, Or, Ordering, Column, CONST_NODES, toField} = nodes
 
 module.exports = class SUDQuery extends BaseQuery

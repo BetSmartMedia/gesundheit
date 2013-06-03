@@ -61,9 +61,11 @@ exports.eachEngine = (testName, tables, callback) ->
 
 createTables = (conn, tables, callback) ->
   queries = for table, definition of tables
-    columns = for col, type of definition
-      "#{col} #{type}"
     conn.query "DROP TABLE IF EXISTS #{table}"
+    columns = for col, type of definition when col isnt 'primary_key'
+      "#{col} #{type}"
+    if definition.primary_key
+      columns.push("PRIMARY KEY (#{definition.primary_key})")
     conn.query("CREATE TABLE #{table} (#{columns.join(', ')})")
 
   queries.pop().once('end', callback.bind(null, null))

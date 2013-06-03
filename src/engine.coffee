@@ -1,11 +1,10 @@
-url      = require('url')
-anyDB    = require('any-db')
-queries  = require('./queries')
-dialects = require('./dialects')
+url        = require('url')
+anyDB      = require('any-db')
+queries    = require('./queries')
+dialects   = require('./dialects')
+extensions = require('./extensions')
 
-module.exports = -> Engine.create.apply Engine, arguments
-
-class Engine
+module.exports = class Engine
   ###
   ``Engine`` is gesundheits interface to an actual database.
 
@@ -39,7 +38,8 @@ class Engine
     new Engine driverName, dbUrl, pool, dialect
 
   constructor: (@driver, @url, @pool, @dialect) ->
-    queries.mixinFactoryMethods @
+    queries.mixinFactoryMethods(@)
+    extensions[@driver]?(@)
 
   query: (statement, params, callback) ->
     ###

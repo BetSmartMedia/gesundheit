@@ -55,7 +55,8 @@ particularly unusual SQL statements, you might also want to make use of these:
 
 ###
 exports.dialects = require './dialects'
-exports.engine = require './engine'
+exports.Engine = require './engine'
+exports.engine = exports.Engine.create
 exports.defaultEngine = exports.engine 'fake://localhost/'
 
 exports.nodes = require './nodes'

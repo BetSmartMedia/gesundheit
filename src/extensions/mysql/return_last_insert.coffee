@@ -2,17 +2,15 @@ nodes = require '../../nodes'
 
 module.exports = (query) ->
   exec = query.execute
-  query.execute = (cb) ->
+  query.execute = (callback) ->
     toReturn = @q.returning.nodes.slice()
+
     unless toReturn.length
-      return exec.call(@, cb)
+      return exec.call(@, callback)
 
     @q.returning.nodes.length = 0
 
-    tableName = switch @q.relation.constructor
-      when nodes.Relation then @q.relation.value
-      when nodes.Relation.Alias then @q.relation.obj.value
-      else throw new Error("@q.relation is not a Relation?")
+    tableName = @q.relation.value
 
     proxy = new EmitterProxy
 
@@ -20,13 +18,17 @@ module.exports = (query) ->
       if err
         if cb then cb(err) else proxy.emit('error', err)
       else
-        id = res.insertId
+        console.log(res)
+        id = res.rows.insertId
         if toReturn.length is 1 and toReturn[0].value is 'id'
-          proxy.emit 'row', {id}
-          proxy.emit 'end', {rows: [{id}]}
+          row = {id}
+          result = rows: [row]
+          proxy.emit 'row', row
+          proxy.emit 'end', result
+          callback(null, result) if callback
         else
           select = @engine.select(tableName, toReturn).where({id})
-          proxy.intercept ['error', 'row', 'end'], select.execute cb
+          proxy.intercept ['error', 'row', 'end'], select.execute(callback)
 
     return proxy
 

@@ -52,20 +52,29 @@ exports.eachEngine = (testName, tables, callback) ->
       t.on 'end', nextEngine
       if tables then db.pool.acquire (err, conn) ->
         throw err if err
-        createTables conn, tables, (err) ->
+        createTables conn, engineName, tables, (err) ->
           throw err if err
           db.pool.release(conn)
           callback db, t
       else
         callback db, t
 
-createTables = (conn, tables, callback) ->
+createTables = (conn, engineName, tables, callback) ->
   queries = for table, definition of tables
     conn.query "DROP TABLE IF EXISTS #{table}"
-    columns = for col, type of definition when col isnt 'primary_key'
+    columns = for col, type of definition when col isnt 'auto_key'
       "#{col} #{type}"
-    if definition.primary_key
-      columns.push("PRIMARY KEY (#{definition.primary_key})")
-    conn.query("CREATE TABLE #{table} (#{columns.join(', ')})")
+
+    if pkey = definition.auto_key then switch engineName
+      when 'postgres'
+        columns.unshift "#{pkey} SERIAL PRIMARY KEY"
+      when 'sqlite3'
+        columns.unshift "#{pkey} INTEGER PRIMARY KEY AUTOINCREMENT"
+      when 'mysql'
+        columns.unshift "#{pkey} INT NOT NULL AUTO_INCREMENT"
+        columns.push "PRIMARY KEY (#{pkey})"
+
+    create = "CREATE TABLE #{table} (#{columns.join(', ')})"
+    conn.query(create)
 
   queries.pop().once('end', callback.bind(null, null))

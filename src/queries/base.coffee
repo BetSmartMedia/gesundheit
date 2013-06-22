@@ -21,9 +21,10 @@ module.exports = class BaseQuery extends EventEmitter
     @bind(engine)
     @q = opts.rootNode or new @constructor.rootNode opts
 
-  copy: ->
+  copy: (fn) ->
     ### Instantiate a new query with a deep copy of this ones AST ###
-    new @constructor @engine, rootNode: @q.copy()
+    query = new @constructor @engine, rootNode: @q.copy()
+    if (fn) then query.visit(fn) else query
 
   visit: (fn) ->
     ###

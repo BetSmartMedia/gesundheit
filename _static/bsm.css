@@ -173,7 +173,7 @@ div.body h1, div.body h2, div.body h3, div.body h4, div.body h5, div.body h6 {
   text-shadow: 0 1px 0 #CBA39C;
 }
  
-div.body h1 { border-top: 20px solid white; margin-top: 0; font-size: 200%; background-color: #CAC8C6; padding: 5px 0 5px 10px; }
+div.body h1 { border-top: 20px solid white; margin-top: 0; font-size: 200%; }
 div.body h2 { border-bottom: 1px solid #CAC8C6; padding: 5px 0; }
 
 a.headerlink {

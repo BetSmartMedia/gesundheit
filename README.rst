@@ -23,8 +23,9 @@ Here's a quick example to illustrate::
 
     query.execute(console.log)
 
-See `the documentation <http://betsmartmedia.github.com/gesundheit/>`_ for more
-thorough examples showing different query types, joins, query execution and more.
+See `the documentation <http://betsmartmedia.github.com/gesundheit/>`_ for full
+API documentation and more examples showing different query types, joins, query
+execution and more.
 
 
 Install
@@ -33,7 +34,8 @@ Install
 In addition to the usual ``npm install gesundheit``, you will need to install
 the driver for your database. Driver support is provided by `any-db
 <https://github.com/grncdr/any-db>`_, which currently works with the ``pg``,
-``mysql``, and ``sqlite3`` database drivers.
+``mysql``, and ``sqlite3`` database drivers. So for example, if you use
+PostgreSQL as your database backend you would do ``npm install pg gesundheit``.
 
 License
 -------

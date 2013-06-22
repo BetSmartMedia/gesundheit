@@ -217,6 +217,7 @@ class Column extends FixedNodeSet
   rel: -> @source
   copy: -> new @constructor copy(@source), copy(@field)
   as: (alias) ->
+    ### Return an aliased version of this column. ###
     new Alias @, alias
 
   @Alias = class Alias extends AbstractAlias

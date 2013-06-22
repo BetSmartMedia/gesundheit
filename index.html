@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Gesundheit! &mdash; gesundheit 0.8.5 documentation</title>
+    <title>Gesundheit! &mdash; gesundheit 0.8.6 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.8.5',
+        VERSION:     '0.8.6',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.8.5 documentation" href="#" />
+    <link rel="top" title="gesundheit 0.8.6 documentation" href="#" />
     <link rel="next" title="Gesundheit!" href="" /> 
   </head>
   <body>  
@@ -285,8 +285,8 @@ example of aliasing table and field names:</p>
 </div>
 <p><em>(This example also shows passing a list of fields to
 :func:`~queries/index::SELECT` as the second parameter).</em></p>
-<p>Conversely, if you are using <a class="reference internal" href="#queries/sud::SUDQuery.project" title="queries/sud::SUDQuery.project"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.project</span></tt></a> to return a
-<tt class="xref coffee coffee-class docutils literal"><span class="pre">Projection</span></tt> node, you can use <tt class="xref coffee coffee-meth docutils literal"><span class="pre">Projection.as</span></tt> to
+<p>Conversely, if you are using <a class="reference internal" href="#queries/sud::SUDQuery.column" title="queries/sud::SUDQuery.column"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.column</span></tt></a> to return a
+<tt class="xref coffee coffee-class docutils literal"><span class="pre">Column</span></tt> node, you can use <tt class="xref coffee coffee-meth docutils literal"><span class="pre">Column.as</span></tt> to
 return an aliased version of the node:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">q = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">)</span>
 <span class="nx">q</span><span class="p">.</span><span class="nx">fields</span><span class="p">(</span><span class="nx">q</span><span class="p">.</span><span class="nx">p</span><span class="p">(</span><span class="s">&#39;manager_id&#39;</span><span class="p">).</span><span class="nx">as</span><span class="p">(</span><span class="s">&#39;m_id&#39;</span><span class="p">))</span>
@@ -471,7 +471,7 @@ gesundheits public API, the methods defined on it are.</p>
 
 <dl class="method">
 <dt id="queries/base::BaseQuery.copy">
-<em class="property">method </em><tt class="descname">BaseQuery.copy</tt><big>(</big><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.copy" title="Permalink to this definition">¶</a></dt>
+<em class="property">method </em><tt class="descname">BaseQuery.copy</tt><big>(</big><em>fn</em><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Instantiate a new query with a deep copy of this ones AST</p>
 </dd></dl>
 
@@ -724,42 +724,46 @@ name with a dot in it, if you have dots in your column names, sorry.</p>
 <div class="section" id="examples">
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
 <p>Start a select query with <a class="reference internal" href="#queries/index::SELECT" title="queries/index::SELECT"><tt class="xref coffee coffee-func docutils literal"><span class="pre">SELECT</span></tt></a>:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">light_recliners = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;chairs&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;chair_type&#39;</span><span class="p">,</span> <span class="s">&#39;size&#39;</span><span class="p">])</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">var</span> <span class="nv">select = </span><span class="nx">require</span><span class="p">(</span><span class="s">&#39;gesundheit&#39;</span><span class="p">).</span><span class="nx">select</span>
+<span class="nx">var</span> <span class="nv">lightRecliners = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;chairs&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;chair_type&#39;</span><span class="p">,</span> <span class="s">&#39;size&#39;</span><span class="p">])</span>
   <span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">chair_type: </span><span class="s">&#39;recliner&#39;</span><span class="p">,</span> <span class="nv">weight: </span><span class="p">{</span><span class="nv">lt: </span><span class="mi">25</span><span class="p">}})</span>
 </pre></div>
 </div>
 <p>Join another table with <a class="reference internal" href="#queries/select::SelectQuery.join" title="queries/select::SelectQuery.join"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.join</span></tt></a>:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">men_with_light_recliners = </span><span class="nx">light_recliners</span><span class="p">.</span><span class="nx">copy</span><span class="p">()</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">var</span> <span class="nv">malesWithLightRecliners = </span><span class="nx">lightRecliners</span><span class="p">.</span><span class="nx">copy</span><span class="p">()</span>
   <span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&quot;people&quot;</span><span class="p">,</span> <span class="p">{</span>
-    <span class="kc">on</span><span class="o">:</span> <span class="p">{</span><span class="nv">chair_id: </span><span class="nx">query</span><span class="p">.</span><span class="nx">project</span><span class="p">(</span><span class="s">&#39;chairs&#39;</span><span class="p">,</span> <span class="s">&#39;id&#39;</span><span class="p">)},</span>
+    <span class="kc">on</span><span class="o">:</span> <span class="p">{</span><span class="nv">chair_id: </span><span class="nx">light_recliners</span><span class="p">.</span><span class="nx">column</span><span class="p">(</span><span class="s">&#39;chairs.id&#39;</span><span class="p">)},</span>
     <span class="nv">fields: </span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
   <span class="p">})</span>
-  <span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">gender: </span><span class="s">&#39;M&#39;</span><span class="p">})</span>
+  <span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">sex: </span><span class="s">&#39;M&#39;</span><span class="p">})</span>
 </pre></div>
 </div>
-<p>Note that joining a table &#8220;focuses&#8221; it, so &#8220;gender&#8221; in <tt class="docutils literal"><span class="pre">.where({gender:</span> <span class="pre">'M'})</span></tt>
-refers to the <tt class="docutils literal"><span class="pre">people.gender</span></tt> column. To add more conditions on an earlier
-table refocus it with <a class="reference internal" href="#queries/select::SelectQuery.focus" title="queries/select::SelectQuery.focus"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.focus</span></tt></a>:</p>
+<p>Note that joining a table &#8220;focuses&#8221; it, so <tt class="docutils literal"><span class="pre">.where({sex:</span> <span class="pre">'M'})</span></tt> refers to the
+<tt class="docutils literal"><span class="pre">people.sex</span></tt> column. You can avoid this implicit behaviour by using full
+column names (e.g. <tt class="docutils literal"><span class="pre">'chairs.id'</span></tt>) or switching focus back to a previous table
+using <a class="reference internal" href="#queries/select::SelectQuery.focus" title="queries/select::SelectQuery.focus"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.focus</span></tt></a>:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">men_with_light_recliners</span><span class="p">.</span><span class="nx">focus</span><span class="p">(</span><span class="s">&#39;chairs&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Ordering and limits are added with methods of the same name:</p>
+<p>Lets order the results by <tt class="docutils literal"><span class="pre">chairs.weight</span></tt> and get the top 5:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">men_with_light_recliners</span>
   <span class="p">.</span><span class="nx">order</span><span class="p">(</span><span class="nv">weight: </span><span class="s">&#39;ASC)</span>
 <span class="s">  .limit(5)</span>
 </pre></div>
 </div>
-<p>The entire query can also be written using <a class="reference internal" href="#queries/base::BaseQuery.visit" title="queries/base::BaseQuery.visit"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.visit</span></tt></a>
-(and less punctuation) like so:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">men_with_light_recliners = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;chairs&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;chair_type&#39;</span><span class="p">,</span> <span class="s">&#39;size&#39;</span><span class="p">],</span> <span class="o">-&gt;</span>
-  <span class="nx">@where</span> <span class="nv">chair_type: </span><span class="s">&#39;recliner&#39;</span><span class="p">,</span> <span class="nv">weight: </span><span class="p">{</span><span class="nv">lt: </span><span class="mi">25</span><span class="p">}</span>
-  <span class="nx">@join</span> <span class="s">&quot;people&quot;</span><span class="p">,</span>
-    <span class="kc">on</span><span class="o">:</span> <span class="p">{</span><span class="nv">chair_id: </span><span class="nx">@project</span><span class="p">(</span><span class="s">&#39;chairs&#39;</span><span class="p">,</span> <span class="s">&#39;id&#39;</span><span class="p">)},</span>
+<p>The entire query can also be written without needing a temp variable by using
+the third parameter to select (a callback function that will be passed to
+<a class="reference internal" href="#queries/base::BaseQuery.visit" title="queries/base::BaseQuery.visit"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.visit</span></tt></a>):</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">men_with_light_recliners = </span><span class="nx">select</span> <span class="s">&#39;chairs&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;chair_type&#39;</span><span class="p">,</span> <span class="s">&#39;size&#39;</span><span class="p">],</span> <span class="nx">function</span> <span class="p">(</span><span class="nx">q</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">chair_type: </span><span class="s">&#39;recliner&#39;</span><span class="p">,</span> <span class="nv">weight: </span><span class="p">{</span><span class="nv">lt: </span><span class="mi">25</span><span class="p">}})</span>
+  <span class="nx">q</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&quot;people&quot;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="kc">on</span><span class="o">:</span> <span class="p">{</span><span class="nv">chair_id: </span><span class="nx">q</span><span class="p">.</span><span class="nx">column</span><span class="p">(</span><span class="s">&#39;chairs.id&#39;</span><span class="p">)},</span>
     <span class="nv">fields: </span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
-  <span class="nx">@where</span> <span class="nv">gender: </span><span class="s">&#39;M&#39;</span>
-  <span class="nx">@focus</span> <span class="s">&#39;chairs&#39;</span>
-  <span class="nx">@order</span> <span class="nv">weight: </span><span class="s">&#39;ASC</span>
-<span class="s">  @limit 5</span>
+  <span class="p">})</span>
+  <span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">gender: </span><span class="s">&#39;M&#39;</span><span class="p">})</span>
+  <span class="nx">q</span><span class="p">.</span><span class="nx">order</span><span class="p">({</span><span class="s">&#39;chairs.weight&#39;</span><span class="o">:</span> <span class="s">&#39;ASC&#39;</span><span class="p">})</span>
+  <span class="nx">q</span><span class="p">.</span><span class="nx">limit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="p">})</span>
 </pre></div>
 </div>
 </div>
@@ -889,10 +893,10 @@ constraints are added the <cite>HAVING</cite> portion of a SQL clause.</p>
 <div class="section" id="id5">
 <h3>Examples<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <p>Updating rows that match a condition:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">update</span><span class="p">(</span><span class="s">&#39;tweeters&#39;</span><span class="p">)</span>            <span class="c1"># UPDATE tweeters</span>
-  <span class="p">.</span><span class="nx">set</span><span class="p">({</span><span class="nv">influential: </span><span class="kc">true</span><span class="p">})</span>     <span class="c1"># SET tweeters.influential = true</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">update</span><span class="p">(</span><span class="s">&#39;tweeters&#39;</span><span class="p">)</span>                <span class="c1"># UPDATE tweeters</span>
+  <span class="p">.</span><span class="nx">set</span><span class="p">({</span><span class="nv">influential: </span><span class="kc">true</span><span class="p">})</span>       <span class="c1"># SET tweeters.influential = true</span>
   <span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">followers: </span><span class="p">{</span><span class="nv">gt: </span><span class="mi">1000</span><span class="p">}})</span> <span class="c1"># WHERE tweeters.followers &gt; 1000;</span>
-  <span class="p">.</span><span class="nx">execute</span><span class="p">(</span><span class="nx">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="sr">/* ... */</span> <span class="p">})</span>
+  <span class="p">.</span><span class="nx">execute</span><span class="p">(</span><span class="nx">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span> <span class="sr">/* ... */</span> <span class="p">})</span>
 </pre></div>
 </div>
 </div>

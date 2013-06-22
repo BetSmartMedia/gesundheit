@@ -126,8 +126,8 @@ example of aliasing table and field names::
 *(This example also shows passing a list of fields to
 :func:`~queries/index::SELECT` as the second parameter).*
 
-Conversely, if you are using :meth:`queries/sud::SUDQuery.project` to return a
-:class:`nodes::Projection` node, you can use :meth:`~nodes::Projection.as` to
+Conversely, if you are using :meth:`queries/sud::SUDQuery.column` to return a
+:class:`nodes::Column` node, you can use :meth:`~nodes::Column.as` to
 return an aliased version of the node::
 
   q = select('departments')
@@ -183,42 +183,46 @@ Examples
 
 Start a select query with :func:`~queries/index::SELECT`::
 
-    light_recliners = select('chairs', ['chair_type', 'size'])
+    var select = require('gesundheit').select
+    var lightRecliners = select('chairs', ['chair_type', 'size'])
       .where({chair_type: 'recliner', weight: {lt: 25}})
 
 Join another table with :meth:`~queries/select::SelectQuery.join`::
 
-    men_with_light_recliners = light_recliners.copy()
+    var malesWithLightRecliners = lightRecliners.copy()
       .join("people", {
-        on: {chair_id: query.project('chairs', 'id')},
+        on: {chair_id: light_recliners.column('chairs.id')},
         fields: ['name']
       })
-      .where({gender: 'M'})
+      .where({sex: 'M'})
 
-Note that joining a table "focuses" it, so "gender" in ``.where({gender: 'M'})``
-refers to the ``people.gender`` column. To add more conditions on an earlier
-table refocus it with :meth:`queries/select::SelectQuery.focus`::
+Note that joining a table "focuses" it, so ``.where({sex: 'M'})`` refers to the
+``people.sex`` column. You can avoid this implicit behaviour by using full
+column names (e.g. ``'chairs.id'``) or switching focus back to a previous table
+using :meth:`queries/select::SelectQuery.focus`::
 
   men_with_light_recliners.focus('chairs')
 
-Ordering and limits are added with methods of the same name::
+Lets order the results by ``chairs.weight`` and get the top 5::
 
   men_with_light_recliners
     .order(weight: 'ASC)
     .limit(5)
 
-The entire query can also be written using :meth:`queries/base::BaseQuery.visit`
-(and less punctuation) like so::
+The entire query can also be written without needing a temp variable by using
+the third parameter to select (a callback function that will be passed to
+:meth:`queries/base::BaseQuery.visit`)::
 
-  men_with_light_recliners = select('chairs', ['chair_type', 'size'], ->
-    @where chair_type: 'recliner', weight: {lt: 25}
-    @join "people",
-      on: {chair_id: @project('chairs', 'id')},
+  men_with_light_recliners = select 'chairs', ['chair_type', 'size'], function (q) {
+    q.where({chair_type: 'recliner', weight: {lt: 25}})
+    q.join("people", {
+      on: {chair_id: q.column('chairs.id')},
       fields: ['name']
-    @where gender: 'M'
-    @focus 'chairs'
-    @order weight: 'ASC
-    @limit 5
+    })
+    q.where({gender: 'M'})
+    q.order({'chairs.weight': 'ASC'})
+    q.limit(5)
+  })
 
 API
 ^^^
@@ -233,10 +237,10 @@ Examples
 
 Updating rows that match a condition::
 
-  update('tweeters')            # UPDATE tweeters
-    .set({influential: true})     # SET tweeters.influential = true
+  update('tweeters')                # UPDATE tweeters
+    .set({influential: true})       # SET tweeters.influential = true
     .where({followers: {gt: 1000}}) # WHERE tweeters.followers > 1000;
-    .execute(function (err) { /* ... */ })
+    .execute(function (err, res) { /* ... */ })
 
 API
 ^^^

@@ -8,7 +8,7 @@ instance.
 read = require('fs').readFileSync
 kwFile = __dirname + '/sql_keywords.txt'
 keywords = read(kwFile, 'ascii').split('\n').filter(Boolean)
-{Select, Update, Delete, Insert} = require './nodes'
+{Select, Update, Delete, Insert, Relation, Field} = require './nodes'
 
 class BaseDialect
 
@@ -94,9 +94,16 @@ class MySQLDialect extends BaseDialect
   placeholder: -> '?'
 
   quote: (s, path) ->
-    ### Do not quote column names in insert column list ###
+    ###
+    MySQL has two special cases for quoting:
+     - The column names in an insert column list are not quoted
+     - table and field names are quoted with backticks.
+    ###
+    node = path[path.length - 1]
     if path.some((node) -> node instanceof Insert.ColumnList)
       s
+    else if node instanceof Field or node instanceof Relation
+      "`#{s}`"
     else
       super
 

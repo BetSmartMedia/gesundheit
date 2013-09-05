@@ -100,7 +100,7 @@ class MySQLDialect extends BaseDialect
      - table and field names are quoted with backticks.
     ###
     node = path[path.length - 1]
-    if path.some((node) -> node instanceof Insert.ColumnList)
+    if s is '*' or path.some((node) -> node instanceof Insert.ColumnList)
       s
     else if node instanceof Field or node instanceof Relation
       "`#{s}`"

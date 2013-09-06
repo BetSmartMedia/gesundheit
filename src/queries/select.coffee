@@ -5,6 +5,7 @@ SUDQuery = require './sud'
   And,
   Join,
   toRelation,
+  toColumn,
   sqlFunction,
   JOIN_TYPES } = require '../nodes'
 
@@ -86,19 +87,29 @@ module.exports = class SelectQuery extends SUDQuery
     :param opts.type: A join type constant (e.g. INNER, OUTER)
     :param opts.fields: Columns to be selected from the newly joined table.
     ###
-    rel = toRelation table
-    if @q.relations.get rel.ref(), false
-      throw new Error "Table/alias #{rel.ref()} is not unique!"
+    relation = toRelation table
+    if @q.relations.get relation, false
+      throw new Error "Table/alias #{relation.ref()} is not unique!"
 
     type = opts.type || JOIN_TYPES.INNER
     if type not instanceof JOIN_TYPES.INNER.constructor
       throw new Error "Invalid join type #{type}, try the constant types exported in the base module (e.g. INNER)."
-    join = new Join type, rel
+
+    join = new Join type, relation
     @q.relations.addNode join
     # must switch to the new relation before making clauses
     if opts.on then join.on(new And(@_makeClauses opts.on))
-    if opts.fields?
-      @fields(opts.fields)
+
+    if (fieldList = opts.fields)?
+      if opts.prefixFields
+        if opts.prefixFields is true
+          prefix = relation.ref() + '_'
+        else
+          prefix = opts.prefixFields
+        fieldList = fieldList.map (f) ->
+          toColumn(relation, f).as(prefix + f)
+
+      @fields(fieldList)
 
   ensureJoin: (table, opts={}) ->
     ###

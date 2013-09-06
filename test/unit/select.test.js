@@ -84,28 +84,34 @@ test("SELECT queries", function (t) {
   })
 
   t.test("more advanced joins", function (t) {
-    var q = select('t1')
-    t.equal(q.copy().visit(function () {
+    t.equal(
+      select('t1').visit(function () {
         this.join("t2", {on: {x: this.c('t1', 'y')}})
       }).render(),
       "SELECT * FROM t1 INNER JOIN t2 ON (t2.x = t1.y)",
       "join using a clause")
 
-    t.equals(q.copy().visit(function () {
-        this.join("t2", {on: {x: this.c('t1', 'x'), y: this.c('t1', 'y')}})
+    t.equals(
+      select('t1').visit(function () {
+        this.join("t2", {
+          on: {x: this.c('t1.x'), y: this.c('t1.y')}
+        })
       }).render(),
       "SELECT * FROM t1 INNER JOIN t2 ON (t2.x = t1.x AND t2.y = t1.y)",
       "joining using a clause with multiple predicates")
 
 
-    t.equal(q.copy().join({parent: "t1"}).render(),
+    t.equal(
+      select('t1').join({parent: "t1"}).render(),
       "SELECT * FROM t1 INNER JOIN t1 AS parent",
       "aliased self-join")
 
-    t.throws(function () { q.join("t2", {type: "DOVETAIL"}) },
+    t.throws(
+      function () { select('t1').join("t2", {type: "DOVETAIL"}) },
       "joining with an invalid join type fails")
 
-    t.equal(select('t1').join("t2", {type: LEFT_OUTER}).render(),
+    t.equal(
+      select('t1').join("t2", {type: LEFT_OUTER}).render(),
       "SELECT * FROM t1 LEFT OUTER JOIN t2",
       "a different join type")
 
@@ -113,7 +119,33 @@ test("SELECT queries", function (t) {
         select('t1').join('t2', {fields: ['col1', 'col2']}).render(),
         "SELECT t2.col1, t2.col2 FROM t1 INNER JOIN t2",
         "joins with fields override star projection")
+    t.end()
+  })
 
+  t.test("join with prefixFields option", function (t) {
+    t.equal(
+      select('t1').join('t2', {
+        fields: ['col1', 'col2'],
+        prefixFields: 'p_'
+      }).render(),
+      "SELECT t2.col1 AS p_col1, t2.col2 AS p_col2 FROM t1 INNER JOIN t2",
+      "explicit prefix for joined fields")
+
+    t.equal(
+      select('t1').join('t2', {
+        fields: ['col1', 'col2'],
+        prefixFields: true
+      }).render(),
+      "SELECT t2.col1 AS t2_col1, t2.col2 AS t2_col2 FROM t1 INNER JOIN t2",
+      "implicit prefix for joined fields")
+
+    t.equal(
+      select('t1').join({al: 't2'}, {
+        fields: ['col1', 'col2'],
+        prefixFields: true
+      }).render(),
+      "SELECT al.col1 AS al_col1, al.col2 AS al_col2 FROM t1 INNER JOIN t2 AS al",
+      "implicit prefix for joined fields uses table alias")
     t.end()
   })
 

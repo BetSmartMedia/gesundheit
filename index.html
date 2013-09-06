@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Gesundheit! &mdash; gesundheit 0.8.7 documentation</title>
+    <title>Gesundheit! &mdash; gesundheit 0.8.8 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.8.7',
+        VERSION:     '0.8.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.8.7 documentation" href="#" />
+    <link rel="top" title="gesundheit 0.8.8 documentation" href="#" />
     <link rel="next" title="Gesundheit!" href="" /> 
   </head>
   <body>  
@@ -837,6 +837,19 @@ more information on the many things <tt class="docutils literal"><span class="pr
 <tt class="xref coffee coffee-meth docutils literal"><span class="pre">where</span></tt> for more.</li>
 <li><strong>opts.type</strong> &#8211; A join type constant (e.g. INNER, OUTER)</li>
 <li><strong>opts.fields</strong> &#8211; Columns to be selected from the newly joined table.</li>
+<li><strong>opts.prefixFields</strong> &#8211; <p>If this is a string, it will be used to prefix
+the field names given in <tt class="docutils literal"><span class="pre">opts.fields</span></tt>. If this is a boolean <tt class="docutils literal"><span class="pre">true</span></tt>
+then the joined table (or alias) name plus an underscore will be used
+as the prefix. For example:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">join</span><span class="p">({</span><span class="nv">p: </span><span class="s">&#39;people&#39;</span><span class="p">},</span> <span class="p">{</span>
+  <span class="kc">on</span><span class="o">:</span> <span class="nx">query</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;people.dep_id&#39;</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="nx">query</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;dep.id&#39;</span><span class="p">)),</span>
+  <span class="nv">fields: </span><span class="p">[</span><span class="s">&#39;first_name&#39;</span><span class="p">,</span> <span class="s">&#39;last_name&#39;</span><span class="p">],</span>
+  <span class="nv">prefixFields: </span><span class="kc">true</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>Will alias <tt class="docutils literal"><span class="pre">people.first_name</span> <span class="pre">AS</span> <span class="pre">p_first_name</span></tt>.</p>
+</li>
 </ul>
 </td>
 </tr>

@@ -50,7 +50,7 @@ test("SELECT queries", function (t) {
       ["SELECT * FROM t1 WHERE t1.x IN ($1, $2, $3)", [1, 2, 3]],
       "and an 'IN' where clause is added")
 
-    t.deepEqual(q.copy().where({x: {"notIn": [1, 2, 3]} }).compile(),
+    t.deepEqual(q.copy().where({x: {"not in": [1, 2, 3]} }).compile(),
       ["SELECT * FROM t1 WHERE t1.x NOT IN ($1, $2, $3)", [1, 2, 3]],
       "and an 'NOT IN' where clause is added")
 

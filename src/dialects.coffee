@@ -37,18 +37,14 @@ class BaseDialect
     keywords.indexOf(word.toUpperCase()) isnt -1
 
   operator: (op) ->
-    switch op.toLowerCase()
-      when 'ne', '!=', '<>' then '!='
-      when 'eq', '='   then '='
-      when 'lt', '<'   then '<'
-      when 'gt', '>'   then '>'
-      when 'lte', '<=' then '<='
-      when 'gte', '>=' then '>='
-      when 'like' then 'LIKE'
-      when 'ilike' then 'ILIKE'
-      when 'in' then 'IN'
-      when 'notin' then 'NOT IN'
-      when 'is' then 'IS'
+    switch (op = op.toUpperCase())
+      when 'NE', '!=', '<>' then '!='
+      when 'EQ', '='   then '='
+      when 'LT', '<'   then '<'
+      when 'GT', '>'   then '>'
+      when 'LTE', '<=' then '<='
+      when 'GTE', '>=' then '>='
+      when 'LIKE', 'ILIKE', 'IN', 'NOT IN', 'IS', 'IS NOT' then op
       else throw new Error("Unsupported comparison operator: #{op}")
 
   placeholder: (position) ->

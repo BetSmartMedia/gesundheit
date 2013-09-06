@@ -562,6 +562,14 @@ class ComparableMixin
     @compare '>=', other
   like: (other) ->
     @compare 'LIKE', other
+  is: (other) ->
+    @compare 'IS', other ? CONST_NODES.NULL
+  isNot: (other) ->
+    @compare 'IS NOT', other ? CONST_NODES.NULL
+  in: (other) ->
+    @compare 'IN', other
+  notIn: (other) ->
+    @compare 'NOT IN', other
   compare: (op, other) ->
     ### ``this op other`` **DANGER** `op` is **NOT** escaped! ###
     new Binary @, op, toParam other

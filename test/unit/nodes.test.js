@@ -76,7 +76,6 @@ test('exists/notExists helpers', function (t) {
 test('tuple helper', function (t) {
   var subject = nodes.tuple([42, nodes.toField('bar')])
 
-
   t.equal(
     nodes.Binary,
     subject.compare('IN', [[1, 2], [3, 4]]).constructor,
@@ -101,4 +100,15 @@ test('g.func function factory', function (t) {
     , d = new dialects.base()
   t.deepEqual(d.compile(c), ["F($1, $2, $3)", ['a', 'b', 'c']])
   t.end()
+})
+
+test('IS [NOT] NULL', function (t) {
+  var f = nodes.toColumn('t1.c1')
+    , isNull = f.is(null)
+    , isNotNull = f.isNot(null)
+    , d = new dialects.base()
+    ;
+  t.equal(d.compile(isNull)[0], "t1.c1 IS NULL")
+  t.equal(d.compile(isNotNull)[0], "t1.c1 IS NOT NULL")
+  t.end();
 })

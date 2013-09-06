@@ -112,3 +112,9 @@ test('IS [NOT] NULL', function (t) {
   t.equal(d.compile(isNotNull)[0], "t1.c1 IS NOT NULL")
   t.end();
 })
+
+test('Bug #54', function (t) {
+  var col = nodes.toColumn('job.offers_count');
+  t.ok(col.lte(2).or(col.is(null)));
+  t.end()
+})

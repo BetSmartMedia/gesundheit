@@ -244,7 +244,7 @@ class Binary extends FixedNodeSet
   and: (args...) ->
     new And [@, args...]
 
-  or: ->
+  or: (args...) ->
     new Or [@, args...]
 
   compile: (dialect) ->

@@ -86,6 +86,19 @@ module.exports = class SelectQuery extends SUDQuery
       :meth:`queries/select::SelectQuery::where` for more.
     :param opts.type: A join type constant (e.g. INNER, OUTER)
     :param opts.fields: Columns to be selected from the newly joined table.
+    :param opts.prefixFields: If this is a string, it will be used to prefix
+      the field names given in ``opts.fields``. If this is a boolean ``true``
+      then the joined table (or alias) name plus an underscore will be used
+      as the prefix. For example::
+
+          query.join({p: 'people'}, {
+            on: query.c('people.dep_id').eq(query.c('dep.id')),
+            fields: ['first_name', 'last_name'],
+            prefixFields: true
+          })
+
+      Will alias ``people.first_name AS p_first_name``.
+
     ###
     relation = toRelation table
     if @q.relations.get relation, false

@@ -24,7 +24,7 @@ class Engine
     a single default database engine for an application.
 
     .. _Any-DB: https://github.com/grncdr/node-any-db
-    .. _Any-DB ConnectionPool: https://github.com/grncdr/node-any-db/blob/master/DESIGN.md#connectionpool
+    .. _Any-DB ConnectionPool: https://github.com/grncdr/node-any-db/blob/master/API.md#connectionpool
     ###
     driverName = url.parse(dbUrl).protocol.replace(':', '').split('+').shift()
 
@@ -56,7 +56,7 @@ class Engine
     and ``rollback`` methods instead of ``close``. (In fact it's an `Any-DB
     Transaction`_ that has had the query factory functions mixed in to it).
 
-    .. _Any-DB Transaction: https://github.com/grncdr/node-any-db#transaction
+    .. _Any-DB Transaction: https://github.com/grncdr/node-any-db/blob/master/API.md#transaction
     ###
     tx = queries.mixinFactoryMethods(@pool.begin(callback))
     tx.engine = @

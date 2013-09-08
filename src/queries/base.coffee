@@ -40,7 +40,7 @@ module.exports = class BaseQuery extends EventEmitter
         })
 
     ###
-    fn.call @
+    fn.call @, @
 
   bind: (engine) ->
     ###

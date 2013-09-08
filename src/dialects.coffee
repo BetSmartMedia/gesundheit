@@ -55,10 +55,10 @@ class BaseDialect
       @path   = []
       @params = []
 
-    compile: (node) ->
+    compile: (node, allowOverride=true) ->
       @path.push(node)
       name = node?.__proto__?.constructor?.name
-      if name and custom = @dialect['render' + name]
+      if allowOverride and name and custom = @dialect['render' + name]
         string = custom.call(@, node)
       else
         string = node.compile(@, @path)
@@ -76,6 +76,33 @@ class BaseDialect
 
     quote: (string) ->
       @dialect.quote(string, @path)
+
+class PrettyDialect extends BaseDialect
+  renderJoin:        (node) -> "\n" + @compile(node, false)
+  renderWhere:       (node) -> "\n" + @compile(node, false)
+  renderHaving:      (node) -> "\n" + @compile(node, false)
+  renderOrderBy:     (node) -> "\n" + @compile(node, false)
+  renderGroupBy:     (node) -> "\n" + @compile(node, false)
+  renderRelationSet: (node) -> "\n" + @compile(node, false)
+  renderSelectColumnSet: (node) ->
+    glue           = node.glue
+    last           = node.nodes.length
+    lines          = []
+    thisLine       = []
+    thisLineLength = 81
+    for node in node.nodes
+      text = @compile(node)
+      size = text.length + glue.length
+      if thisLineLength + size > 50
+        lines.push(thisLine.join(glue))
+        thisLine = []
+        thisLineLength = 0
+      thisLineLength += size
+      thisLine.push text
+    lines.shift()
+    lines.push(thisLine.join(glue))
+    lines.join("\n  ")
+
 
 class PostgresDialect extends BaseDialect
   operator: (op) ->
@@ -120,6 +147,7 @@ class SQLite3Dialect extends BaseDialect
 
 module.exports =
   base: BaseDialect
+  pretty: PrettyDialect
   postgres: PostgresDialect
   mysql: MySQLDialect
   sqlite3: SQLite3Dialect

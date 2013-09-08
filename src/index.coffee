@@ -78,3 +78,5 @@ exports.begin = (args...) ->
   
 exports.query = (args...) ->
   exports.defaultEngine.query args...
+
+exports.unmarshaller = require('./unmarshal')

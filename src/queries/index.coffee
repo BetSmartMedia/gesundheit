@@ -120,19 +120,3 @@ maybeVisit = (func) ->
       func.apply(@, a).visit(cb)
     else
       func.apply(@, a)
-
-
-exports.inflate = do ->
-  queries = {
-    InsertQuery
-    SelectQuery
-    UpdateQuery
-    DeleteQuery
-  }
-  nodes = require '../nodes'
-  (json) ->
-    if !(ctor = queries[json._type])
-      throw new Error("Can't inflate #{JSON.stringify(json)}")
-    query = new ctor()
-    query.q = nodes.fromJSON(json.q)
-    query

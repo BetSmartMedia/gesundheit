@@ -19,12 +19,12 @@ class Node
     {_type: @constructor.name}
 
   copy: ->
-    @constructor.fromJSON @toJSON()
+    unmarshal @toJSON()
 
 class ValueNode extends Node
   ### A ValueNode is a literal string that should be printed unescaped. ###
-  @fromJSON = (json) ->
-    new @(json.value)
+  @unmarshal = (data, recur) ->
+    new @(data.value)
 
   constructor: (@value) ->
     if @value?
@@ -62,8 +62,8 @@ JOIN_TYPES[name] = new JoinType(name.replace('_', ' ')) for name in [
 class NodeSet extends Node
   ### A set of nodes joined together by ``@glue`` ###
 
-  @fromJSON = (json) ->
-    new @(fromJSON(json.nodes), json.glue)
+  @unmarshal = (data, recur) ->
+    new @(recur(data.nodes), data.glue)
 
   constructor: (nodes, glue=' ') ->
     ###
@@ -104,10 +104,10 @@ class Statement extends Node
       @::__defineGetter__ k, -> @_private[k] or= new type
       @::__defineSetter__ k, (v) -> @_private[k] = v
 
-  @fromJSON = (json) ->
+  @unmarshal = (data, recur) ->
     it = new @
-    delete json._type
-    it._private = fromJSON(json)
+    delete data._type
+    it._private = recur(data)
     return it
 
   constructor: (opts) ->
@@ -143,8 +143,8 @@ class AbstractAlias extends Node
     klazz::as = (name) ->
       new @constructor.Alias @, name
 
-  @fromJSON = (json) ->
-    new @(fromJSON(json.obj), json.alias)
+  @unmarshal = (data, recur) ->
+    new @(recur(data.obj), data.alias)
 
   constructor: (@obj, @alias) ->
   ref: -> @alias
@@ -156,8 +156,8 @@ class AbstractAlias extends Node
 # End of generic base classes
 
 class TextNode extends Node
-  @fromJSON = (json) ->
-    new @(json.text, json.bindVals)
+  @unmarshal = (data, recur) ->
+    new @(data.text, data.bindVals)
 
   constructor: (@text, @bindVals=[]) ->
 
@@ -178,8 +178,8 @@ class TextAlias extends AbstractAlias
 
 class SqlFunction extends Node
   ### Includes :class:`nodes::ComparableMixin` ###
-  @fromJSON = (json) ->
-    new @(json.name, json.arglist)
+  @unmarshal = (data, recur) ->
+    new @(data.name, data.arglist)
 
   constructor: (@name, @arglist) ->
   ref:         -> @name
@@ -239,8 +239,8 @@ class Column extends FixedNodeSet
   ###
   Includes :class:`nodes::ComparableMixin`
   ###
-  @fromJSON = (json) ->
-    new @(fromJSON(json.nodes[0]), fromJSON(json.nodes[1]))
+  @unmarshal = (data, recur) ->
+    new @(recur(data.nodes[0]), recur(data.nodes[1]))
 
   constructor: (@source, @field) -> super [@source, @field], '.'
   rel: -> @source
@@ -265,8 +265,8 @@ class Offset extends IntegerNode
     if @value then "OFFSET #{@value}" else ""
 
 class Binary extends FixedNodeSet
-  @fromJSON = (json) ->
-    new @(fromJSON(json.left), fromJSON(json.op), fromJSON(json.right))
+  @unmarshal = (data, recur) ->
+    new @(recur(data.left), recur(data.op), recur(data.right))
 
   constructor: (@left, @op, @right) -> super [@left, @op, @right], ' '
 
@@ -361,9 +361,9 @@ class Join extends FixedNodeSet
   JOIN = new ValueNode 'JOIN'
   ON   = new ValueNode 'ON'
 
-  @fromJSON = (json) ->
-    {nodes} = json
-    join = new @(fromJSON(nodes[0]), fromJSON(nodes[2]))
+  @unmarshal = (data, recur) ->
+    {nodes} = data
+    join = new @(recur(nodes[0]), recur(nodes[2]))
     for clause in nodes.slice(4)
       join.on(clause)
     join
@@ -786,21 +786,6 @@ tuple = (input) ->
   ###
   new Tuple input.map(toParam)
 
-fromJSON = (object) ->
-  return object if typeof object != 'object'
-  if Array.isArray(object)
-    object.map(fromJSON)
-  else
-    if !object._type
-      newObject = {}
-      newObject[k] = fromJSON(v) for k, v of object when k isnt '_type'
-      newObject
-    else if module.exports[object._type]?.fromJSON?
-      ctor = module.exports[object._type]
-      ctor.fromJSON(object)
-    else
-      throw new Error("Can't inflate: " + JSON.stringify(object))
-
 module.exports = {
   CONST_NODES
   JOIN_TYPES
@@ -809,7 +794,6 @@ module.exports = {
   exists
   func
   getAlias
-  fromJSON
   notExists
   sqlFunction
   text
@@ -864,6 +848,9 @@ module.exports = {
   Delete
   ComparableMixin
 }
+
+# default (no validation) unmarshaller
+unmarshal = require('./unmarshal')()
 
 copy = (it) ->
   # Return a deep copy of ``it``.

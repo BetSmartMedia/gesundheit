@@ -634,7 +634,7 @@ toRelation = (it) ->
   ###
   Transform ``it`` into a :class:`nodes::Relation` instance.
 
-  This accepts `strings, `Relation`` and ``Alias`` instances, and objects with
+  This accepts `strings, ``Relation`` and ``Alias`` instances, and objects with
   a single key-value pair, which will be turned into an ``Alias`` instance.
 
   Examples::
@@ -748,9 +748,11 @@ text = (rawSQL, bindVals) ->
           .execute(callback)
       }
 
-  If you find yourself using this function often, please consider opening an
-  issue on `Github <https://github.com/BetSmartMedia/gesundheit>`_ with details
-  on your use case so gesundheit can support it more elegantly.
+  .. [#] If you find yourself using this function often, please `open an issue`_
+    on Github with details on your use case so `gesundheit` can support it
+    more elegantly.
+
+  ..  _open an issue: https://github.com/BetSmartMedia/gesundheit/issues/new?title=I%20use%20text()%20for%20blah
   ###
   new TextNode(rawSQL, bindVals)
 

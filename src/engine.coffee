@@ -26,17 +26,22 @@ class Engine
     .. _Any-DB: https://github.com/grncdr/node-any-db
     .. _Any-DB ConnectionPool: https://github.com/grncdr/node-any-db/blob/master/API.md#connectionpool
     ###
-    driverName = url.parse(dbUrl).protocol.replace(':', '').split('+').shift()
+    parsed = url.parse(dbUrl)
+    driverName = parsed.protocol.replace(':', '').split('+').shift()
 
     if driverName is 'fake'
-      return fakeEngine()
+      pool = fakePool()
+      if parsed.protocol.match('pretty')
+        dialectType = dialects.pretty
+      else
+        dialectType = dialects.base
+    else
+      pool = anyDB.createPool(dbUrl, poolOptions)
+      dialectType = dialects[driverName]
 
-    ctor = dialects[driverName]
-    if not ctor?
-      throw new Error('no such driver: ' + driverName)
-    dialect = new ctor
-    pool = anyDB.createPool(dbUrl, poolOptions)
-    new Engine driverName, dbUrl, pool, dialect
+    if not dialectType?
+      throw new Error('no such dialect: ' + driverName)
+    new Engine driverName, dbUrl, pool, new dialectType()
 
   constructor: (@driver, @url, @pool, @dialect) ->
     queries.mixinFactoryMethods @
@@ -75,22 +80,16 @@ class Engine
     ###
     @pool.close()
 
-fakeEngine = ->
+fakePool = ->
   ###
-  Create a no-op engine that simply returns the compiled SQL and parameter
-  array to the result callback. This will be the default until you over-ride
-  with ``gesundheit.defaultEngine = myAppEngine``.
+  Create a fake database connection pool that throws errors if you try to
+  execute a query.
   ###
-  dialect = new dialects.base
-  engine =
-    compile: (node) ->
-      dialect.compile(node)
-
+  return {
     begin: (cb) ->
       if cb then process.nextTick(cb.bind(null, engine))
       engine
     query: (sql, params, cb) ->
       throw new Error("Cannot query with fakeEngine. Do `gesundheit.defaultEngine = gesundheit.engine(url)` before querying")
     close: ->
-
-  return engine
+  }

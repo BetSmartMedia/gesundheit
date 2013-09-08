@@ -224,10 +224,9 @@ class Column extends FixedNodeSet
     ### An aliased :class:`nodes::Column` ###
     rel: -> @obj.rel()
     compile: (dialect, parents) ->
-      if parents.some((n) -> n instanceof ColumnSet)
-        super
-      else
-        dialect.quote(@alias)
+      for node in parents when node instanceof ColumnSet
+        return dialect.compile(@obj) + " AS " + dialect.quote(@alias)
+      dialect.quote(@alias)
 
 class Limit extends IntegerNode
   compile: ->

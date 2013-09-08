@@ -11,6 +11,11 @@ module.exports = class BaseQuery extends EventEmitter
   ###
   @rootNode = null
 
+  @unmarshal = (data, recur) ->
+    query = new @
+    query.q = recur(data.q)
+    query
+
   constructor: (engine, opts={}) ->
     ###
     :param engine: The engine the query will be bound to.

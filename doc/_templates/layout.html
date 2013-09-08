@@ -1,6 +1,5 @@
 {% extends "!layout.html" %}
-{% set css_files = css_files + ['_static/bsm.css'] %}
-{% set script_files = script_files + ['_static/customize.js'] %}
+{% set script_files = script_files %}
 {% set sidebars = ['localtoc.html', 'projectlinks.html', 'logo.html'] %}
 
 {% block sidebar1 %} {{ sidebar() }} {% endblock %}

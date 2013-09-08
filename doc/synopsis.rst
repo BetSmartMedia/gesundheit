@@ -1,0 +1,5 @@
+API summary
+=============
+
+.. automodule:: index
+

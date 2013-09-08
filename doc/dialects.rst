@@ -1,0 +1,4 @@
+Dialects
+========
+
+.. automodule:: dialects

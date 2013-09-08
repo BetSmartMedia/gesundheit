@@ -31,8 +31,10 @@ clean:
 $(LIB_DIR): $(SRC_DIR)
 	@node_modules/.bin/coffee -o $@ -bc $<
 
-pages:
+pages: bundle
 	make -C doc clean html
+	cp bundle.js doc/_build/html/_static
+	cp tryit.html doc/_build/html/_static
 
 release: clean test pages
 	git checkout gh-pages

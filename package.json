@@ -30,7 +30,7 @@
     "node": ">=0.4.0"
   },
   "dependencies": {
-    "any-db": "< 1.0.0"
+    "any-db": "< 0.9.9"
   },
   "devDependencies": {
     "coffee-script": "~1.4.0",

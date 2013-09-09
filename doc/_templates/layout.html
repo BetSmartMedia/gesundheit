@@ -1,56 +1,13 @@
 {% extends "!layout.html" %}
 {% set css_files = css_files + ['_static/local-overrides.css'] %}
-{% block sidebarrel %}
+
+{% block navbarextra %}
 <li>
-  <a data-toggle="modal" href="#tryItModal">Try it now!</a>
+  <a data-toggle="modal" href="#try-it-modal">Try it now!</a>
 </li>
 {% endblock %}
 
 {% block footer %}
-<div id="tryItModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="tryItModalLabel" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="tryItModalLabel">Try Gesundheit</h3>
-  </div>
-  <div class="modal-body">
-    <textarea id=code style="width: 98%; height: 10em; font-family:monospace">select('t1', ['*'], function (q) {
-  // Modify q here
-  q.where({x: 1})
-})</textarea>
-    <small>
-      <em>(Any function exported by gesundheit is available as a global above)</em>
-    </small>
-    <pre id=sql></pre>
-    <pre id=params></pre>
-  </div>
-</div>
-<script src="_static/bundle.js"></script>
-<script>var g = gesundheit</script>
-<script>
-  var queryInput = document.getElementById("code");
-  queryInput.onchange = evaluateQuery;
-  queryInput.onkeyup = evaluateQuery;
-  evaluateQuery();
-  function evaluateQuery () {
-    var result;
-    try {
-      eval([
-        'var result = (function (g) {',
-        '  with (g) {',
-        '    return ' + queryInput.value, 
-        '  }',
-        '})(gesundheit)'
-      ].join('\n'));
-    } catch (err) {
-      return;
-    }
-    if (result && result.compile) {
-      var sp = result.compile();
-      document.getElementById("sql").textContent = sp[0];
-      var params = document.getElementById("params");
-      params.textContent = JSON.stringify(sp[1])
-    }
-  }
-</script>
-{{ super() }}
+  {% include "try_it_modal.html" %}
+  {{ super() }}
 {% endblock %}

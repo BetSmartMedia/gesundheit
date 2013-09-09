@@ -110,9 +110,9 @@ html_theme = 'bootstrap'
 # documentation.
 html_theme_options = {
     'navbar_site_name': 'Contents',
-    #'navbar_sidebarrel': False,
+    'navbar_sidebarrel': False,
     'source_link_position': False,
-    'bootswatch_theme': 'readable',
+    #'bootswatch_theme': 'readable',
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

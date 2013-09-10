@@ -32,10 +32,10 @@ Install
 -------
 
 In addition to the usual ``npm install gesundheit``, you will need to install
-the driver for your database. Driver support is provided by `any-db
-<https://github.com/grncdr/any-db>`_, which currently works with the ``pg``,
-``mysql``, and ``sqlite3`` database drivers. So for example, if you use
-PostgreSQL as your database backend you would do ``npm install pg gesundheit``.
+the driver for your database. Driver support is provided by `Any-DB
+<https://github.com/grncdr/any-db>`_, which currently supports MySQL, Postgres
+and SQLite3. So for example, if you use PostgreSQL as your database backend you
+would do ``npm install --save any-db-postgres``.
 
 License
 -------

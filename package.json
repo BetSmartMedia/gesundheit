@@ -29,15 +29,16 @@
   "engines": {
     "node": ">=0.4.0"
   },
-  "dependencies": {
-    "any-db": "< 0.9.9"
+  "peerDependencies": {
+    "any-db": "1.x"
   },
   "devDependencies": {
     "coffee-script": "~1.4.0",
-    "pg": "*",
-    "mysql": "~2.0.0-alpha6",
-    "tap": "~0.4.0",
-    "sqlite3": "~2.1.5"
+    "any-db": "1.x",
+    "any-db-postgres": "1.x",
+    "any-db-sqlite3": "1.x",
+    "any-db-mysql": "1.x",
+    "tap": "~0.4.0"
   },
   "author": "Stephen Sugden <glurgle@gmail.com> (http://www.betsmartmedia.com)",
   "optionalDependencies": {},

@@ -11,8 +11,7 @@ Installation
 In addition to `gesundheit` itself, you will need to install any database
 drivers you plan on using::
 
-   npm install --save pg mysql
-   npm install --save-dev sqlite3
+   npm install --save any-db-{mysql,postgres,sqlite3}
 
 
 Creating a Query object

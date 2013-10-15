@@ -8,6 +8,12 @@ PACKAGE_VERSION = $(shell node -e 'console.log(require("./package.json").version
 all: $(LIB_DIR)
 	@cp $(SRC_DIR)/sql_keywords.txt $(LIB_DIR)/
 
+standalone_bundle: clean all
+	node_modules/.bin/browserify -s gesundheit lib/index.js > gesundheit-standalone.js
+
+doc_bundle: clean all
+	node_modules/.bin/browserify -s gesundheit lib/index.js > doc/_static/bundle.js
+
 .PHONY: test
 test: unit integration
 
@@ -31,12 +37,10 @@ clean:
 $(LIB_DIR): $(SRC_DIR)
 	@node_modules/.bin/coffee -o $@ -bc $<
 
-pages: bundle
+pages: doc_bundle
 	make -C doc clean html
-	cp bundle.js doc/_build/html/_static
-	cp tryit.html doc/_build/html/_static
 
-release: clean test pages
+release: clean test pages standalone_bundle
 	git checkout gh-pages
 	cp -R doc/_build/html/ ./
 	[[ -z `git status -suno` ]] || git commit -a -m v$(PACKAGE_VERSION)

@@ -1,8 +1,13 @@
 {% extends "!layout.html" %}
-{% set script_files = script_files %}
-{% set sidebars = ['localtoc.html', 'projectlinks.html', 'logo.html'] %}
+{% set css_files = css_files + ['_static/local-overrides.css'] %}
 
-{% block sidebar1 %} {{ sidebar() }} {% endblock %}
-{% block sidebar2 %} {% endblock %}
-{% block relbar1 %} {% endblock %}
-{% block relbar2 %} {% endblock %}
+{% block navbarextra %}
+<li>
+  <a data-toggle="modal" href="#try-it-modal">Try it now!</a>
+</li>
+{% endblock %}
+
+{% block footer %}
+  {% include "try_it_modal.html" %}
+  {{ super() }}
+{% endblock %}

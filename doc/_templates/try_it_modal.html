@@ -1,0 +1,28 @@
+<div id="try-it-modal"
+     class="modal hide fade"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="try-it-modal-label"
+     aria-hidden="true"
+    s>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="try-it-modal-label">Try Gesundheit</h3>
+  </div>
+  <div class="modal-body">
+    <p>All functions exported by gesundheit are available as globals
+    below.</p>
+    <p>Returning a Gesundheit object (such as a query or AST node) will cause
+    it to be compiled and the resulting SQL + parameters displayed</p>
+    <textarea class=code
+              style="width: 98%; height: 10em; font-family:monospace"
+              >return select('t1', ['*'])
+  .join('t2', {on: {id: toColumn('t1.t2_id')}})
+</textarea>
+    <pre class=sql></pre>
+    <pre class=params></pre>
+  </div>
+</div>
+<script src="_static/bundle.js"></script>
+<script src="_static/try-it-now.js"></script>
+</script>

@@ -15,15 +15,24 @@ class Node
     message = "#{@constructor} has no compile method. Parents: #{dialect.path}"
     throw new Error message
 
+  toJSON: ->
+    {_type: @constructor.name}
+
+  copy: ->
+    unmarshal @toJSON()
 
 class ValueNode extends Node
   ### A ValueNode is a literal string that should be printed unescaped. ###
+  @unmarshal = (data, recur) ->
+    new @(data.value)
+
   constructor: (@value) ->
     if @value?
       throw new Error("Invalid #{@constructor.name}: #{@value}") unless @valid()
-  copy: -> new @constructor @value
-  valid: -> true
+
+  valid:   -> true
   compile: -> @value
+  toJSON:  -> merge super, value: @value
 
 class IntegerNode extends ValueNode
   ### A :class:`nodes::ValueNode` that validates it's input is an integer. ###
@@ -52,6 +61,10 @@ JOIN_TYPES[name] = new JoinType(name.replace('_', ' ')) for name in [
 
 class NodeSet extends Node
   ### A set of nodes joined together by ``@glue`` ###
+
+  @unmarshal = (data, recur) ->
+    new @(recur(data.nodes), data.glue)
+
   constructor: (nodes, glue=' ') ->
     ###
     :param @nodes: A list of child nodes.
@@ -61,13 +74,6 @@ class NodeSet extends Node
     @addNode(node) for node in nodes if nodes
     @glue ?= glue
 
-  copy: ->
-    ###
-    Make a deep copy of this node and it's children
-    ###
-    c = new @constructor @nodes.map(copy), @glue
-    return c
-
   addNode: (node) ->
     ### Add a new Node to the end of this set ###
     @nodes.push node
@@ -75,6 +81,9 @@ class NodeSet extends Node
   compile: (dialect) ->
     compile = dialect.compile.bind(dialect)
     @nodes.map(compile).filter(Boolean).join(@glue)
+
+  toJSON: ->
+    merge super, glue: @glue, nodes: @nodes.map (n) -> n.toJSON()
 
 
 class FixedNodeSet extends NodeSet
@@ -95,19 +104,18 @@ class Statement extends Node
       @::__defineGetter__ k, -> @_private[k] or= new type
       @::__defineSetter__ k, (v) -> @_private[k] = v
 
+  @unmarshal = (data, recur) ->
+    it = new @
+    delete data._type
+    it._private = recur(data)
+    return it
+
   constructor: (opts) ->
     @_private = {}
     @initialize(opts) if opts
 
   initialize: (opts) ->
     @initialize = null
-
-  copy: ->
-    c = new @constructor
-    for k, node of @_private
-      c[k] = copy node
-    c.initialize = null
-    return c
 
   compile: (dialect) ->
     parts = for k in @constructor._nodeOrder when node = @_private[k]
@@ -117,21 +125,40 @@ class Statement extends Node
     else
       return ""
 
+  toJSON: ->
+    parent = super
+    for k, v of @_private
+      parent[k] = v.toJSON()
+    parent
+
+
 class ParenthesizedNodeSet extends NodeSet
   ### A NodeSet wrapped in parenthesis. ###
   compile: ->
     "(" + super + ")"
 
 class AbstractAlias extends Node
+  @patch = (klazz) ->
+    klazz.Alias = @
+    klazz::as = (name) ->
+      new @constructor.Alias @, name
+
+  @unmarshal = (data, recur) ->
+    new @(recur(data.obj), data.alias)
+
   constructor: (@obj, @alias) ->
-  copy: -> new @constructor copy(@obj), @alias
   ref: -> @alias
   compile: (dialect) ->
     dialect.maybeParens(dialect.compile(@obj)) + " AS " + dialect.quote(@alias)
 
+  toJSON: -> merge super, {obj: @obj.toJSON(), @alias}
+
 # End of generic base classes
 
 class TextNode extends Node
+  @unmarshal = (data, recur) ->
+    new @(data.text, data.bindVals)
+
   constructor: (@text, @bindVals=[]) ->
 
   paramRegexp = /\$([\w]+)\b/g
@@ -143,34 +170,35 @@ class TextNode extends Node
       else
         throw new Error "Parameter #{name} not present in #{JSON.stringify(@bindVals)}"
 
-  as: (alias) ->
-    new Alias @, alias
+  toJSON: ->
+    merge super, {@text, @bindVals}
 
-  copy: -> new @constructor(@text, copy(@bindVals))
-
-  @Alias = class Alias extends AbstractAlias
-
+class TextAlias extends AbstractAlias
+  @patch(TextNode)
 
 class SqlFunction extends Node
   ### Includes :class:`nodes::ComparableMixin` ###
+  @unmarshal = (data, recur) ->
+    new @(data.name, data.arglist)
+
   constructor: (@name, @arglist) ->
-  ref:  -> @name
-  copy: -> new @constructor @name, copy(@arglist)
-  compile: (dialect) ->
-    "#{@name}#{dialect.compile @arglist}"
-  as: (alias) -> new Alias @, alias
+  ref:         -> @name
+  compile: (d) -> "#{@name}#{d.compile @arglist}"
+  toJSON:      -> merge super, {@name, @arglist}
 
-  @Alias = class Alias extends AbstractAlias
-    shouldRenderFull = (parents) ->
-      return false if parents.some((it) -> it instanceof Column)
-      parents.some (node) ->
-        node instanceof ColumnSet or node instanceof RelationSet
+class FunctionAlias extends AbstractAlias
+  @patch(SqlFunction)
 
-    compile: (dialect, parents) ->
-      if shouldRenderFull(parents)
-        dialect.compile(@obj) + " AS " + dialect.quote(@alias)
-      else
-        dialect.quote(@alias)
+  shouldRenderFull = (parents) ->
+    return false if parents.some((it) -> it instanceof Column)
+    parents.some (node) ->
+      node instanceof ColumnSet or node instanceof RelationSet
+
+  compile: (dialect, parents) ->
+    if shouldRenderFull(parents)
+      dialect.compile(@obj) + " AS " + dialect.quote(@alias)
+    else
+      dialect.quote(@alias)
 
 class Parameter extends ValueNode
   ###
@@ -194,17 +222,15 @@ class Relation extends Identifier
     ### Return a new :class:`nodes::Column` of `field` from this table. ###
     new Column @, toField(field)
 
-  as: (alias) ->
-    new Alias @, alias
-
-  @Alias = class Alias extends AbstractAlias
-    ### An aliased :class:`nodes::Relation` ###
-    project: (field) -> Relation::project.call @, field
-    compile: (dialect, parents) ->
-      if parents.some((n) -> n instanceof Column)
-        dialect.quote(@alias)
-      else
-        super
+class RelationAlias extends AbstractAlias
+  ### An aliased :class:`nodes::Relation` ###
+  @patch(Relation)
+  project: (field) -> Relation::project.call @, field
+  compile: (dialect, parents) ->
+    if parents.some((n) -> n instanceof Column)
+      dialect.quote(@alias)
+    else
+      super
 
 class Field extends Identifier
   ### A column name ###
@@ -213,9 +239,11 @@ class Column extends FixedNodeSet
   ###
   Includes :class:`nodes::ComparableMixin`
   ###
+  @unmarshal = (data, recur) ->
+    new @(recur(data.nodes[0]), recur(data.nodes[1]))
+
   constructor: (@source, @field) -> super [@source, @field], '.'
   rel: -> @source
-  copy: -> new @constructor copy(@source), copy(@field)
   as: (alias) ->
     ### Return an aliased version of this column. ###
     new Alias @, alias
@@ -237,8 +265,10 @@ class Offset extends IntegerNode
     if @value then "OFFSET #{@value}" else ""
 
 class Binary extends FixedNodeSet
+  @unmarshal = (data, recur) ->
+    new @(recur(data.left), recur(data.op), recur(data.right))
+
   constructor: (@left, @op, @right) -> super [@left, @op, @right], ' '
-  copy: -> new @constructor copy(@left), @op, copy(@right)
 
   and: (args...) ->
     new And [@, args...]
@@ -251,6 +281,12 @@ class Binary extends FixedNodeSet
       dialect.operator(@op)
       dialect.compile(@right)
     ].join(' ')
+
+  toJSON: ->
+    merge Node::toJSON.call(@),
+      left: @left.toJSON(),
+      op: @op,
+      right: @right.toJSON()
 
 class Tuple extends ParenthesizedNodeSet
   glue: ', '
@@ -270,8 +306,6 @@ class Returning extends ColumnSet
 
 class Distinct extends ColumnSet
   constructor: (@enable=false) -> super
-
-  copy: -> new @constructor @enable, copy(@nodes)
 
   compile: (dialect) ->
     if not @enable
@@ -310,12 +344,6 @@ class RelationSet extends NodeSet
       super
       @active = @relsByName[node.ref()] = node.relation
 
-  copy: ->
-    c = super
-    if @active?.ref?() isnt c.active?.ref?()
-      c.switch(@active.ref())
-    return c
-
   get: (name, strict=true) ->
     name = name.ref() unless 'string' == typeof name
     found = @relsByName[name]
@@ -331,7 +359,14 @@ class RelationSet extends NodeSet
 
 class Join extends FixedNodeSet
   JOIN = new ValueNode 'JOIN'
-  ON = new ValueNode 'ON'
+  ON   = new ValueNode 'ON'
+
+  @unmarshal = (data, recur) ->
+    {nodes} = data
+    join = new @(recur(nodes[0]), recur(nodes[2]))
+    for clause in nodes.slice(4)
+      join.on(clause)
+    join
 
   constructor: (@type, @relation) ->
     nodes = [@type, JOIN, @relation]
@@ -344,13 +379,6 @@ class Join extends FixedNodeSet
 
   ref: ->
     @relation.ref()
-
-  copy: ->
-    c = new @constructor copy(@type), copy(@relation)
-    for clause in @nodes.slice(4)
-      c.on(clause)
-    return c
-
 
 class Where extends NodeSet
   glue: ' AND '
@@ -428,7 +456,7 @@ class Update extends Statement
   The root node of an UPDATE query
   ###
 
-  class UpdateSet extends NodeSet
+  @UpdateSet = class UpdateSet extends NodeSet
     # must be pre-defined for the call to @structure below
     constructor: (nodes) -> super nodes, ', '
     compile: (dialect) ->
@@ -457,7 +485,7 @@ class Insert extends Statement
   The root node of an INSERT query
   ###
 
-  class InsertData extends NodeSet
+  @InsertData = class InsertData extends NodeSet
     # must be pre-defined for the call to @structure below
     glue: ', '
     compile: (dialect) ->
@@ -541,6 +569,9 @@ class ComparableMixin
   A mixin that adds comparison methods to a class. Each of these comparison
   methods will yield a new AST node comparing the invocant to the argument.
   ###
+  @patch = (klazz) ->
+    klazz::[k] = v for k, v of @prototype
+
   eq:  (other) ->
     ### ``this = other`` ###
     @compare '=',  other
@@ -573,13 +604,14 @@ class ComparableMixin
     ### ``this op other`` **DANGER** `op` is **NOT** escaped! ###
     new Binary @, op, toParam other
 
-for k, v of ComparableMixin::
-  TextNode::[k] = v
-  SqlFunction::[k] = v
-  SqlFunction.Alias::[k] = v
-  Column::[k] = v
-  Column.Alias::[k] = v
-  Tuple::[k] = v
+ComparableMixin.patch(ctor) for ctor in [
+  TextNode
+  SqlFunction
+  SqlFunction.Alias
+  Column
+  Column.Alias
+  Tuple
+]
 
 toParam = (it) ->
   ###
@@ -602,7 +634,7 @@ toRelation = (it) ->
   ###
   Transform ``it`` into a :class:`nodes::Relation` instance.
 
-  This accepts `strings, `Relation`` and ``Alias`` instances, and objects with
+  This accepts `strings, ``Relation`` and ``Alias`` instances, and objects with
   a single key-value pair, which will be turned into an ``Alias`` instance.
 
   Examples::
@@ -716,9 +748,11 @@ text = (rawSQL, bindVals) ->
           .execute(callback)
       }
 
-  If you find yourself using this function often, please consider opening an
-  issue on `Github <https://github.com/BetSmartMedia/gesundheit>`_ with details
-  on your use case so gesundheit can support it more elegantly.
+  .. [#] If you find yourself using this function often, please `open an issue`_
+    on Github with details on your use case so `gesundheit` can support it
+    more elegantly.
+
+  ..  _open an issue: https://github.com/BetSmartMedia/gesundheit/issues/new?title=I%20use%20text()%20for%20blah
   ###
   new TextNode(rawSQL, bindVals)
 
@@ -782,11 +816,15 @@ module.exports = {
   Statement
   ParenthesizedNodeSet
   TextNode
+  TextAlias
   SqlFunction
+  FunctionAlias
   Parameter
   Relation
+  RelationAlias: Relation.Alias
   Field
   Column
+  ColumnAlias: Column.Alias
   Limit
   Offset
   Binary
@@ -805,10 +843,16 @@ module.exports = {
   Ordering
   Select
   Update
+  UpdateSet: Update.UpdateSet
   Insert
+  ColumnList: Insert.ColumnList
+  InsertData: Insert.InsertData
   Delete
   ComparableMixin
 }
+
+# default (no validation) unmarshaller
+unmarshal = require('./unmarshal')()
 
 copy = (it) ->
   # Return a deep copy of ``it``.
@@ -820,6 +864,11 @@ copy = (it) ->
       c = {}
       for k, v of it
         c[k] = copy v
+      return c
     else
       if it.copy? then it.copy()
       else throw new Error "Don't know how to copy #{it}"
+
+merge = (dest, src) ->
+  dest[k] = v for k, v of src
+  dest

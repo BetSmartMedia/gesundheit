@@ -1,6 +1,6 @@
 url      = require('url')
 anyDB    = require('any-db')
-queries  = require('./queries')
+queries  = require('./queries/index')
 dialects = require('./dialects')
 
 module.exports = -> Engine.create.apply Engine, arguments

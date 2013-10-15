@@ -11,6 +11,11 @@ module.exports = class BaseQuery extends EventEmitter
   ###
   @rootNode = null
 
+  @unmarshal = (data, recur) ->
+    query = new @
+    query.q = recur(data.q)
+    query
+
   constructor: (engine, opts={}) ->
     ###
     :param engine: The engine the query will be bound to.
@@ -48,7 +53,7 @@ module.exports = class BaseQuery extends EventEmitter
     If no argument is given the query will be bound to the default engine.
     ###
     oldEngine = @engine
-    @engine = engine or require('../').defaultEngine
+    @engine = engine or require('../index').defaultEngine
     if @engine isnt oldEngine
       oldEngine?.unextendQuery?(@)
       @engine.extendQuery?(@)
@@ -92,6 +97,9 @@ module.exports = class BaseQuery extends EventEmitter
 
   toString: ->
     @render()
+
+  toJSON: ->
+    {_type: @constructor.name, q: @q.toJSON()}
 
 
 fluid = require '../decorators/fluid'

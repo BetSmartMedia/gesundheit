@@ -55,10 +55,14 @@ particularly unusual SQL statements, you might also want to make use of these:
 
 ###
 exports.dialects = require './dialects'
-exports.engine = require './engine'
+exports.engine   = require './engine'
+exports.nodes    = require './nodes'
+
+exports.queries  = require('./queries/index')
+
 exports.defaultEngine = exports.engine 'fake://localhost/'
 
-exports.nodes = require './nodes'
+exports.queries.mixinFactoryMethods(exports, -> exports.defaultEngine)
 
 for name, node of exports.nodes.CONST_NODES
   exports[name] = exports.nodes.CONST_NODES[name]
@@ -69,10 +73,10 @@ for name, node of exports.nodes.JOIN_TYPES
 for name, helper of exports.nodes when name[0] is name[0].toLowerCase()
   exports[name] = helper
 
-require('./queries').mixinFactoryMethods(exports, -> exports.defaultEngine)
-
 exports.begin = (args...) ->
   exports.defaultEngine.begin args...
   
 exports.query = (args...) ->
   exports.defaultEngine.query args...
+
+exports.unmarshaller = require('./unmarshal')

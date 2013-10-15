@@ -1,21 +1,22 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Search &mdash; gesundheit 0.8.8 documentation</title>
+    <title>Search &mdash; gesundheit 0.8.10 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bsm.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap-responsive.min.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.8.8',
+        VERSION:     '0.8.10',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,17 +26,86 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/searchtools.js"></script>
-    <script type="text/javascript" src="_static/customize.js"></script>
-    <link rel="top" title="gesundheit 0.8.8 documentation" href="index.html" />
+    <script type="text/javascript" src="_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-2.3.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="gesundheit 0.8.10 documentation" href="index.html" />
   <script type="text/javascript">
     jQuery(function() { Search.loadIndex("searchindex.js"); });
   </script>
   
-  <script type="text/javascript" id="searchindexloader"></script>
-   
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
 
   </head>
-  <body>  
+  <body> 
+
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+
+        <a class="brand" href="index.html">gesundheit</a>
+        <span class="navbar-text pull-left"><b>0.8</b></span>
+
+        <div class="nav-collapse">
+          <ul class="nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">API summary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="query_building_api.html">Query Building API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="engines_and_binding.html">Engines and Binding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dialects.html">Dialects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row"> 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper"><h3>Project Links</h3>
 <ul>
@@ -49,12 +119,8 @@
 </p>
         </div>
       </div> 
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
+    <div class="span9">
+      
   <h1 id="search-documentation">Search</h1>
   <div id="fallback" class="admonition warning">
   <script type="text/javascript">$('#fallback').hide();</script>
@@ -69,24 +135,33 @@
     function will automatically search for all of the words. Pages
     containing fewer words won't appear in the result list.
   </p>
-  <form action="" method="get">
-    <input type="text" name="q" value="" />
-    <input type="submit" value="search" />
+
+  <form class="form-search" action="" method="get">
+    <input type="text" name="q" class="input-medium search-query">
+    <button type="submit" class="btn">search</button>
     <span id="search-progress" style="padding-left: 10px"></span>
   </form>
+
   
   <div id="search-results">
   
   </div>
 
-          </div>
-        </div>
-      </div> 
-      <div class="clearer"></div>
-    </div> 
-    <div class="footer">
-        &copy; Copyright 2012, Stephen Sugden.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
+     
+  </div>
+</div> 
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2012, Stephen Sugden.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2b1.<br/>
+    </p>
+  </div>
+</footer>
   </body>
 </html>

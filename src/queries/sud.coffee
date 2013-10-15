@@ -102,7 +102,9 @@ module.exports = class SUDQuery extends BaseQuery
       return [constraint]
 
     for field, predicate of constraint
-      if field is 'and'
+      if predicate is undefined
+        continue
+      else if field is 'and'
         clauses.push new And @_makeClauses(predicate)
       else if field is 'or'
         clauses.push new Or @_makeClauses(predicate)

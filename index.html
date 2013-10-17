@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/local-overrides.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap-responsive.min.css" type="text/css" />
     
@@ -37,7 +38,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 
   </head>
-  <body> 
+  <body>
 
   <div id="navbar" class="navbar navbar-fixed-top">
     <div class="navbar-inner">
@@ -60,7 +61,7 @@
               <li class="dropdown globaltoc-container">
   <a href="#"
      class="dropdown-toggle"
-     data-toggle="dropdown">Site <b class="caret"></b></a>
+     data-toggle="dropdown">Contents <b class="caret"></b></a>
   <ul class="dropdown-menu globaltoc"
     ><ul>
 <li class="toctree-l1"><a class="reference internal" href="synopsis.html">API summary</a></li>
@@ -69,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="engines_and_binding.html">Engines and Binding</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dialects.html">Dialects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client_side_usage.html">Client-side usage - Experimental</a></li>
 </ul>
 </ul>
 </li>
@@ -88,18 +90,11 @@
               
             
             
-              
-                
-  <li><a href="synopsis.html"
-         title="Next Chapter: API summary">API summary &raquo;</a></li>
-              
             
-            
-            
-            
-              <li>
-  <a href="_sources/index.txt"
-     rel="nofollow">Source</a></li>
+<li>
+  <a data-toggle="modal" href="#try-it-modal">Try it now!</a>
+</li>
+
             
           </ul>
 
@@ -117,29 +112,8 @@
   </div>
 
 <div class="container">
-  <div class="row"> 
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper"><ul>
-<li><a class="reference internal" href="#">Gesundheit!</a><ul>
-<li><a class="reference internal" href="#contents">Contents</a><ul>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h3>Project Links</h3>
-<ul>
-
-<li><a href="#">Documentation Index</a></li>
-<li><a href="http://github.com/BetSmartMedia/gesundheit">Source on Github</a></li>
-
-</ul><h3>Brought to you by:</h3>
-<p>
-  <img class="logo" src="_static/logo.png" alt="Logo"/>
-</p>
-        </div>
-      </div> 
-    <div class="span9">
+  <div class="row">
+    <div class="span12">
       
   <div class="section" id="gesundheit">
 <h1>Gesundheit!<a class="headerlink" href="#gesundheit" title="Permalink to this headline">¶</a></h1>
@@ -178,6 +152,11 @@ proper bound parameters and allowing for streaming of results.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="dialects.html">Dialects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client_side_usage.html">Client-side usage - Experimental</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="client_side_usage.html#securely-executing-queries-from-untrusted-sources">Securely executing queries from untrusted sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client_side_usage.html#missing-batteries">Missing Batteries</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <ul class="simple">
@@ -188,9 +167,38 @@ proper bound parameters and allowing for streaming of results.</p>
 
 
     </div>
-     
+      
   </div>
-</div> 
+</div>
+  <div id="try-it-modal"
+     class="modal hide fade"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="try-it-modal-label"
+     aria-hidden="true"
+    s>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="try-it-modal-label">Try Gesundheit</h3>
+  </div>
+  <div class="modal-body">
+    <p>All functions exported by gesundheit are available as globals
+    below.</p>
+    <p>Returning a Gesundheit object (such as a query or AST node) will cause
+    it to be compiled and the resulting SQL + parameters displayed</p>
+    <textarea class=code
+              style="width: 98%; height: 10em; font-family:monospace"
+              >return select('t1', ['*'])
+  .join('t2', {on: {id: toColumn('t1.t2_id')}})
+</textarea>
+    <pre class=sql></pre>
+    <pre class=params></pre>
+  </div>
+</div>
+<script src="_static/bundle.js"></script>
+<script src="_static/try-it-now.js"></script>
+</script>
+  
 <footer class="footer">
   <div class="container">
     <p class="pull-right">
@@ -203,5 +211,6 @@ proper bound parameters and allowing for streaming of results.</p>
     </p>
   </div>
 </footer>
+
   </body>
 </html>

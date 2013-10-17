@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/local-overrides.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap-responsive.min.css" type="text/css" />
     
@@ -38,7 +39,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 
   </head>
-  <body> 
+  <body>
 
   <div id="navbar" class="navbar navbar-fixed-top">
     <div class="navbar-inner">
@@ -61,7 +62,7 @@
               <li class="dropdown globaltoc-container">
   <a href="index.html"
      class="dropdown-toggle"
-     data-toggle="dropdown">Site <b class="caret"></b></a>
+     data-toggle="dropdown">Contents <b class="caret"></b></a>
   <ul class="dropdown-menu globaltoc"
     ><ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="synopsis.html">API summary</a></li>
@@ -70,6 +71,7 @@
 <li class="toctree-l1"><a class="reference internal" href="engines_and_binding.html">Engines and Binding</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dialects.html">Dialects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client_side_usage.html">Client-side usage - Experimental</a></li>
 </ul>
 </ul>
 </li>
@@ -108,20 +110,11 @@
               
             
             
-              
-                
-  <li><a href="getting_started.html"
-         title="Previous Chapter: Getting Started">&laquo; Getting Started</a></li>
-  <li><a href="engines_and_binding.html"
-         title="Next Chapter: Engines and Binding">Engines and Bind... &raquo;</a></li>
-              
             
-            
-            
-            
-              <li>
-  <a href="_sources/query_building_api.txt"
-     rel="nofollow">Source</a></li>
+<li>
+  <a data-toggle="modal" href="#try-it-modal">Try it now!</a>
+</li>
+
             
           </ul>
 
@@ -139,48 +132,8 @@
   </div>
 
 <div class="container">
-  <div class="row"> 
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper"><ul>
-<li><a class="reference internal" href="#">Query Building API reference</a><ul>
-<li><a class="reference internal" href="#module-queries/base::">BaseQuery</a></li>
-<li><a class="reference internal" href="#insert">Insert</a><ul>
-<li><a class="reference internal" href="#examples">Examples</a></li>
-<li><a class="reference internal" href="#module-queries/insert::">API</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-queries/sud::">SUDQuery</a></li>
-<li><a class="reference internal" href="#select">Select</a><ul>
-<li><a class="reference internal" href="#id1">Examples</a></li>
-<li><a class="reference internal" href="#id2">API</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#update">Update</a><ul>
-<li><a class="reference internal" href="#id3">Examples</a></li>
-<li><a class="reference internal" href="#id4">API</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#delete">Delete</a><ul>
-<li><a class="reference internal" href="#id5">Examples</a></li>
-<li><a class="reference internal" href="#id6">API</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h3>Project Links</h3>
-<ul>
-
-<li><a href="index.html">Documentation Index</a></li>
-<li><a href="http://github.com/BetSmartMedia/gesundheit">Source on Github</a></li>
-
-</ul><h3>Brought to you by:</h3>
-<p>
-  <img class="logo" src="_static/logo.png" alt="Logo"/>
-</p>
-        </div>
-      </div> 
-    <div class="span9">
+  <div class="row">
+    <div class="span12">
       
   <div class="section" id="module-queries/index::">
 <span id="query-building-api-reference"></span><h1>Query Building API reference<a class="headerlink" href="#module-queries/index::" title="Permalink to this headline">¶</a></h1>
@@ -570,7 +523,7 @@ will be treated as a field and each value as a direction.</p>
 <dl class="method">
 <dt id="queries/sud::SUDQuery.column">
 <em class="property">method </em><tt class="descname">SUDQuery.column</tt><big>(</big><em>relation</em>, <em>field</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.column" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a <tt class="xref coffee coffee-class docutils literal"><span class="pre">Column</span></tt> node representing <tt class="docutils literal"><span class="pre">&lt;relation&gt;.&lt;field&gt;</span></tt>.</p>
+<dd><p>Return a <a class="reference internal" href="nodes.html#nodes::Column" title="nodes::Column"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Column</span></tt></a> node representing <tt class="docutils literal"><span class="pre">&lt;relation&gt;.&lt;field&gt;</span></tt>.</p>
 <p>The first argument is optional and specifies a table or alias name referring
 to a relation already joined to this query. If you don&#8217;t specify a relation,
 the table added or focused last will be used. Alternatively, you can specify
@@ -860,9 +813,38 @@ to <a class="reference internal" href="nodes.html#nodes::toParam" title="nodes::
 
 
     </div>
-     
+      
   </div>
-</div> 
+</div>
+  <div id="try-it-modal"
+     class="modal hide fade"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="try-it-modal-label"
+     aria-hidden="true"
+    s>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="try-it-modal-label">Try Gesundheit</h3>
+  </div>
+  <div class="modal-body">
+    <p>All functions exported by gesundheit are available as globals
+    below.</p>
+    <p>Returning a Gesundheit object (such as a query or AST node) will cause
+    it to be compiled and the resulting SQL + parameters displayed</p>
+    <textarea class=code
+              style="width: 98%; height: 10em; font-family:monospace"
+              >return select('t1', ['*'])
+  .join('t2', {on: {id: toColumn('t1.t2_id')}})
+</textarea>
+    <pre class=sql></pre>
+    <pre class=params></pre>
+  </div>
+</div>
+<script src="_static/bundle.js"></script>
+<script src="_static/try-it-now.js"></script>
+</script>
+  
 <footer class="footer">
   <div class="container">
     <p class="pull-right">
@@ -875,5 +857,6 @@ to <a class="reference internal" href="nodes.html#nodes::toParam" title="nodes::
     </p>
   </div>
 </footer>
+
   </body>
 </html>

@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/local-overrides.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap-responsive.min.css" type="text/css" />
     
@@ -30,6 +31,7 @@
     <script type="text/javascript" src="_static/bootstrap-2.3.2/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
     <link rel="top" title="gesundheit 0.8.10 documentation" href="index.html" />
+    <link rel="next" title="Client-side usage - Experimental" href="client_side_usage.html" />
     <link rel="prev" title="Dialects" href="dialects.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
@@ -37,7 +39,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 
   </head>
-  <body> 
+  <body>
 
   <div id="navbar" class="navbar navbar-fixed-top">
     <div class="navbar-inner">
@@ -60,7 +62,7 @@
               <li class="dropdown globaltoc-container">
   <a href="index.html"
      class="dropdown-toggle"
-     data-toggle="dropdown">Site <b class="caret"></b></a>
+     data-toggle="dropdown">Contents <b class="caret"></b></a>
   <ul class="dropdown-menu globaltoc"
     ><ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="synopsis.html">API summary</a></li>
@@ -69,6 +71,7 @@
 <li class="toctree-l1"><a class="reference internal" href="engines_and_binding.html">Engines and Binding</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dialects.html">Dialects</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client_side_usage.html">Client-side usage - Experimental</a></li>
 </ul>
 </ul>
 </li>
@@ -83,18 +86,11 @@
               
             
             
-              
-                
-  <li><a href="dialects.html"
-         title="Previous Chapter: Dialects">&laquo; Dialects</a></li>
-              
             
-            
-            
-            
-              <li>
-  <a href="_sources/nodes.txt"
-     rel="nofollow">Source</a></li>
+<li>
+  <a data-toggle="modal" href="#try-it-modal">Try it now!</a>
+</li>
+
             
           </ul>
 
@@ -112,24 +108,8 @@
   </div>
 
 <div class="container">
-  <div class="row"> 
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper"><ul>
-<li><a class="reference internal" href="#">Nodes</a></li>
-</ul>
-<h3>Project Links</h3>
-<ul>
-
-<li><a href="index.html">Documentation Index</a></li>
-<li><a href="http://github.com/BetSmartMedia/gesundheit">Source on Github</a></li>
-
-</ul><h3>Brought to you by:</h3>
-<p>
-  <img class="logo" src="_static/logo.png" alt="Logo"/>
-</p>
-        </div>
-      </div> 
-    <div class="span9">
+  <div class="row">
+    <div class="span12">
       
   <div class="section" id="module-nodes::">
 <span id="nodes"></span><h1>Nodes<a class="headerlink" href="#module-nodes::" title="Permalink to this headline">¶</a></h1>
@@ -186,12 +166,6 @@ you need to.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="nodes::NodeSet.copy">
-<em class="property">method </em><tt class="descname">NodeSet.copy</tt><big>(</big><big>)</big><a class="headerlink" href="#nodes::NodeSet.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a deep copy of this node and it&#8217;s children</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="nodes::NodeSet.addNode">
 <em class="property">method </em><tt class="descname">NodeSet.addNode</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#nodes::NodeSet.addNode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a new Node to the end of this set</p>
@@ -206,10 +180,58 @@ you need to.</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="nodes::SqlFunction">
+<em class="property">class </em><tt class="descname">SqlFunction</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::Node" title="nodes::Node"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Node</span></tt></a><a class="headerlink" href="#nodes::SqlFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Includes <a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a></p>
+</dd></dl>
+
+<dl class="class">
 <dt id="nodes::Parameter">
 <em class="property">class </em><tt class="descname">Parameter</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::ValueNode" title="nodes::ValueNode"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ValueNode</span></tt></a><a class="headerlink" href="#nodes::Parameter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Like a ValueNode, but will render as a bound parameter place-holder
 (e.g. <tt class="docutils literal"><span class="pre">$1</span></tt>) and it&#8217;s value will be collected by the dialect when compiling.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nodes::Relation">
+<em class="property">class </em><tt class="descname">Relation</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::Identifier" title="nodes::Identifier"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Identifier</span></tt></a><a class="headerlink" href="#nodes::Relation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A relation node represents a table name or alias in a statement.</p>
+<dl class="method">
+<dt id="nodes::Relation.ref">
+<em class="property">method </em><tt class="descname">Relation.ref</tt><big>(</big><big>)</big><a class="headerlink" href="#nodes::Relation.ref" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the table name. Aliased tables return the alias name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nodes::Relation.project">
+<em class="property">method </em><tt class="descname">Relation.project</tt><big>(</big><em>field</em><big>)</big><a class="headerlink" href="#nodes::Relation.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new <a class="reference internal" href="#nodes::Column" title="nodes::Column"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Column</span></tt></a> of <cite>field</cite> from this table.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nodes::RelationAlias">
+<em class="property">class </em><tt class="descname">RelationAlias</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">AbstractAlias</span></tt><a class="headerlink" href="#nodes::RelationAlias" title="Permalink to this definition">¶</a></dt>
+<dd><p>An aliased <a class="reference internal" href="#nodes::Relation" title="nodes::Relation"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nodes::Field">
+<em class="property">class </em><tt class="descname">Field</tt><em class="property"> extends </em><a class="reference internal" href="#nodes::Identifier" title="nodes::Identifier"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Identifier</span></tt></a><a class="headerlink" href="#nodes::Field" title="Permalink to this definition">¶</a></dt>
+<dd><p>A column name</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nodes::Column">
+<em class="property">class </em><tt class="descname">Column</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">FixedNodeSet</span></tt><a class="headerlink" href="#nodes::Column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Includes <a class="reference internal" href="#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a></p>
+<dl class="method">
+<dt id="nodes::Column.as">
+<em class="property">method </em><tt class="descname">Column.as</tt><big>(</big><em>alias</em><big>)</big><a class="headerlink" href="#nodes::Column.as" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an aliased version of this column.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -323,8 +345,8 @@ un-named sub queries,</li>
 <dl class="function">
 <dt id="nodes::toRelation">
 <em class="property">function </em><tt class="descname">toRelation</tt><big>(</big><em>it</em><big>)</big><a class="headerlink" href="#nodes::toRelation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transform <tt class="docutils literal"><span class="pre">it</span></tt> into a <tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt> instance.</p>
-<p>This accepts <cite>strings, `Relation`</cite> and <tt class="docutils literal"><span class="pre">Alias</span></tt> instances, and objects with
+<dd><p>Transform <tt class="docutils literal"><span class="pre">it</span></tt> into a <a class="reference internal" href="#nodes::Relation" title="nodes::Relation"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt></a> instance.</p>
+<p>This accepts <cite>strings, ``Relation`</cite> and <tt class="docutils literal"><span class="pre">Alias</span></tt> instances, and objects with
 a single key-value pair, which will be turned into an <tt class="docutils literal"><span class="pre">Alias</span></tt> instance.</p>
 <p>Examples:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">toRelation</span><span class="p">(</span><span class="s">&#39;table1&#39;</span><span class="p">)</span>     <span class="o">==</span> <span class="k">new</span> <span class="nx">Relation</span><span class="p">(</span><span class="s">&#39;table1&#39;</span><span class="p">)</span>
@@ -337,7 +359,7 @@ a single key-value pair, which will be turned into an <tt class="docutils litera
 <dl class="function">
 <dt id="nodes::toColumn">
 <em class="property">function </em><tt class="descname">toColumn</tt><big>(</big><em>relation</em>, <em>field</em><big>)</big><a class="headerlink" href="#nodes::toColumn" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new <tt class="xref coffee coffee-class docutils literal"><span class="pre">Column</span></tt> instance.</p>
+<dd><p>Create a new <a class="reference internal" href="#nodes::Column" title="nodes::Column"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Column</span></tt></a> instance.</p>
 <p>The first argument is optional and specifies a table (or alias) name.
 Alternatively, you can specify the relation name and field with a single
 dot-separated string:</p>
@@ -381,7 +403,7 @@ alias name if it is.</p>
 <em class="property">function </em><tt class="descname">text</tt><big>(</big><em>rawSQL</em>, <em>bindVals</em><big>)</big><a class="headerlink" href="#nodes::text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct a node with a raw SQL string and (optionally) parameters. Useful for
 when you want to construct a query that is difficult or impossible with the
-normal APIs. <a href="#id2"><span class="problematic" id="id3"><span id="id1"></span>[#]_</span></a></p>
+normal APIs. <a class="footnote-reference" href="#id2" id="id1">[1]</a></p>
 <p>To use bound parameters in the SQL string, use <tt class="docutils literal"><span class="pre">$</span></tt> prefixed names, and
 pass a <tt class="docutils literal"><span class="pre">bindVals</span></tt> argument with corresponding property names. For example,
 <a class="reference internal" href="query_building_api.html#queries/sud::SUDQuery.where" title="queries/sud::SUDQuery.where"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.where</span></tt></a> doesn&#8217;t (currently) support the SQL
@@ -403,9 +425,14 @@ snippets:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>If you find yourself using this function often, please consider opening an
-issue on <a class="reference external" href="https://github.com/BetSmartMedia/gesundheit">Github</a> with details
-on your use case so gesundheit can support it more elegantly.</p>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>If you find yourself using this function often, please <a class="reference external" href="https://github.com/BetSmartMedia/gesundheit/issues/new?title=I%20use%20text()%20for%20blah">open an issue</a>
+on Github with details on your use case so <cite>gesundheit</cite> can support it
+more elegantly.</td></tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -444,9 +471,38 @@ on your use case so gesundheit can support it more elegantly.</p>
 
 
     </div>
-     
+      
   </div>
-</div> 
+</div>
+  <div id="try-it-modal"
+     class="modal hide fade"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="try-it-modal-label"
+     aria-hidden="true"
+    s>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="try-it-modal-label">Try Gesundheit</h3>
+  </div>
+  <div class="modal-body">
+    <p>All functions exported by gesundheit are available as globals
+    below.</p>
+    <p>Returning a Gesundheit object (such as a query or AST node) will cause
+    it to be compiled and the resulting SQL + parameters displayed</p>
+    <textarea class=code
+              style="width: 98%; height: 10em; font-family:monospace"
+              >return select('t1', ['*'])
+  .join('t2', {on: {id: toColumn('t1.t2_id')}})
+</textarea>
+    <pre class=sql></pre>
+    <pre class=params></pre>
+  </div>
+</div>
+<script src="_static/bundle.js"></script>
+<script src="_static/try-it-now.js"></script>
+</script>
+  
 <footer class="footer">
   <div class="container">
     <p class="pull-right">
@@ -459,5 +515,6 @@ on your use case so gesundheit can support it more elegantly.</p>
     </p>
   </div>
 </footer>
+
   </body>
 </html>

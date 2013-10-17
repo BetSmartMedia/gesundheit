@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/local-overrides.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap-responsive.min.css" type="text/css" />
     
@@ -37,7 +38,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 
   </head>
-  <body> 
+  <body>
 
   <div id="navbar" class="navbar navbar-fixed-top">
     <div class="navbar-inner">
@@ -60,7 +61,7 @@
               <li class="dropdown globaltoc-container">
   <a href="index.html"
      class="dropdown-toggle"
-     data-toggle="dropdown">Site <b class="caret"></b></a>
+     data-toggle="dropdown">Contents <b class="caret"></b></a>
   <ul class="dropdown-menu globaltoc"
     ><ul>
 <li class="toctree-l1"><a class="reference internal" href="synopsis.html">API summary</a></li>
@@ -69,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="engines_and_binding.html">Engines and Binding</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dialects.html">Dialects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client_side_usage.html">Client-side usage - Experimental</a></li>
 </ul>
 </ul>
 </li>
@@ -80,17 +82,11 @@
               
             
             
-              
+            
+<li>
+  <a data-toggle="modal" href="#try-it-modal">Try it now!</a>
+</li>
 
-   
-                
-              
-
-            
-            
-            
-            
-              <li></li>
             
           </ul>
 
@@ -108,21 +104,8 @@
   </div>
 
 <div class="container">
-  <div class="row"> 
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper"><h3>Project Links</h3>
-<ul>
-
-<li><a href="index.html">Documentation Index</a></li>
-<li><a href="http://github.com/BetSmartMedia/gesundheit">Source on Github</a></li>
-
-</ul><h3>Brought to you by:</h3>
-<p>
-  <img class="logo" src="_static/logo.png" alt="Logo"/>
-</p>
-        </div>
-      </div> 
-    <div class="span9">
+  <div class="row">
+    <div class="span12">
       
 
 <h1 id="index">Index</h1>
@@ -171,7 +154,7 @@
   </dt>
 
       
-  <dt><a href="engines_and_binding.html#engine::Engine.Engine.create">engine::Engine.Engine.create (static method)</a>
+  <dt><a href="engines_and_binding.html#engine::Engine.create">engine::Engine.create (static method)</a>
   </dt>
 
       
@@ -204,6 +187,14 @@
 
       
   <dt><a href="nodes.html#nodes::binaryOp">nodes::binaryOp (function)</a>
+  </dt>
+
+      
+  <dt><a href="nodes.html#nodes::Column">nodes::Column (class)</a>
+  </dt>
+
+      
+  <dt><a href="nodes.html#nodes::Column.as">nodes::Column.as (method)</a>
   </dt>
 
       
@@ -251,6 +242,10 @@
   </dt>
 
       
+  <dt><a href="nodes.html#nodes::Field">nodes::Field (class)</a>
+  </dt>
+
+      
   <dt><a href="nodes.html#nodes::func">nodes::func (function)</a>
   </dt>
 
@@ -293,10 +288,6 @@
   </dt>
 
       
-  <dt><a href="nodes.html#nodes::NodeSet.copy">nodes::NodeSet.copy (method)</a>
-  </dt>
-
-      
   <dt><a href="nodes.html#nodes::notExists">nodes::notExists (function)</a>
   </dt>
 
@@ -309,11 +300,31 @@
   </dt>
 
       
+  <dt><a href="nodes.html#nodes::Relation">nodes::Relation (class)</a>
+  </dt>
+
+      
+  <dt><a href="nodes.html#nodes::Relation.project">nodes::Relation.project (method)</a>
+  </dt>
+
+      
+  <dt><a href="nodes.html#nodes::Relation.ref">nodes::Relation.ref (method)</a>
+  </dt>
+
+      
+  <dt><a href="nodes.html#nodes::RelationAlias">nodes::RelationAlias (class)</a>
+  </dt>
+
+      
   <dt><a href="nodes.html#nodes::RelationSet">nodes::RelationSet (class)</a>
   </dt>
 
       
   <dt><a href="nodes.html#nodes::Select">nodes::Select (class)</a>
+  </dt>
+
+      
+  <dt><a href="nodes.html#nodes::SqlFunction">nodes::SqlFunction (class)</a>
   </dt>
 
       
@@ -550,9 +561,38 @@
 
 
     </div>
-     
+      
   </div>
-</div> 
+</div>
+  <div id="try-it-modal"
+     class="modal hide fade"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="try-it-modal-label"
+     aria-hidden="true"
+    s>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="try-it-modal-label">Try Gesundheit</h3>
+  </div>
+  <div class="modal-body">
+    <p>All functions exported by gesundheit are available as globals
+    below.</p>
+    <p>Returning a Gesundheit object (such as a query or AST node) will cause
+    it to be compiled and the resulting SQL + parameters displayed</p>
+    <textarea class=code
+              style="width: 98%; height: 10em; font-family:monospace"
+              >return select('t1', ['*'])
+  .join('t2', {on: {id: toColumn('t1.t2_id')}})
+</textarea>
+    <pre class=sql></pre>
+    <pre class=params></pre>
+  </div>
+</div>
+<script src="_static/bundle.js"></script>
+<script src="_static/try-it-now.js"></script>
+</script>
+  
 <footer class="footer">
   <div class="container">
     <p class="pull-right">
@@ -565,5 +605,6 @@
     </p>
   </div>
 </footer>
+
   </body>
 </html>

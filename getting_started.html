@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/local-overrides.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap-responsive.min.css" type="text/css" />
     
@@ -38,7 +39,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 
   </head>
-  <body> 
+  <body>
 
   <div id="navbar" class="navbar navbar-fixed-top">
     <div class="navbar-inner">
@@ -61,7 +62,7 @@
               <li class="dropdown globaltoc-container">
   <a href="index.html"
      class="dropdown-toggle"
-     data-toggle="dropdown">Site <b class="caret"></b></a>
+     data-toggle="dropdown">Contents <b class="caret"></b></a>
   <ul class="dropdown-menu globaltoc"
     ><ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="synopsis.html">API summary</a></li>
@@ -70,6 +71,7 @@
 <li class="toctree-l1"><a class="reference internal" href="engines_and_binding.html">Engines and Binding</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dialects.html">Dialects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client_side_usage.html">Client-side usage - Experimental</a></li>
 </ul>
 </ul>
 </li>
@@ -93,20 +95,11 @@
               
             
             
-              
-                
-  <li><a href="synopsis.html"
-         title="Previous Chapter: API summary">&laquo; API summary</a></li>
-  <li><a href="query_building_api.html"
-         title="Next Chapter: Query Building API reference">Query Building A... &raquo;</a></li>
-              
             
-            
-            
-            
-              <li>
-  <a href="_sources/getting_started.txt"
-     rel="nofollow">Source</a></li>
+<li>
+  <a data-toggle="modal" href="#try-it-modal">Try it now!</a>
+</li>
+
             
           </ul>
 
@@ -124,33 +117,8 @@
   </div>
 
 <div class="container">
-  <div class="row"> 
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper"><ul>
-<li><a class="reference internal" href="#">Getting Started</a><ul>
-<li><a class="reference internal" href="#installation">Installation</a></li>
-<li><a class="reference internal" href="#creating-a-query-object">Creating a Query object</a></li>
-<li><a class="reference internal" href="#creating-a-query-manager">Creating a query manager</a></li>
-<li><a class="reference internal" href="#compiling-executing">Compiling &amp; Executing</a></li>
-<li><a class="reference internal" href="#using-a-real-database">Using a real database</a></li>
-<li><a class="reference internal" href="#aliasing-tables-and-fields">Aliasing tables and fields</a></li>
-<li><a class="reference internal" href="#a-quick-note-on-async-errors-and-throw">A quick note on async, errors and <tt class="docutils literal"><span class="pre">throw</span></tt></a></li>
-</ul>
-</li>
-</ul>
-<h3>Project Links</h3>
-<ul>
-
-<li><a href="index.html">Documentation Index</a></li>
-<li><a href="http://github.com/BetSmartMedia/gesundheit">Source on Github</a></li>
-
-</ul><h3>Brought to you by:</h3>
-<p>
-  <img class="logo" src="_static/logo.png" alt="Logo"/>
-</p>
-        </div>
-      </div> 
-    <div class="span9">
+  <div class="row">
+    <div class="span12">
       
   <div class="section" id="getting-started">
 <h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
@@ -255,13 +223,13 @@ example of aliasing table and field names:</p>
 <p><em>(This example also shows passing a list of fields to
 :func:`~queries/index::SELECT` as the second parameter).</em></p>
 <p>Conversely, if you are using <a class="reference internal" href="query_building_api.html#queries/sud::SUDQuery.column" title="queries/sud::SUDQuery.column"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.column</span></tt></a> to return a
-<tt class="xref coffee coffee-class docutils literal"><span class="pre">Column</span></tt> node, you can use <tt class="xref coffee coffee-meth docutils literal"><span class="pre">Column.as</span></tt> to
+<a class="reference internal" href="nodes.html#nodes::Column" title="nodes::Column"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Column</span></tt></a> node, you can use <a class="reference internal" href="nodes.html#nodes::Column.as" title="nodes::Column.as"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">Column.as</span></tt></a> to
 return an aliased version of the node:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">var</span> <span class="nv">q = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">)</span>
 <span class="nx">q</span><span class="p">.</span><span class="nx">fields</span><span class="p">(</span><span class="nx">q</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;manager_id&#39;</span><span class="p">).</span><span class="nx">as</span><span class="p">(</span><span class="s">&#39;m_id&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>This also works with <tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt> and <tt class="xref coffee coffee-class docutils literal"><span class="pre">SqlFunction</span></tt>
+<p>This also works with <a class="reference internal" href="nodes.html#nodes::Relation" title="nodes::Relation"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt></a> and <a class="reference internal" href="nodes.html#nodes::SqlFunction" title="nodes::SqlFunction"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SqlFunction</span></tt></a>
 instances (as returned by <a class="reference internal" href="nodes.html#nodes::sqlFunction" title="nodes::sqlFunction"><tt class="xref coffee coffee-func docutils literal"><span class="pre">sqlFunction</span></tt></a>).</p>
 <p class="rubric">Footnotes</p>
 <table class="docutils footnote" frame="void" id="id3" rules="none">
@@ -292,9 +260,38 @@ continuing to run with an obviously broken query.</p>
 
 
     </div>
-     
+      
   </div>
-</div> 
+</div>
+  <div id="try-it-modal"
+     class="modal hide fade"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="try-it-modal-label"
+     aria-hidden="true"
+    s>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="try-it-modal-label">Try Gesundheit</h3>
+  </div>
+  <div class="modal-body">
+    <p>All functions exported by gesundheit are available as globals
+    below.</p>
+    <p>Returning a Gesundheit object (such as a query or AST node) will cause
+    it to be compiled and the resulting SQL + parameters displayed</p>
+    <textarea class=code
+              style="width: 98%; height: 10em; font-family:monospace"
+              >return select('t1', ['*'])
+  .join('t2', {on: {id: toColumn('t1.t2_id')}})
+</textarea>
+    <pre class=sql></pre>
+    <pre class=params></pre>
+  </div>
+</div>
+<script src="_static/bundle.js"></script>
+<script src="_static/try-it-now.js"></script>
+</script>
+  
 <footer class="footer">
   <div class="container">
     <p class="pull-right">
@@ -307,5 +304,6 @@ continuing to run with an obviously broken query.</p>
     </p>
   </div>
 </footer>
+
   </body>
 </html>

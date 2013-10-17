@@ -22,5 +22,6 @@ Contents
    engines_and_binding
    dialects
    nodes
+   client_side_usage
 
 * :ref:`genindex`

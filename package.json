@@ -48,8 +48,16 @@
   "author": "Stephen Sugden <glurgle@gmail.com> (http://www.betsmartmedia.com)",
   "optionalDependencies": {},
   "scripts": {
-    "test": "make test",
-    "release": "make release"
+    "compile": "rm -fr lib && coffee -o lib -bc src && cp src/sql_keywords.txt lib/ && browserify -s gesundheit lib/index.js > gesundheit-standalone.js && cp gesundheit-standalone.js doc/_static/",
+    "test": "npm run compile && npm run unit-test && npm run integration-test",
+    "unit-test": "tap test/unit",
+    "integration-test": "npm run init-mysql && npm run init-postgres && tap test/integration",
+    "prepare-release": "npm run compile && npm test && npm run build-doc && npm run commit-pages",
+    "commit-pages": "OLD_HEAD=`git describe --contains --all HEAD` && git checkout gh-pages && cp -R doc/_build/html/ ./ && git commit -a -m v$npm_package_version && git checkout $OLD_HEAD",
+    "build-docs": "npm run compile && make -C doc html",
+    "init-mysql": "mysql -u root -e 'drop database if exists gesundheit_test' && mysql -u root -e 'create database gesundheit_test'",
+    "init-postgres": "psql -U postgres -c 'drop database if exists gesundheit_test' && psql -U postgres -c 'create database gesundheit_test'"
+
   },
   "license": "MIT"
 }

@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Query Building API reference &mdash; gesundheit 0.8.10 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap-responsive.min.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.8.10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-2.3.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="gesundheit 0.8.10 documentation" href="index.html" />
+    <link rel="next" title="Engines and Binding" href="engines_and_binding.html" />
+    <link rel="prev" title="Getting Started" href="getting_started.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body> 
+
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+
+        <a class="brand" href="index.html">gesundheit</a>
+        <span class="navbar-text pull-left"><b>0.8</b></span>
+
+        <div class="nav-collapse">
+          <ul class="nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">API summary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Query Building API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="engines_and_binding.html">Engines and Binding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dialects.html">Dialects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Query Building API reference</a><ul>
+<li><a class="reference internal" href="#module-queries/base::">BaseQuery</a></li>
+<li><a class="reference internal" href="#insert">Insert</a><ul>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+<li><a class="reference internal" href="#module-queries/insert::">API</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-queries/sud::">SUDQuery</a></li>
+<li><a class="reference internal" href="#select">Select</a><ul>
+<li><a class="reference internal" href="#id1">Examples</a></li>
+<li><a class="reference internal" href="#id2">API</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#update">Update</a><ul>
+<li><a class="reference internal" href="#id3">Examples</a></li>
+<li><a class="reference internal" href="#id4">API</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#delete">Delete</a><ul>
+<li><a class="reference internal" href="#id5">Examples</a></li>
+<li><a class="reference internal" href="#id6">API</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li><a href="getting_started.html"
+         title="Previous Chapter: Getting Started">&laquo; Getting Started</a></li>
+  <li><a href="engines_and_binding.html"
+         title="Next Chapter: Engines and Binding">Engines and Bind... &raquo;</a></li>
+              
+            
+            
+            
+            
+              <li>
+  <a href="_sources/query_building_api.txt"
+     rel="nofollow">Source</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-search pull-right" action="search.html" method="get">
+  <input type="text" name="q" class="search-query" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row"> 
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><ul>
+<li><a class="reference internal" href="#">Query Building API reference</a><ul>
+<li><a class="reference internal" href="#module-queries/base::">BaseQuery</a></li>
+<li><a class="reference internal" href="#insert">Insert</a><ul>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+<li><a class="reference internal" href="#module-queries/insert::">API</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-queries/sud::">SUDQuery</a></li>
+<li><a class="reference internal" href="#select">Select</a><ul>
+<li><a class="reference internal" href="#id1">Examples</a></li>
+<li><a class="reference internal" href="#id2">API</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#update">Update</a><ul>
+<li><a class="reference internal" href="#id3">Examples</a></li>
+<li><a class="reference internal" href="#id4">API</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#delete">Delete</a><ul>
+<li><a class="reference internal" href="#id5">Examples</a></li>
+<li><a class="reference internal" href="#id6">API</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Project Links</h3>
+<ul>
+
+<li><a href="index.html">Documentation Index</a></li>
+<li><a href="http://github.com/BetSmartMedia/gesundheit">Source on Github</a></li>
+
+</ul><h3>Brought to you by:</h3>
+<p>
+  <img class="logo" src="_static/logo.png" alt="Logo"/>
+</p>
+        </div>
+      </div> 
+    <div class="span9">
+      
+  <div class="section" id="module-queries/index::">
+<span id="query-building-api-reference"></span><h1>Query Building API reference<a class="headerlink" href="#module-queries/index::" title="Permalink to this headline">¶</a></h1>
+<p>The factory functions defined here create instances of the corresponding
+<cite>*Query</cite> manager classes, which fit the following inheritance hierarchy:</p>
+<blockquote>
+<div><ul class="simple">
+<li>BaseQuery<ul>
+<li>InsertQuery</li>
+<li>SUDQuery<ul>
+<li>SelectQuery</li>
+<li>UpdateQuery</li>
+<li>DeleteQuery</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+<p id="query-factories">These functions are the same ones re-exported by the main gesundheit module
+(where they bind queries to <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</span></tt>), and attached to
+engine/transaction objects (where they bind queries to the engine/transaction
+they are called on).</p>
+<p>Each one accepts a table name or alias object (anything handled by
+<a class="reference internal" href="nodes.html#nodes::toRelation" title="nodes::toRelation"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toRelation</span></tt></a>), one or more extra parameters, and an optional
+visitor callback as a final parameter that will be called with it&#8217;s <tt class="docutils literal"><span class="pre">this</span></tt>
+context set to the newly constructed query instance.</p>
+<dl class="function">
+<dt id="queries/index::INSERT">
+<em class="property">function </em><tt class="descname">INSERT</tt><big>(</big><em>table</em>, <em>fieldsOrRow</em><big>)</big><a class="headerlink" href="#queries/index::INSERT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new <a class="reference internal" href="#queries/insert::InsertQuery" title="queries/insert::InsertQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">InsertQuery</span></tt></a> that will add rows to
+<tt class="docutils literal"><span class="pre">table</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>table</strong> &#8211; Name of the table that rows will be inserted into.</li>
+<li><strong>fieldsOrRow</strong> &#8211; Either an array of column names that will be inserted, or a
+plain object representing a row of data to insert, in which case the keys
+of the object will define the columns that are inserted.</li>
+<li><strong>visitor</strong> &#8211; (Optional) a function that will be called with it&#8217;s context
+set to the newly constructed query object.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The column names passed in <tt class="docutils literal"><span class="pre">fields</span></tt> will be printed into the query
+<strong>unescaped</strong> so do <strong>not</strong> use arbitrary input here. This is hopefully only temporary.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="queries/index::SELECT">
+<em class="property">function </em><tt class="descname">SELECT</tt><big>(</big><em>table</em>, <em>fields</em><big>)</big><a class="headerlink" href="#queries/index::SELECT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new <a class="reference internal" href="#queries/select::SelectQuery" title="queries/select::SelectQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SelectQuery</span></tt></a> selecting from <tt class="docutils literal"><span class="pre">table</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>table</strong> &#8211; Name or alias object of the first table to select rows from.
+More tables can be joined using <a class="reference internal" href="#queries/select::SelectQuery.join" title="queries/select::SelectQuery.join"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.join</span></tt></a>.</li>
+<li><strong>fields</strong> &#8211; (Optional) Fields to project from <tt class="docutils literal"><span class="pre">table</span></tt>. If this is not
+given, all fields (<tt class="docutils literal"><span class="pre">*</span></tt>) will be projected until
+<a class="reference internal" href="#queries/select::SelectQuery.fields" title="queries/select::SelectQuery.fields"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.fields</span></tt></a> is called.</li>
+<li><strong>visitor</strong> &#8211; (Optional) a function that will be called with it&#8217;s context
+set to the newly constructed query object.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="queries/index::UPDATE">
+<em class="property">function </em><tt class="descname">UPDATE</tt><big>(</big><em>table</em><big>)</big><a class="headerlink" href="#queries/index::UPDATE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new <a class="reference internal" href="#queries/update::UpdateQuery" title="queries/update::UpdateQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">UpdateQuery</span></tt></a> that will update <tt class="docutils literal"><span class="pre">table</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>table</strong> &#8211; Name or alias of the table to update.</li>
+<li><strong>visitor</strong> &#8211; (Optional) a function that will be called with it&#8217;s context
+set to the newly constructed query object.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="queries/index::DELETE">
+<em class="property">function </em><tt class="descname">DELETE</tt><big>(</big><em>table</em><big>)</big><a class="headerlink" href="#queries/index::DELETE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new <a class="reference internal" href="#queries/delete::DeleteQuery" title="queries/delete::DeleteQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">DeleteQuery</span></tt></a> that will delete rows from
+<tt class="docutils literal"><span class="pre">table</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>table</strong> &#8211; Name or alias of the table to delete rows from.</li>
+<li><strong>visitor</strong> &#8211; (Optional) a function that will be called with it&#8217;s context
+set to the newly constructed query object.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="queries/index::exports.mixinFactoryMethods">
+<em class="property">function </em><tt class="descname">exports.mixinFactoryMethods</tt><big>(</big><em>invocant</em>, <em>getEngine</em><big>)</big><a class="headerlink" href="#queries/index::exports.mixinFactoryMethods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add wrappers methods for each of the query factory functions to <tt class="docutils literal"><span class="pre">invocant</span></tt>
+using lower, UPPER, and Camel cases. The new methods will retrieve an engine
+using <tt class="docutils literal"><span class="pre">getEngine</span></tt> and then create the query bound to that engine.</p>
+<p>If <tt class="docutils literal"><span class="pre">getEngine</span></tt> is not given, queries will be bound to <tt class="docutils literal"><span class="pre">invocant</span></tt> instead.</p>
+</dd></dl>
+
+<div class="section" id="module-queries/base::">
+<span id="basequery"></span><h2>BaseQuery<a class="headerlink" href="#module-queries/base::" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="queries/base::BaseQuery">
+<em class="property">class </em><tt class="descname">BaseQuery</tt><em class="property"> extends </em><tt class="xref coffee coffee-class docutils literal"><span class="pre">EventEmitter</span></tt><a class="headerlink" href="#queries/base::BaseQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>The base class for all queries. While this class itself is not part of
+gesundheits public API, the methods defined on it are.</p>
+<dl class="method">
+<dt id="queries/base::BaseQuery.constructor">
+<em class="property">method </em><tt class="descname">BaseQuery.constructor</tt><big>(</big><em>engine</em>, <em>opts</em><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.constructor" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>engine</strong> &#8211; The engine the query will be bound to.</li>
+<li><strong>opts.table</strong> &#8211; Any object that can be converted by <a class="reference internal" href="nodes.html#nodes::toRelation" title="nodes::toRelation"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toRelation</span></tt></a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/base::BaseQuery.copy">
+<em class="property">method </em><tt class="descname">BaseQuery.copy</tt><big>(</big><em>fn</em><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate a new query with a deep copy of this ones AST</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/base::BaseQuery.visit">
+<em class="property">method </em><tt class="descname">BaseQuery.visit</tt><big>(</big><em>fn</em><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.visit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call the given function in the context of this query. This is useful with
+query factory functions where you can use it as a sort-of-DSL:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">SELECT</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="nx">function</span><span class="p">(</span><span class="nx">q</span><span class="p">)</span> <span class="p">{</span>
+  <span class="o">//</span> <span class="k">this</span> <span class="o">===</span> <span class="nx">q</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39;addresses&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="kc">on</span><span class="o">:</span> <span class="p">{</span><span class="nv">person_id: </span><span class="nx">q</span><span class="p">.</span><span class="nx">project</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="s">&#39;id&#39;</span><span class="p">)},</span>
+    <span class="nv">fields: </span><span class="p">[</span><span class="s">&#39;city&#39;</span><span class="p">,</span> <span class="s">&#39;region&#39;</span><span class="p">]</span>
+  <span class="p">})</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/base::BaseQuery.bind">
+<em class="property">method </em><tt class="descname">BaseQuery.bind</tt><big>(</big><em>engine</em><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.bind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bind this query object to a new engine.
+If no argument is given the query will be bound to the default engine.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/base::BaseQuery.render">
+<em class="property">method </em><tt class="descname">BaseQuery.render</tt><big>(</big><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the query to a SQL string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/base::BaseQuery.compile">
+<em class="property">method </em><tt class="descname">BaseQuery.compile</tt><big>(</big><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.compile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile this query object, returning a SQL string and parameter array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/base::BaseQuery.execute">
+<em class="property">method </em><tt class="descname">BaseQuery.execute</tt><big>(</big><em>cb</em><big>)</big><a class="headerlink" href="#queries/base::BaseQuery.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the query using <tt class="docutils literal"><span class="pre">&#64;engine</span></tt> and return a <cite>QueryAdapter</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cb</strong> &#8211; An (optional) node-style callback that will be called with any
+errors and/or the query results. If no callback is given, an <a class="reference external" href="https://github.com/grncdr/node-any-db/blob/master/DESIGN.md#query-adapters">AnyDB Query</a>
+will be returned.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="insert">
+<h2>Insert<a class="headerlink" href="#insert" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<p>Insert a single row:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">var</span> <span class="nv">insert = </span><span class="nx">require</span><span class="p">(</span><span class="s">&#39;gesundheit&#39;</span><span class="p">).</span><span class="nx">insert</span>
+
+<span class="nx">insert</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nv">name: </span><span class="s">&#39;Jerry&#39;</span><span class="p">}).</span><span class="nx">execute</span><span class="p">(</span><span class="nx">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="nx">Handle</span> <span class="nx">err</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>Add multiple rows to a single insert:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">var</span> <span class="nv">q = </span><span class="nx">insert</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">addRows</span><span class="p">([</span>
+  <span class="p">[</span><span class="s">&#39;Jerry&#39;</span><span class="p">],</span>
+  <span class="p">[</span><span class="s">&#39;Joey&#39;</span><span class="p">],</span>
+  <span class="p">[</span><span class="s">&#39;Jimbob&#39;</span><span class="p">]</span>
+<span class="p">])</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">execute</span><span class="p">(</span><span class="nx">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="nx">Handle</span> <span class="nx">err</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-queries/insert::">
+<span id="api"></span><h3>API<a class="headerlink" href="#module-queries/insert::" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="queries/insert::InsertQuery">
+<em class="property">class </em><tt class="descname">InsertQuery</tt><em class="property"> extends </em><a class="reference internal" href="#queries/base::BaseQuery" title="queries/base::BaseQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">BaseQuery</span></tt></a><a class="headerlink" href="#queries/insert::InsertQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert queries are much simpler than most query types: they cannot join
+multiple tables.</p>
+<dl class="method">
+<dt id="queries/insert::InsertQuery.addRows">
+<em class="property">method </em><tt class="descname">InsertQuery.addRows</tt><big>(</big><em>rows</em>, <em>variadic</em><big>)</big><a class="headerlink" href="#queries/insert::InsertQuery.addRows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add multiple rows of data to the insert statement.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/insert::InsertQuery.addRow">
+<em class="property">method </em><tt class="descname">InsertQuery.addRow</tt><big>(</big><em>row</em><big>)</big><a class="headerlink" href="#queries/insert::InsertQuery.addRow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a single row</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/insert::InsertQuery.from">
+<em class="property">method </em><tt class="descname">InsertQuery.from</tt><big>(</big><em>query</em><big>)</big><a class="headerlink" href="#queries/insert::InsertQuery.from" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert from a select query.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-queries/sud::">
+<span id="sudquery"></span><h2>SUDQuery<a class="headerlink" href="#module-queries/sud::" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="queries/sud::SUDQuery">
+<em class="property">class </em><tt class="descname">SUDQuery</tt><em class="property"> extends </em><a class="reference internal" href="#queries/base::BaseQuery" title="queries/base::BaseQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">BaseQuery</span></tt></a><a class="headerlink" href="#queries/sud::SUDQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>SUDQuery is the base class for SELECT, UPDATE, and DELETE queries. It adds
+logic to <a class="reference internal" href="#queries/base::BaseQuery" title="queries/base::BaseQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">BaseQuery</span></tt></a> for adding WHERE clauses, projecting
+columns, ordering, limits, and offsets.</p>
+<dl class="method">
+<dt id="queries/sud::SUDQuery.where">
+<em class="property">method </em><tt class="descname">SUDQuery.where</tt><big>(</big><em>constraint</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.where" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a WHERE clause to the query. This method accepts wide range of input
+that can express very complex constraints. The examples below assume we are
+starting with this simple select query: <tt class="docutils literal"><span class="pre">q</span> <span class="pre">=</span> <span class="pre">select('t1')</span></tt></p>
+<p>The first kind of constraint is a comparison node as produced by the
+<a class="reference internal" href="nodes.html#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a> methods on projected fields:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">q</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;field1&#39;</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="mi">42</span><span class="p">))</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">q</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;field2&#39;</span><span class="p">).</span><span class="nx">gt</span><span class="p">(</span><span class="mi">42</span><span class="p">))</span>
+<span class="c1"># WHERE t1.field1 = 42 AND t1.field2 &gt; 42</span>
+</pre></div>
+</div>
+<p>We used an implied table name above, which is always the last table added to
+the query or focused with  <tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.focus</span></tt>. If you want
+to specify constraints on multiple tables at once (or just be more explicit)
+you can also specify the relation for a field by prepending it to the field
+name (e.g. <tt class="docutils literal"><span class="pre">q.c('t1.field1')</span></tt>. See <a class="reference internal" href="#queries/sud::SUDQuery.project" title="queries/sud::SUDQuery.project"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.project</span></tt></a>
+for details.</p>
+<p>The second kind of constraint is an object literal where each key is a field
+name and each value is a constraint. The last example expressed as a literal
+object looks like this:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">field1: </span><span class="mi">42</span><span class="p">,</span> <span class="nv">field2: </span><span class="p">{</span><span class="nv">gt: </span><span class="mi">42</span><span class="p">}})</span>
+<span class="c1"># WHERE t1.field1 = 42 AND t1.field2 &gt; 42</span>
+</pre></div>
+</div>
+<p>Internally this constructs the comparison nodes for you using a simple
+transformation: each key is passed to <tt class="xref coffee coffee-meth docutils literal"><span class="pre">project</span></tt> (meaning you can
+specify the relation name as part of the key if you so desire) and each
+value is either used as the argument to <a class="reference internal" href="nodes.html#nodes::ComparableMixin.eq" title="nodes::ComparableMixin.eq"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">ComparableMixin.eq</span></tt></a>
+or (in the case of object literals) converted into one or more calls to
+the corresponding comparison methods.</p>
+<p>To compare two fields, use a projection as the value to be compared:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">p = </span><span class="nx">q</span><span class="p">.</span><span class="nx">project</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">q</span><span class="p">,</span> <span class="s">&#39;t1&#39;</span><span class="p">)</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">field1: </span><span class="p">{</span><span class="nv">gt: </span><span class="nx">p</span><span class="p">(</span><span class="s">&#39;field2&#39;</span><span class="p">)}})</span>
+<span class="c1"># WHERE t1.field1 &gt; t1.field2</span>
+</pre></div>
+</div>
+<p>If you use either of the special keys <tt class="docutils literal"><span class="pre">'and'</span></tt> or <tt class="docutils literal"><span class="pre">'or'</span></tt> in an object,
+the value will be treated as a nested set of constraints to be joined with
+the corresponding SQL operator. This process is recursive so you can nest
+constraints arbitrarily deep:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="o">or:</span> <span class="p">{</span><span class="nv">a: </span><span class="mi">1</span><span class="p">,</span> <span class="o">and:</span> <span class="p">{</span><span class="nv">b: </span><span class="mi">2</span><span class="p">,</span> <span class="nv">c: </span><span class="mi">3</span><span class="p">}}})</span>
+<span class="c1"># WHERE (t1.a = 1 OR (t1.b = 2 AND t1.c = 3))</span>
+</pre></div>
+</div>
+<p>You can also acheive the same effect by chaining method calls on comparison
+nodes:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">a = </span><span class="nx">q</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">)</span>
+<span class="nv">b = </span><span class="nx">q</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">)</span>
+<span class="nv">c = </span><span class="nx">q</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;c&#39;</span><span class="p">)</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">a</span><span class="p">.</span><span class="nx">eq</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="o">or</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">eq</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="o">and</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">eq</span><span class="p">(</span><span class="mi">3</span><span class="p">))))</span>
+<span class="c1"># WHERE (t1.a = 1 OR (t1.b = 2 AND t1.c = 3))</span>
+</pre></div>
+</div>
+<p>If you have the need to mix both styles (or simply find it more readable,
+You can use an array of constraints as the value for <tt class="docutils literal"><span class="pre">'or'</span></tt> or <tt class="docutils literal"><span class="pre">'and'</span></tt>:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="o">or:</span> <span class="p">[{</span><span class="nv">a: </span><span class="mi">1</span><span class="p">},</span> <span class="nx">b</span><span class="p">.</span><span class="nx">eq</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="o">and</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">eq</span><span class="p">(</span><span class="mi">3</span><span class="p">))]})</span>
+</pre></div>
+</div>
+<p>Note that currently you <strong>cannot</strong> pass an object literal to the <tt class="docutils literal"><span class="pre">.and</span></tt>
+and <tt class="docutils literal"><span class="pre">.or</span></tt> methods:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="c1"># Will not work!!</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">a</span><span class="p">.</span><span class="nx">eq</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="o">or</span><span class="p">({</span><span class="nv">b: </span><span class="mi">2</span><span class="p">,</span> <span class="nv">c: </span><span class="mi">3</span><span class="p">}))</span>
+</pre></div>
+</div>
+<p>Finally, there are also shortcut methods <a class="reference internal" href="#queries/sud::SUDQuery.and" title="queries/sud::SUDQuery.and"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.and</span></tt></a>
+and <a class="reference internal" href="#queries/sud::SUDQuery.or" title="queries/sud::SUDQuery.or"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.or</span></tt></a> that treat multiple arguments like an
+array of constraints.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/sud::SUDQuery.or">
+<em class="property">method </em><tt class="descname">SUDQuery.or</tt><big>(</big><em>clauses</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.or" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortcut for <tt class="docutils literal"><span class="pre">.where({or:</span> <span class="pre">clauses})</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/sud::SUDQuery.and">
+<em class="property">method </em><tt class="descname">SUDQuery.and</tt><big>(</big><em>clauses</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.and" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortcut for <tt class="docutils literal"><span class="pre">.where({and:</span> <span class="pre">clauses})</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/sud::SUDQuery.order">
+<em class="property">method </em><tt class="descname">SUDQuery.order</tt><big>(</big><em>args</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add one or more ORDER BY clauses to the query.</p>
+<p>Each ordering can either be a string, in which case it must be a valid-ish
+SQL snippet like &#8216;some_table.some_field DESC&#8217;, (the field name and direction
+will still be converted to AST nodes) or an object, in which case each key
+will be treated as a field and each value as a direction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/sud::SUDQuery.limit">
+<em class="property">method </em><tt class="descname">SUDQuery.limit</tt><big>(</big><em>l</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the LIMIT on this query</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/sud::SUDQuery.offset">
+<em class="property">method </em><tt class="descname">SUDQuery.offset</tt><big>(</big><em>l</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the OFFSET of this query</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/sud::SUDQuery.project">
+<em class="property">method </em><tt class="descname">SUDQuery.project</tt><big>(</big><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Backwards compatible alias for <a class="reference internal" href="#queries/sud::SUDQuery.column" title="queries/sud::SUDQuery.column"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.column</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/sud::SUDQuery.column">
+<em class="property">method </em><tt class="descname">SUDQuery.column</tt><big>(</big><em>relation</em>, <em>field</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a <tt class="xref coffee coffee-class docutils literal"><span class="pre">Column</span></tt> node representing <tt class="docutils literal"><span class="pre">&lt;relation&gt;.&lt;field&gt;</span></tt>.</p>
+<p>The first argument is optional and specifies a table or alias name referring
+to a relation already joined to this query. If you don&#8217;t specify a relation,
+the table added or focused last will be used. Alternatively, you can specify
+the relation name and field with a single dot-separated string:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">column</span><span class="p">(</span><span class="s">&#39;departments.name&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="nx">q</span><span class="p">.</span><span class="nx">column</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The returned object has a methods from <a class="reference internal" href="nodes.html#nodes::ComparableMixin" title="nodes::ComparableMixin"><tt class="xref coffee coffee-class docutils literal"><span class="pre">ComparableMixin</span></tt></a> that
+create new comparison nodes usable in join conditions and where clauses:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="c1"># Find developers over the age of 45</span>
+<span class="nv">s = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
+<span class="nx">s</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="kc">on</span><span class="o">:</span> <span class="p">{</span><span class="nv">id: </span><span class="nx">s</span><span class="p">.</span><span class="nx">column</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="s">&#39;department_id&#39;</span><span class="p">)})</span>
+<span class="nx">s</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">s</span><span class="p">.</span><span class="nx">column</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="s">&#39;development&#39;</span><span class="p">))</span>
+<span class="nx">s</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">s</span><span class="p">.</span><span class="nx">column</span><span class="p">(</span><span class="s">&#39;people&#39;</span><span class="p">,</span> <span class="s">&#39;age&#39;</span><span class="p">).</span><span class="nx">gte</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">project</span></tt> is also aliased as <tt class="docutils literal"><span class="pre">p</span></tt> for those who value brevity:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">q</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;departments.name&#39;</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="s">&#39;development&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">this means you <em>must</em> specify a relation name if you have a field
+name with a dot in it, if you have dots in your column names, sorry.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/sud::SUDQuery.rel">
+<em class="property">method </em><tt class="descname">SUDQuery.rel</tt><big>(</big><em>alias</em><big>)</big><a class="headerlink" href="#queries/sud::SUDQuery.rel" title="Permalink to this definition">¶</a></dt>
+<dd><p>A shorthand way to get a relation by (alias) name</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="select">
+<h2>Select<a class="headerlink" href="#select" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Examples<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Start a select query with <a class="reference internal" href="#queries/index::SELECT" title="queries/index::SELECT"><tt class="xref coffee coffee-func docutils literal"><span class="pre">SELECT</span></tt></a>:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">var</span> <span class="nv">select = </span><span class="nx">require</span><span class="p">(</span><span class="s">&#39;gesundheit&#39;</span><span class="p">).</span><span class="nx">select</span>
+<span class="nx">var</span> <span class="nv">lightRecliners = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;chairs&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;chair_type&#39;</span><span class="p">,</span> <span class="s">&#39;size&#39;</span><span class="p">])</span>
+  <span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">chair_type: </span><span class="s">&#39;recliner&#39;</span><span class="p">,</span> <span class="nv">weight: </span><span class="p">{</span><span class="nv">lt: </span><span class="mi">25</span><span class="p">}})</span>
+</pre></div>
+</div>
+<p>Join another table with <a class="reference internal" href="#queries/select::SelectQuery.join" title="queries/select::SelectQuery.join"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.join</span></tt></a>:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">var</span> <span class="nv">malesWithLightRecliners = </span><span class="nx">lightRecliners</span><span class="p">.</span><span class="nx">copy</span><span class="p">()</span>
+  <span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&quot;people&quot;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="kc">on</span><span class="o">:</span> <span class="p">{</span><span class="nv">chair_id: </span><span class="nx">light_recliners</span><span class="p">.</span><span class="nx">column</span><span class="p">(</span><span class="s">&#39;chairs.id&#39;</span><span class="p">)},</span>
+    <span class="nv">fields: </span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+  <span class="p">})</span>
+  <span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">sex: </span><span class="s">&#39;M&#39;</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>Note that joining a table &#8220;focuses&#8221; it, so <tt class="docutils literal"><span class="pre">.where({sex:</span> <span class="pre">'M'})</span></tt> refers to the
+<tt class="docutils literal"><span class="pre">people.sex</span></tt> column. You can avoid this implicit behaviour by using full
+column names (e.g. <tt class="docutils literal"><span class="pre">'chairs.id'</span></tt>) or switching focus back to a previous table
+using <a class="reference internal" href="#queries/select::SelectQuery.focus" title="queries/select::SelectQuery.focus"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.focus</span></tt></a>:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">men_with_light_recliners</span><span class="p">.</span><span class="nx">focus</span><span class="p">(</span><span class="s">&#39;chairs&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Lets order the results by <tt class="docutils literal"><span class="pre">chairs.weight</span></tt> and get the top 5:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">men_with_light_recliners</span>
+  <span class="p">.</span><span class="nx">order</span><span class="p">(</span><span class="nv">weight: </span><span class="s">&#39;ASC)</span>
+<span class="s">  .limit(5)</span>
+</pre></div>
+</div>
+<p>The entire query can also be written without needing a temp variable by using
+the third parameter to select (a callback function that will be passed to
+<a class="reference internal" href="#queries/base::BaseQuery.visit" title="queries/base::BaseQuery.visit"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.visit</span></tt></a>):</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">men_with_light_recliners = </span><span class="nx">select</span> <span class="s">&#39;chairs&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;chair_type&#39;</span><span class="p">,</span> <span class="s">&#39;size&#39;</span><span class="p">],</span> <span class="nx">function</span> <span class="p">(</span><span class="nx">q</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">chair_type: </span><span class="s">&#39;recliner&#39;</span><span class="p">,</span> <span class="nv">weight: </span><span class="p">{</span><span class="nv">lt: </span><span class="mi">25</span><span class="p">}})</span>
+  <span class="nx">q</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&quot;people&quot;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="kc">on</span><span class="o">:</span> <span class="p">{</span><span class="nv">chair_id: </span><span class="nx">q</span><span class="p">.</span><span class="nx">column</span><span class="p">(</span><span class="s">&#39;chairs.id&#39;</span><span class="p">)},</span>
+    <span class="nv">fields: </span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+  <span class="p">})</span>
+  <span class="nx">q</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">gender: </span><span class="s">&#39;M&#39;</span><span class="p">})</span>
+  <span class="nx">q</span><span class="p">.</span><span class="nx">order</span><span class="p">({</span><span class="s">&#39;chairs.weight&#39;</span><span class="o">:</span> <span class="s">&#39;ASC&#39;</span><span class="p">})</span>
+  <span class="nx">q</span><span class="p">.</span><span class="nx">limit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h3>API<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="module-queries/select::"></span><dl class="class">
+<dt id="queries/select::SelectQuery">
+<em class="property">class </em><tt class="descname">SelectQuery</tt><em class="property"> extends </em><a class="reference internal" href="#queries/sud::SUDQuery" title="queries/sud::SUDQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SUDQuery</span></tt></a><a class="headerlink" href="#queries/select::SelectQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a number of SELECT-specific methods to <a class="reference internal" href="#queries/sud::SUDQuery" title="queries/sud::SUDQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SUDQuery</span></tt></a>,
+such as <cite>fields</cite> and <cite>groupBy</cite></p>
+<dl class="method">
+<dt id="queries/select::SelectQuery.fields">
+<em class="property">method </em><tt class="descname">SelectQuery.fields</tt><big>(</big><em>fields</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds one or more fields to the query. Fields can be strings (in which case
+they will be passed to <a class="reference internal" href="#queries/sud::SUDQuery.column" title="queries/sud::SUDQuery.column"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.column</span></tt></a>) or pre-
+constructed nodes. (Such as those returned by <tt class="docutils literal"><span class="pre">column</span></tt>).</p>
+<p>If no fields are given, clears all fields from the currently focused table.</p>
+<p>To alias a field, use an object with a single key where the key is the alias
+name and the value is a string or node:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">q</span><span class="p">.</span><span class="nx">fields</span><span class="p">({</span><span class="nv">employee_name: </span><span class="s">&#39;employees.name&#39;</span><span class="p">})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/select::SelectQuery.func">
+<em class="property">method </em><tt class="descname">SelectQuery.func</tt><big>(</big><em>fun</em>, <em>args</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a SQL function to the column list for the query. This can be an
+aggregate function if you also use <tt class="xref coffee coffee-meth docutils literal"><span class="pre">groupBy</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fun</strong> &#8211; name of SQL function.</li>
+<li><strong>args</strong> &#8211; arguments that will be passed to the function. Any argument
+that is not a <cite>Node</cite> object will be converted into a bound parameter.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="c1"># SELECT count(id) FROM t1</span>
+<span class="nx">select</span><span class="p">(</span><span class="s">&#39;t1&#39;</span><span class="p">,</span> <span class="nx">function</span> <span class="p">(</span><span class="nx">q</span><span class="p">)</span> <span class="p">{</span> <span class="nx">q</span><span class="p">.</span><span class="nx">func</span><span class="p">(</span><span class="s">&#39;count&#39;</span><span class="p">,</span> <span class="nx">q</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">))</span> <span class="p">})</span>
+
+<span class="c1"># SELECT count(id) AS &quot;counter&quot; FROM t1</span>
+<span class="nx">select</span><span class="p">(</span><span class="s">&#39;t1&#39;</span><span class="p">,</span> <span class="nx">function</span> <span class="p">(</span><span class="nx">q</span><span class="p">)</span> <span class="p">{</span> <span class="nx">q</span><span class="p">.</span><span class="nx">func</span><span class="p">({</span><span class="nv">counter: </span><span class="s">&#39;count&#39;</span><span class="p">},</span> <span class="nx">q</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">))</span> <span class="p">})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/select::SelectQuery.distinct">
+<em class="property">method </em><tt class="descname">SelectQuery.distinct</tt><big>(</big><em>bool</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.distinct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make this query DISTINCT on <em>all</em> fields.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/select::SelectQuery.join">
+<em class="property">method </em><tt class="descname">SelectQuery.join</tt><big>(</big><em>table</em>, <em>opts</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Join another table to the query.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>table</strong> &#8211; A table name, or alias literal. An error will be thrown if
+the table/alias name is not unique. See <a class="reference internal" href="nodes.html#nodes::toRelation" title="nodes::toRelation"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toRelation</span></tt></a> for
+more information on the many things <tt class="docutils literal"><span class="pre">table</span></tt> could be.</li>
+<li><strong>opts.on</strong> &#8211; An object literal expressing join conditions. See
+<tt class="xref coffee coffee-meth docutils literal"><span class="pre">where</span></tt> for more.</li>
+<li><strong>opts.type</strong> &#8211; A join type constant (e.g. INNER, OUTER)</li>
+<li><strong>opts.fields</strong> &#8211; Columns to be selected from the newly joined table.</li>
+<li><strong>opts.prefixFields</strong> &#8211; <p>If this is a string, it will be used to prefix
+the field names given in <tt class="docutils literal"><span class="pre">opts.fields</span></tt>. If this is a boolean <tt class="docutils literal"><span class="pre">true</span></tt>
+then the joined table (or alias) name plus an underscore will be used
+as the prefix. For example:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">join</span><span class="p">({</span><span class="nv">p: </span><span class="s">&#39;people&#39;</span><span class="p">},</span> <span class="p">{</span>
+  <span class="kc">on</span><span class="o">:</span> <span class="nx">query</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;people.dep_id&#39;</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="nx">query</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;dep.id&#39;</span><span class="p">)),</span>
+  <span class="nv">fields: </span><span class="p">[</span><span class="s">&#39;first_name&#39;</span><span class="p">,</span> <span class="s">&#39;last_name&#39;</span><span class="p">],</span>
+  <span class="nv">prefixFields: </span><span class="kc">true</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>Will alias <tt class="docutils literal"><span class="pre">people.first_name</span> <span class="pre">AS</span> <span class="pre">p_first_name</span></tt>.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/select::SelectQuery.ensureJoin">
+<em class="property">method </em><tt class="descname">SelectQuery.ensureJoin</tt><big>(</big><em>table</em>, <em>opts</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.ensureJoin" title="Permalink to this definition">¶</a></dt>
+<dd><p>The same as <tt class="xref coffee coffee-meth docutils literal"><span class="pre">join</span></tt>, but will only join <tt class="docutils literal"><span class="pre">tbl</span></tt> if it is <strong>not</strong>
+joined already.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/select::SelectQuery.focus">
+<em class="property">method </em><tt class="descname">SelectQuery.focus</tt><big>(</big><em>alias</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.focus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a different table &#8220;focused&#8221;, this will use that table as the default
+for the <tt class="docutils literal"><span class="pre">fields</span></tt>, <tt class="docutils literal"><span class="pre">order</span></tt> and <tt class="docutils literal"><span class="pre">where</span></tt> methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>alias</strong> &#8211; The table/alias name to focus. If the table or alias is not
+already part of the query an error will be thrown.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/select::SelectQuery.groupBy">
+<em class="property">method </em><tt class="descname">SelectQuery.groupBy</tt><big>(</big><em>fields</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.groupBy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a GROUP BY to the query.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/select::SelectQuery.having">
+<em class="property">method </em><tt class="descname">SelectQuery.having</tt><big>(</big><em>constraint</em><big>)</big><a class="headerlink" href="#queries/select::SelectQuery.having" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method works similarly to <a class="reference internal" href="#queries/sud::SUDQuery.where" title="queries/sud::SUDQuery.where"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.where</span></tt></a>, but the
+constraints are added the <cite>HAVING</cite> portion of a SQL clause.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="update">
+<h2>Update<a class="headerlink" href="#update" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>Examples<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>Updating rows that match a condition:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">update</span><span class="p">(</span><span class="s">&#39;tweeters&#39;</span><span class="p">)</span>                <span class="c1"># UPDATE tweeters</span>
+  <span class="p">.</span><span class="nx">set</span><span class="p">({</span><span class="nv">influential: </span><span class="kc">true</span><span class="p">})</span>       <span class="c1"># SET tweeters.influential = true</span>
+  <span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nv">followers: </span><span class="p">{</span><span class="nv">gt: </span><span class="mi">1000</span><span class="p">}})</span> <span class="c1"># WHERE tweeters.followers &gt; 1000;</span>
+  <span class="p">.</span><span class="nx">execute</span><span class="p">(</span><span class="nx">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span> <span class="sr">/* ... */</span> <span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h3>API<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="module-queries/update::"></span><dl class="class">
+<dt id="queries/update::UpdateQuery">
+<em class="property">class </em><tt class="descname">UpdateQuery</tt><em class="property"> extends </em><a class="reference internal" href="#queries/sud::SUDQuery" title="queries/sud::SUDQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SUDQuery</span></tt></a><a class="headerlink" href="#queries/update::UpdateQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>The update query is a little underpowered right now, and can only handle
+simple updates of a single table.</p>
+<dl class="method">
+<dt id="queries/update::UpdateQuery.set">
+<em class="property">method </em><tt class="descname">UpdateQuery.set</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#queries/update::UpdateQuery.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add fields to the SET portion of this query.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> &#8211; An object mapping fields to values. The values will be passed
+to <a class="reference internal" href="nodes.html#nodes::toParam" title="nodes::toParam"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toParam</span></tt></a> to be converted into bound paramaeters.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="queries/update::UpdateQuery.setNodes">
+<em class="property">method </em><tt class="descname">UpdateQuery.setNodes</tt><big>(</big><em>nodes</em><big>)</big><a class="headerlink" href="#queries/update::UpdateQuery.setNodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Directly push one or more nodes into the SET portion of this query</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="delete">
+<h2>Delete<a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h3>Examples<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>Delete all rows that match a condition:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="c1"># DELETE FROM tweeters WHERE tweeters.followers &lt; 10</span>
+<span class="k">delete</span><span class="p">(</span><span class="s">&#39;tweeters&#39;</span><span class="p">).</span><span class="nx">where</span><span class="p">(</span><span class="nv">followers: lt: </span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h3>API<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="module-queries/delete::"></span><dl class="class">
+<dt id="queries/delete::DeleteQuery">
+<em class="property">class </em><tt class="descname">DeleteQuery</tt><em class="property"> extends </em><a class="reference internal" href="#queries/sud::SUDQuery" title="queries/sud::SUDQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SUDQuery</span></tt></a><a class="headerlink" href="#queries/delete::DeleteQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete queries only add a &#8216;returning&#8217; method to <tt class="docutils literal"><span class="pre">SUDQuery</span></tt></p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+    </div>
+     
+  </div>
+</div> 
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2012, Stephen Sugden.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2b1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

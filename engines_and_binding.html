@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Engines and Binding &mdash; gesundheit 0.8.10 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap-responsive.min.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.8.10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-2.3.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="gesundheit 0.8.10 documentation" href="index.html" />
+    <link rel="next" title="Dialects" href="dialects.html" />
+    <link rel="prev" title="Query Building API reference" href="query_building_api.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body> 
+
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+
+        <a class="brand" href="index.html">gesundheit</a>
+        <span class="navbar-text pull-left"><b>0.8</b></span>
+
+        <div class="nav-collapse">
+          <ul class="nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">API summary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="query_building_api.html">Query Building API reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Engines and Binding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dialects.html">Dialects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Engines and Binding</a><ul>
+<li><a class="reference internal" href="#module-engine::">Engine API Reference</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li><a href="query_building_api.html"
+         title="Previous Chapter: Query Building API reference">&laquo; Query Building A...</a></li>
+  <li><a href="dialects.html"
+         title="Next Chapter: Dialects">Dialects &raquo;</a></li>
+              
+            
+            
+            
+            
+              <li>
+  <a href="_sources/engines_and_binding.txt"
+     rel="nofollow">Source</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-search pull-right" action="search.html" method="get">
+  <input type="text" name="q" class="search-query" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row"> 
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><ul>
+<li><a class="reference internal" href="#">Engines and Binding</a><ul>
+<li><a class="reference internal" href="#module-engine::">Engine API Reference</a></li>
+</ul>
+</li>
+</ul>
+<h3>Project Links</h3>
+<ul>
+
+<li><a href="index.html">Documentation Index</a></li>
+<li><a href="http://github.com/BetSmartMedia/gesundheit">Source on Github</a></li>
+
+</ul><h3>Brought to you by:</h3>
+<p>
+  <img class="logo" src="_static/logo.png" alt="Logo"/>
+</p>
+        </div>
+      </div> 
+    <div class="span9">
+      
+  <div class="section" id="engines-and-binding">
+<h1>Engines and Binding<a class="headerlink" href="#engines-and-binding" title="Permalink to this headline">¶</a></h1>
+<p>A gesundheit query must be &#8220;bound&#8221; to an &#8220;engine&#8221; to render and/or execute. For
+apps that deal with a single database, you can simply create an engine instance
+during application startup, assign it to <tt class="docutils literal"><span class="pre">gesundheit.defaultEngine</span></tt> and not
+have to think about binding after that.</p>
+<div class="section" id="module-engine::">
+<span id="engine-api-reference"></span><h2>Engine API Reference<a class="headerlink" href="#module-engine::" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="engine::Engine">
+<em class="property">class </em><tt class="descname">Engine</tt><a class="headerlink" href="#engine::Engine" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">Engine</span></tt> is gesundheits interface to an actual database.</p>
+<p>Engines have all of the <a class="reference internal" href="query_building_api.html#query-factories"><em>query factory functions</em></a>
+attached to them as instance methods that automatically bind created queries
+to the engine. They also have these additionaly methods</p>
+<dl class="staticmethod">
+<dt id="engine::Engine.Engine.create">
+<em class="property">static method </em><tt class="descname">Engine.Engine.create</tt><big>(</big><em>dbUrl</em>, <em>poolOptions</em><big>)</big><a class="headerlink" href="#engine::Engine.Engine.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an <a class="reference internal" href="#engine::Engine" title="engine::Engine"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Engine</span></tt></a> instance from an <a class="reference external" href="https://github.com/grncdr/node-any-db">Any-DB</a> connect string
+and extra connection pool options, this is exported by gesundheit as
+<tt class="docutils literal"><span class="pre">gesundheit.engine(...)</span></tt>.</p>
+<p><a class="reference internal" href="getting_started.html#engine-usage-example"><em>This example</em></a> shows the most common way to set up
+a single default database engine for an application.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="engine::Engine.query">
+<em class="property">method </em><tt class="descname">Engine.query</tt><big>(</big><em>statement</em>, <em>params</em>, <em>callback</em><big>)</big><a class="headerlink" href="#engine::Engine.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Passes arguments directly to the query method of the underlying <a class="reference external" href="https://github.com/grncdr/node-any-db/blob/master/API.md#connectionpool">Any-DB
+ConnectionPool</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="engine::Engine.begin">
+<em class="property">method </em><tt class="descname">Engine.begin</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#engine::Engine.begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start a new transaction and return it.</p>
+<p>The returned object behaves exactly like a new engine, but has <tt class="docutils literal"><span class="pre">commit</span></tt>
+and <tt class="docutils literal"><span class="pre">rollback</span></tt> methods instead of <tt class="docutils literal"><span class="pre">close</span></tt>. (In fact it&#8217;s an <a class="reference external" href="https://github.com/grncdr/node-any-db/blob/master/API.md#transaction">Any-DB
+Transaction</a> that has had the query factory functions mixed in to it).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="engine::Engine.compile">
+<em class="property">method </em><tt class="descname">Engine.compile</tt><big>(</big><em>root</em><big>)</big><a class="headerlink" href="#engine::Engine.compile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render an AST to a SQL string and collect parameters</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="engine::Engine.close">
+<em class="property">method </em><tt class="descname">Engine.close</tt><big>(</big><big>)</big><a class="headerlink" href="#engine::Engine.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the internal connection pool.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="engine::fakePool">
+<em class="property">function </em><tt class="descname">fakePool</tt><big>(</big><big>)</big><a class="headerlink" href="#engine::fakePool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a fake database connection pool that throws errors if you try to
+execute a query.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+    </div>
+     
+  </div>
+</div> 
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2012, Stephen Sugden.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2b1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

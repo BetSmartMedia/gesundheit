@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Getting Started &mdash; gesundheit 0.8.10 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap-responsive.min.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.8.10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-2.3.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="gesundheit 0.8.10 documentation" href="index.html" />
+    <link rel="next" title="Query Building API reference" href="query_building_api.html" />
+    <link rel="prev" title="API summary" href="synopsis.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body> 
+
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+
+        <a class="brand" href="index.html">gesundheit</a>
+        <span class="navbar-text pull-left"><b>0.8</b></span>
+
+        <div class="nav-collapse">
+          <ul class="nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">API summary</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="query_building_api.html">Query Building API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="engines_and_binding.html">Engines and Binding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dialects.html">Dialects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Getting Started</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#creating-a-query-object">Creating a Query object</a></li>
+<li><a class="reference internal" href="#creating-a-query-manager">Creating a query manager</a></li>
+<li><a class="reference internal" href="#compiling-executing">Compiling &amp; Executing</a></li>
+<li><a class="reference internal" href="#using-a-real-database">Using a real database</a></li>
+<li><a class="reference internal" href="#aliasing-tables-and-fields">Aliasing tables and fields</a></li>
+<li><a class="reference internal" href="#a-quick-note-on-async-errors-and-throw">A quick note on async, errors and <tt class="docutils literal"><span class="pre">throw</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li><a href="synopsis.html"
+         title="Previous Chapter: API summary">&laquo; API summary</a></li>
+  <li><a href="query_building_api.html"
+         title="Next Chapter: Query Building API reference">Query Building A... &raquo;</a></li>
+              
+            
+            
+            
+            
+              <li>
+  <a href="_sources/getting_started.txt"
+     rel="nofollow">Source</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-search pull-right" action="search.html" method="get">
+  <input type="text" name="q" class="search-query" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row"> 
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><ul>
+<li><a class="reference internal" href="#">Getting Started</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#creating-a-query-object">Creating a Query object</a></li>
+<li><a class="reference internal" href="#creating-a-query-manager">Creating a query manager</a></li>
+<li><a class="reference internal" href="#compiling-executing">Compiling &amp; Executing</a></li>
+<li><a class="reference internal" href="#using-a-real-database">Using a real database</a></li>
+<li><a class="reference internal" href="#aliasing-tables-and-fields">Aliasing tables and fields</a></li>
+<li><a class="reference internal" href="#a-quick-note-on-async-errors-and-throw">A quick note on async, errors and <tt class="docutils literal"><span class="pre">throw</span></tt></a></li>
+</ul>
+</li>
+</ul>
+<h3>Project Links</h3>
+<ul>
+
+<li><a href="index.html">Documentation Index</a></li>
+<li><a href="http://github.com/BetSmartMedia/gesundheit">Source on Github</a></li>
+
+</ul><h3>Brought to you by:</h3>
+<p>
+  <img class="logo" src="_static/logo.png" alt="Logo"/>
+</p>
+        </div>
+      </div> 
+    <div class="span9">
+      
+  <div class="section" id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p><cite>gesundheit</cite> is installed via npm just as you&#8217;d expect:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">npm</span> <span class="nx">install</span> <span class="o">--</span><span class="nx">save</span> <span class="nx">gesundheit</span>
+</pre></div>
+</div>
+<p>In addition to <cite>gesundheit</cite> itself, you will need to install any database
+drivers you plan on using:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">npm</span> <span class="nx">install</span> <span class="o">--</span><span class="nx">save</span> <span class="nx">any</span><span class="o">-</span><span class="nx">db</span><span class="o">-</span><span class="p">{</span><span class="nx">mysql</span><span class="p">,</span><span class="nx">postgres</span><span class="p">,</span><span class="nx">sqlite3</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-a-query-object">
+<h2>Creating a Query object<a class="headerlink" href="#creating-a-query-object" title="Permalink to this headline">¶</a></h2>
+<p>The main interface for building queries with <cite>gesundheit</cite> are the query manager
+classes. They provide an API designed to make most query building operations
+concise and fluent, while under the hood they manage an abstract syntax tree
+for the query.</p>
+</div>
+<div class="section" id="creating-a-query-manager">
+<h2>Creating a query manager<a class="headerlink" href="#creating-a-query-manager" title="Permalink to this headline">¶</a></h2>
+<p>All of the query managers are created with functions named after the query type
+that take a table (or <a class="reference internal" href="#using-aliases"><em>alias</em></a>) as their first
+parameter. To demonstrate we will create a simple select query:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">select = </span><span class="nx">require</span><span class="p">(</span><span class="s">&#39;gesundheit&#39;</span><span class="p">).</span><span class="nx">select</span>
+<span class="nv">departments = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This creates a new <a class="reference internal" href="query_building_api.html#queries/select::SelectQuery" title="queries/select::SelectQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SelectQuery</span></tt></a> query instance that
+generates the SQL string <tt class="docutils literal"><span class="pre">SELECT</span> <span class="pre">*</span> <span class="pre">FROM</span> <span class="pre">departments</span></tt>. To refine the field
+list we call <a class="reference internal" href="query_building_api.html#queries/select::SelectQuery.fields" title="queries/select::SelectQuery.fields"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SelectQuery.fields</span></tt></a>:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">departments</span><span class="p">.</span><span class="nx">fields</span><span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;manager_id&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It&#8217;s important to note that all of the query manager methods modify the query
+<strong>in-place</strong> <a class="footnote-reference" href="#id3" id="id1">[1]</a> so <tt class="docutils literal"><span class="pre">departments</span></tt> will now render to <tt class="docutils literal"><span class="pre">SELECT</span>
+<span class="pre">departments.name,</span> <span class="pre">departments.manager_id</span> <span class="pre">FROM</span> <span class="pre">departments</span></tt>.</p>
+</div>
+<div class="section" id="compiling-executing">
+<h2>Compiling &amp; Executing<a class="headerlink" href="#compiling-executing" title="Permalink to this headline">¶</a></h2>
+<p>To turn the query object into a SQL string and array of bound parameters, we
+<tt class="docutils literal"><span class="pre">.compile</span></tt> the query:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">assert</span><span class="p">.</span><span class="nx">deepEqual</span><span class="p">(</span>
+  <span class="nx">departments</span><span class="p">.</span><span class="nx">compile</span><span class="p">(),</span>
+  <span class="p">[</span> <span class="s">&#39;SELECT name, manager_id FROM departments&#39;</span><span class="p">,</span> <span class="p">[]</span> <span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><cite>(there are no parameters to our query yet)</cite></p>
+<p>Most often you don&#8217;t really care about the SQL string and params themselves, but
+want result of performing the query on an actual database. In that case you
+simply use the <tt class="docutils literal"><span class="pre">.execute</span></tt> method:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">execute</span><span class="p">(</span><span class="nx">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">})</span>
+</pre></div>
+</div>
+<p>&#8220;but...&#8221; you might be saying, &#8220;gesundheit can&#8217;t know how connect to my database
+all on it&#8217;s own!&#8221; and you are 100% correct. In order to execute against a real
+database the query must be <cite>bound</cite> to an <a class="reference internal" href="engines_and_binding.html#engine::Engine" title="engine::Engine"><tt class="xref coffee coffee-class docutils literal"><span class="pre">Engine</span></tt></a>. Queries are
+<cite>bound</cite> to an engine when they are first created, and will rely on that engine
+when asked to render and/or execute. <a class="footnote-reference" href="#id4" id="id2">[2]</a></p>
+</div>
+<div class="section" id="using-a-real-database">
+<span id="engine-usage-example"></span><h2>Using a real database<a class="headerlink" href="#using-a-real-database" title="Permalink to this headline">¶</a></h2>
+<p>So far, we have been using the built-in <tt class="docutils literal"><span class="pre">fake</span></tt> engine, which does nothing
+but render SQL strings. In order to use a real database, we need to create our
+own engine object to use:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">var</span> <span class="nv">gesundheit = </span><span class="nx">require</span><span class="p">(</span><span class="s">&#39;gesundheit&#39;</span><span class="p">)</span>
+
+<span class="nx">var</span> <span class="nv">db = </span><span class="nx">gesundheit</span><span class="p">.</span><span class="nx">engine</span><span class="p">(</span><span class="s">&#39;postgres://localhost/test&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The database URL above can point to any database supported by <a class="reference external" href="https://github.com/grncdr/node-any-db">Any-DB</a>, which
+includes MySQL, Postgres, and SQLite3.</p>
+<p>The <cite>engine</cite> we just created (named <tt class="docutils literal"><span class="pre">db</span></tt>) is a query factory. We can create
+queries using <tt class="docutils literal"><span class="pre">select</span></tt>, <tt class="docutils literal"><span class="pre">insert</span></tt>, <tt class="docutils literal"><span class="pre">update</span></tt> or <tt class="docutils literal"><span class="pre">delete</span></tt> as methods:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">var</span> <span class="nv">departments = </span><span class="nx">db</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;manager_id&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Since it&#8217;s common to use only a single database in your application, you can
+set the global default engine for the module like so:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">gesundheit.defaultEngine = </span><span class="nx">db</span>
+<span class="c1"># This is now equivalent to db.select(...)</span>
+<span class="nx">gesundheit</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;manager_id&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="aliasing-tables-and-fields">
+<span id="using-aliases"></span><h2>Aliasing tables and fields<a class="headerlink" href="#aliasing-tables-and-fields" title="Permalink to this headline">¶</a></h2>
+<p>Any function that accepts a <tt class="docutils literal"><span class="pre">table</span></tt> or <tt class="docutils literal"><span class="pre">field</span></tt> parameter will accept a
+string, an instance of the appropriate AST node type, or an <cite>alias object</cite>.
+Alias objects are objects with a single key-value pair where the key is an
+alias name and the value is the object to be aliased. So the alias object
+<tt class="docutils literal"><span class="pre">{p:</span> <span class="pre">'people'}</span></tt> will generate the SQL string <tt class="docutils literal"><span class="pre">people</span> <span class="pre">AS</span> <span class="pre">p</span></tt>. Here is an
+example of aliasing table and field names:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="c1"># SELECT manager_id AS m_id FROM departments AS d;</span>
+<span class="nx">select</span><span class="p">({</span><span class="nv">d: </span><span class="s">&#39;departments&#39;</span><span class="p">},</span> <span class="p">[{</span><span class="nv">m_id: </span><span class="s">&#39;manager_id&#39;</span><span class="p">}])</span>
+</pre></div>
+</div>
+<p><em>(This example also shows passing a list of fields to
+:func:`~queries/index::SELECT` as the second parameter).</em></p>
+<p>Conversely, if you are using <a class="reference internal" href="query_building_api.html#queries/sud::SUDQuery.column" title="queries/sud::SUDQuery.column"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.column</span></tt></a> to return a
+<tt class="xref coffee coffee-class docutils literal"><span class="pre">Column</span></tt> node, you can use <tt class="xref coffee coffee-meth docutils literal"><span class="pre">Column.as</span></tt> to
+return an aliased version of the node:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">var</span> <span class="nv">q = </span><span class="nx">select</span><span class="p">(</span><span class="s">&#39;departments&#39;</span><span class="p">)</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">fields</span><span class="p">(</span><span class="nx">q</span><span class="p">.</span><span class="nx">c</span><span class="p">(</span><span class="s">&#39;manager_id&#39;</span><span class="p">).</span><span class="nx">as</span><span class="p">(</span><span class="s">&#39;m_id&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>This also works with <tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt> and <tt class="xref coffee coffee-class docutils literal"><span class="pre">SqlFunction</span></tt>
+instances (as returned by <a class="reference internal" href="nodes.html#nodes::sqlFunction" title="nodes::sqlFunction"><tt class="xref coffee coffee-func docutils literal"><span class="pre">sqlFunction</span></tt></a>).</p>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Use <a class="reference internal" href="query_building_api.html#queries/base::BaseQuery.copy" title="queries/base::BaseQuery.copy"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.copy</span></tt></a> if you want to generate
+multiple independent refinements from a single query instance.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>Actually, queries can be rebound with <a class="reference internal" href="query_building_api.html#queries/base::BaseQuery.bind" title="queries/base::BaseQuery.bind"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">BaseQuery.bind</span></tt></a>,
+but this should only be used if you know what you&#8217;re doing and why.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="a-quick-note-on-async-errors-and-throw">
+<h2>A quick note on async, errors and <tt class="docutils literal"><span class="pre">throw</span></tt><a class="headerlink" href="#a-quick-note-on-async-errors-and-throw" title="Permalink to this headline">¶</a></h2>
+<p><strong>Gesundheit throws exceptions at pretty much every opportunity</strong>. The only time
+an error is returned to a callback or emitted via event emitter is when a query
+is actually executed. Any error that <cite>gesundheit</cite> can detect at query building
+time will cause an exception to be thrown. This keeps the query building API&#8217;s
+straightforward and synchronous, and means <cite>gesundheit</cite> can prevent your code from
+continuing to run with an obviously broken query.</p>
+</div>
+</div>
+
+
+    </div>
+     
+  </div>
+</div> 
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2012, Stephen Sugden.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2b1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

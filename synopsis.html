@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>API summary &mdash; gesundheit 0.8.10 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap-responsive.min.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.8.10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-2.3.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="gesundheit 0.8.10 documentation" href="index.html" />
+    <link rel="next" title="Getting Started" href="getting_started.html" />
+    <link rel="prev" title="Gesundheit!" href="index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body> 
+
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+
+        <a class="brand" href="index.html">gesundheit</a>
+        <span class="navbar-text pull-left"><b>0.8</b></span>
+
+        <div class="nav-collapse">
+          <ul class="nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">API summary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="query_building_api.html">Query Building API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="engines_and_binding.html">Engines and Binding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dialects.html">Dialects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">API summary</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li><a href="index.html"
+         title="Previous Chapter: Gesundheit!">&laquo; Gesundheit!</a></li>
+  <li><a href="getting_started.html"
+         title="Next Chapter: Getting Started">Getting Started &raquo;</a></li>
+              
+            
+            
+            
+            
+              <li>
+  <a href="_sources/synopsis.txt"
+     rel="nofollow">Source</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-search pull-right" action="search.html" method="get">
+  <input type="text" name="q" class="search-query" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row"> 
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><ul>
+<li><a class="reference internal" href="#">API summary</a></li>
+</ul>
+<h3>Project Links</h3>
+<ul>
+
+<li><a href="index.html">Documentation Index</a></li>
+<li><a href="http://github.com/BetSmartMedia/gesundheit">Source on Github</a></li>
+
+</ul><h3>Brought to you by:</h3>
+<p>
+  <img class="logo" src="_static/logo.png" alt="Logo"/>
+</p>
+        </div>
+      </div> 
+    <div class="span9">
+      
+  <div class="section" id="module-index::">
+<span id="api-summary"></span><h1>API summary<a class="headerlink" href="#module-index::" title="Permalink to this headline">¶</a></h1>
+<p>There are a few subsystems that make up gesundheit, but the majority of use
+cases will be covered by using the following properties of the main module:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt><strong>gesundheit.{Select, SELECT, select}</strong></dt>
+<dd>Function for creating new <a class="reference internal" href="query_building_api.html#queries/select::SelectQuery" title="queries/select::SelectQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">SelectQuery</span></tt></a> instances.</dd>
+<dt><strong>gesundheit.{Update, UPDATE, update}</strong></dt>
+<dd>Function for creating new <a class="reference internal" href="query_building_api.html#queries/update::UpdateQuery" title="queries/update::UpdateQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">UpdateQuery</span></tt></a> instances.</dd>
+<dt><strong>gesundheit.{Delete, DELETE, delete}</strong></dt>
+<dd>Function for creating new <a class="reference internal" href="query_building_api.html#queries/delete::DeleteQuery" title="queries/delete::DeleteQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">DeleteQuery</span></tt></a> instances.</dd>
+<dt><strong>gesundheit.{Insert, INSERT, insert}</strong></dt>
+<dd>Function for creating new <a class="reference internal" href="query_building_api.html#queries/insert::InsertQuery" title="queries/insert::InsertQuery"><tt class="xref coffee coffee-class docutils literal"><span class="pre">InsertQuery</span></tt></a> instances.</dd>
+<dt><strong>gesundheit.engine</strong></dt>
+<dd>Function for creating new <tt class="xref coffee coffee-mod docutils literal"><span class="pre">engines</span></tt>.</dd>
+<dt><strong>gesundheit.defaultEngine</strong></dt>
+<dd>The engine that will be used for queries that aren&#8217;t explicitly bound. This
+is set to a no-op engine that you will want to replace with either an object
+returned by the <tt class="docutils literal"><span class="pre">gesundheit.engine</span></tt> function or by implementing the engine
+interface yourself.</dd>
+<dt><strong>Join types</strong></dt>
+<dd>Constant nodes for use with <tt class="xref coffee coffee-meth docutils literal"><span class="pre">SUDQuery.join</span></tt>.
+&#8216;LEFT&#8217;, &#8216;RIGHT&#8217;, &#8216;INNER&#8217;, &#8216;LEFT_OUTER&#8217;, &#8216;RIGHT_OUTER&#8217;, &#8216;FULL_OUTER&#8217;
+&#8216;NATURAL&#8217;, &#8216;CROSS&#8217;</dd>
+<dt><strong>AST helper functions</strong></dt>
+<dd><p class="first">These come from the <a class="reference external" href="#module-nodes::">nodes</a> module and are often useful
+when constructing complicated queries:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt><a class="reference internal" href="nodes.html#nodes::toParam" title="nodes::toParam"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toParam</span></tt></a></dt>
+<dd>Convert any object to a parameter placeholder.</dd>
+<dt><a class="reference internal" href="nodes.html#nodes::toRelation" title="nodes::toRelation"><tt class="xref coffee coffee-func docutils literal"><span class="pre">toRelation</span></tt></a></dt>
+<dd>Convert various inputs to <tt class="xref coffee coffee-class docutils literal"><span class="pre">Relation</span></tt> nodes.</dd>
+<dt><a class="reference internal" href="nodes.html#nodes::binaryOp" title="nodes::binaryOp"><tt class="xref coffee coffee-func docutils literal"><span class="pre">binaryOp</span></tt></a></dt>
+<dd>Create a binary comparison node manually.  (e.g. for postgres&#8217; custom
+operators).</dd>
+<dt><a class="reference internal" href="nodes.html#nodes::sqlFunction" title="nodes::sqlFunction"><tt class="xref coffee coffee-func docutils literal"><span class="pre">sqlFunction</span></tt></a></dt>
+<dd>Create SQL function calls (e.g. <tt class="docutils literal"><span class="pre">MAX(last_update)</span></tt>)</dd>
+<dt><a class="reference internal" href="nodes.html#nodes::text" title="nodes::text"><tt class="xref coffee coffee-func docutils literal"><span class="pre">text</span></tt></a></dt>
+<dd>Include raw SQL in a query, with parameter placeholders.</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
+<p>If you are implementing support for a different database engine or constructing
+particularly unusual SQL statements, you might also want to make use of these:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt><strong>gesundheit.nodes</strong></dt>
+<dd>The <cite>nodes &lt;Nodes&gt;</cite> module.</dd>
+<dt><strong>gesundheit.dialects</strong></dt>
+<dd>The <cite>dialects &lt;Dialects&gt;</cite> module.</dd>
+</dl>
+</div></blockquote>
+</div>
+
+
+    </div>
+     
+  </div>
+</div> 
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2012, Stephen Sugden.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2b1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

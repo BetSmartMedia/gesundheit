@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Client-side usage - Experimental &mdash; gesundheit 0.8.10 documentation</title>
+    <title>Client-side usage - Experimental &mdash; gesundheit 0.9.0 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.8.10',
+        VERSION:     '0.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -30,7 +30,7 @@
     <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="_static/bootstrap-2.3.2/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="gesundheit 0.8.10 documentation" href="index.html" />
+    <link rel="top" title="gesundheit 0.9.0 documentation" href="index.html" />
     <link rel="prev" title="Nodes" href="nodes.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
@@ -51,7 +51,7 @@
         </button>
 
         <a class="brand" href="index.html">gesundheit</a>
-        <span class="navbar-text pull-left"><b>0.8</b></span>
+        <span class="navbar-text pull-left"><b>0.9</b></span>
 
         <div class="nav-collapse">
           <ul class="nav">
@@ -174,12 +174,12 @@ additional projects are envisaged that will make this much easier to use.</p>
 <blockquote>
 <div><ol class="arabic">
 <li><dl class="first docutils">
-<dt>A &#8220;compiler&#8221; of sorts that creates a visitor object using a declarative</dt>
-<dd><p class="first last">access policy description.</p>
+<dt>A &#8220;compiler&#8221; that creates a validation visitor from a declarative access</dt>
+<dd><p class="first last">policy description.</p>
 </dd>
 </dl>
 </li>
-<li><p class="first">An engine implementation sends queries over HTTP.</p>
+<li><p class="first">In-browser engine implementations that send queries over HTTP.</p>
 </li>
 <li><dl class="first docutils">
 <dt>A server-side &#8220;bridge&#8221; component that can handle HTTP requests from #2</dt>
@@ -189,8 +189,9 @@ additional projects are envisaged that will make this much easier to use.</p>
 </li>
 </ol>
 </div></blockquote>
-<p>Each of these could be published separately from Gesundheit itself, which is
-already quite large.</p>
+<p>Each of these could be implemented by anybody who&#8217;s interested, and published
+separately from Gesundheit itself, which is already significantly larger than I
+would like it to be.</p>
 </div>
 </div>
 
@@ -224,7 +225,7 @@ already quite large.</p>
     <pre class=params></pre>
   </div>
 </div>
-<script src="_static/bundle.js"></script>
+<script src="_static/gesundheit-standalone.js"></script>
 <script src="_static/try-it-now.js"></script>
 </script>
   

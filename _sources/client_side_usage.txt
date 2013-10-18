@@ -62,13 +62,15 @@ Missing Batteries
 This approach currently leaves most of the hard work up to the end user. Several
 additional projects are envisaged that will make this much easier to use.
 
-    1. A "compiler" of sorts that creates a visitor object using a declarative
-           access policy description.
-           
-    2. An engine implementation sends queries over HTTP.
+    1. A "compiler" that creates a validation visitor from a declarative access
+           policy description.
+
+    2. In-browser engine implementations that send queries over HTTP.
 
     3. A server-side "bridge" component that can handle HTTP requests from #2
            and enforce an access policy using #1.
 
-Each of these could be published separately from Gesundheit itself, which is
-already quite large.
+Each of these could be implemented by anybody who's interested, and published
+separately from Gesundheit itself, which is already significantly larger than I
+would like it to be.
+

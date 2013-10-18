@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Client-side usage - Experimental &mdash; gesundheit 0.8.10 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/local-overrides.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-2.3.2/css/bootstrap-responsive.min.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.8.10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-2.3.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="gesundheit 0.8.10 documentation" href="index.html" />
+    <link rel="prev" title="Nodes" href="nodes.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+
+        <a class="brand" href="index.html">gesundheit</a>
+        <span class="navbar-text pull-left"><b>0.8</b></span>
+
+        <div class="nav-collapse">
+          <ul class="nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Contents <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">API summary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="query_building_api.html">Query Building API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="engines_and_binding.html">Engines and Binding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dialects.html">Dialects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Client-side usage - Experimental</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Client-side usage - Experimental</a><ul>
+<li><a class="reference internal" href="#securely-executing-queries-from-untrusted-sources">Securely executing queries from untrusted sources</a></li>
+<li><a class="reference internal" href="#missing-batteries">Missing Batteries</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+<li>
+  <a data-toggle="modal" href="#try-it-modal">Try it now!</a>
+</li>
+
+            
+          </ul>
+
+          
+            
+<form class="navbar-search pull-right" action="search.html" method="get">
+  <input type="text" name="q" class="search-query" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="span12">
+      
+  <div class="section" id="client-side-usage-experimental">
+<h1>Client-side usage - Experimental<a class="headerlink" href="#client-side-usage-experimental" title="Permalink to this headline">¶</a></h1>
+<p>Starting with version 0.9, Gesundheit can be used in the browser with
+<a class="reference external" href="https://github.com/substack/node-browserify">Browserify</a>. There are also
+precompiled standalone bundles (available on Github) that declare a
+<tt class="docutils literal"><span class="pre">gesundheit</span></tt> global variable.</p>
+<p>Because it is not possible to connect directly to a database server over a
+socket from the browser, queries created in the browser will need to be sent to
+some sort of server-side component for execution.</p>
+<div class="section" id="securely-executing-queries-from-untrusted-sources">
+<h2>Securely executing queries from untrusted sources<a class="headerlink" href="#securely-executing-queries-from-untrusted-sources" title="Permalink to this headline">¶</a></h2>
+<p>The idea of executing arbitrary SQL statements sent to your web-app should be
+setting off all kinds of alarm bells. Luckily, Gesundheit provides a better
+alternative. Instead of sending queries as an opaque string, a browser-based
+client instead sends a serialized AST. On the server side this datastructure
+is unmarshalled back into a Gesundheit query object.</p>
+<p>This is an improvement over arbitrary text, but it&#8217;s still not really providing
+any <cite>security</cite>; A user can construct an awful lot of malicious queries using
+Gesundheit.</p>
+<p>The next layer of security is pluggable via the <tt class="docutils literal"><span class="pre">visitor</span></tt> argument to
+<tt class="docutils literal"><span class="pre">gesundheit.unmarshaller(visitor,</span> <span class="pre">data)</span></tt>. This <tt class="docutils literal"><span class="pre">visitor</span></tt> object can
+interact with and/or abort the unmarshalling process. For example:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">var</span> <span class="nv">allowedTables = </span><span class="p">[</span><span class="s">&#39;free_for_all&#39;</span><span class="p">,</span> <span class="s">&#39;delete_my_records&#39;</span><span class="p">];</span>
+<span class="nx">var</span> <span class="nv">checkTableName = </span><span class="p">{</span>
+  <span class="nv">before: </span><span class="nx">function</span> <span class="p">(</span><span class="nx">nodeData</span><span class="p">,</span> <span class="nx">path</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">nodeData</span><span class="p">.</span><span class="nx">_type</span> <span class="o">==</span> <span class="s">&#39;Relation&#39;</span>
+        <span class="o">&amp;&amp;</span> <span class="nx">allowedTables</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">nodeData</span><span class="p">.</span><span class="nx">value</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s">&quot;Access denied&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">var</span> <span class="nv">userInput = </span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">arbitraryString</span><span class="p">);</span>
+<span class="nx">var</span> <span class="nv">query = </span><span class="nx">gesundheit</span><span class="p">.</span><span class="nx">unmarshaller</span><span class="p">(</span><span class="nx">checkTableNames</span><span class="p">,</span> <span class="nx">userInput</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>If a query attempts to access any table that is not listed in <tt class="docutils literal"><span class="pre">allowedTables</span></tt>
+an error will be thrown. The above could also be written using the <tt class="docutils literal"><span class="pre">after</span></tt>
+hook:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">var</span> <span class="nv">allowedTables = </span><span class="p">[</span><span class="s">&#39;free_for_all&#39;</span><span class="p">,</span> <span class="s">&#39;delete_my_records&#39;</span><span class="p">];</span>
+<span class="nx">var</span> <span class="nv">checkTableName = </span><span class="p">{</span>
+  <span class="nv">after: </span><span class="nx">function</span> <span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">path</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">node</span> <span class="k">instanceof</span> <span class="nx">gesundheit</span><span class="p">.</span><span class="nx">nodes</span><span class="p">.</span><span class="nx">Relation</span><span class="p">)</span>
+        <span class="o">&amp;&amp;</span> <span class="nx">allowedTables</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">value</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s">&quot;Access denied&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="missing-batteries">
+<h2>Missing Batteries<a class="headerlink" href="#missing-batteries" title="Permalink to this headline">¶</a></h2>
+<p>This approach currently leaves most of the hard work up to the end user. Several
+additional projects are envisaged that will make this much easier to use.</p>
+<blockquote>
+<div><ol class="arabic">
+<li><dl class="first docutils">
+<dt>A &#8220;compiler&#8221; of sorts that creates a visitor object using a declarative</dt>
+<dd><p class="first last">access policy description.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">An engine implementation sends queries over HTTP.</p>
+</li>
+<li><dl class="first docutils">
+<dt>A server-side &#8220;bridge&#8221; component that can handle HTTP requests from #2</dt>
+<dd><p class="first last">and enforce an access policy using #1.</p>
+</dd>
+</dl>
+</li>
+</ol>
+</div></blockquote>
+<p>Each of these could be published separately from Gesundheit itself, which is
+already quite large.</p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+  <div id="try-it-modal"
+     class="modal hide fade"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="try-it-modal-label"
+     aria-hidden="true"
+    s>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="try-it-modal-label">Try Gesundheit</h3>
+  </div>
+  <div class="modal-body">
+    <p>All functions exported by gesundheit are available as globals
+    below.</p>
+    <p>Returning a Gesundheit object (such as a query or AST node) will cause
+    it to be compiled and the resulting SQL + parameters displayed</p>
+    <textarea class=code
+              style="width: 98%; height: 10em; font-family:monospace"
+              >return select('t1', ['*'])
+  .join('t2', {on: {id: toColumn('t1.t2_id')}})
+</textarea>
+    <pre class=sql></pre>
+    <pre class=params></pre>
+  </div>
+</div>
+<script src="_static/bundle.js"></script>
+<script src="_static/try-it-now.js"></script>
+</script>
+  
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2012, Stephen Sugden.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2b1.<br/>
+    </p>
+  </div>
+</footer>
+
+  </body>
+</html>

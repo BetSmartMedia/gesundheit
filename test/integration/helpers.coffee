@@ -60,10 +60,19 @@ exports.eachEngine = (testName, tables, callback) ->
         callback db, t
 
 createTables = (conn, tables, callback) ->
+  bailed = false
+
+  handleError = (err) ->
+    if err and not bailed
+      callback(err)
+      bailed = true
+
+  ignoreError = (err) -> return # do nothing
+
   queries = for table, definition of tables
     columns = for col, type of definition
       "#{col} #{type}"
-    conn.query "DROP TABLE IF EXISTS #{table}"
-    conn.query("CREATE TABLE #{table} (#{columns.join(', ')})")
+    conn.query "DROP TABLE IF EXISTS #{table}", ignoreError
+    conn.query "CREATE TABLE #{table} (#{columns.join(', ')})", handleError
 
   queries.pop().once('end', callback.bind(null, null))

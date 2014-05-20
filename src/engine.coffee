@@ -1,5 +1,6 @@
 url      = require('url')
 anyDB    = require('any-db')
+begin    = require('any-db-transaction')
 queries  = require('./queries/index')
 dialects = require('./dialects')
 
@@ -63,7 +64,7 @@ class Engine
 
     .. _Any-DB Transaction: https://github.com/grncdr/node-any-db/blob/master/API.md#transaction
     ###
-    tx = queries.mixinFactoryMethods(@pool.begin(callback))
+    tx = queries.mixinFactoryMethods(begin(@pool, callback))
     tx.engine = @
     tx.compile = @dialect.compile.bind(@dialect)
     tx

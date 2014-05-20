@@ -29,9 +29,11 @@
   "engines": {
     "node": ">=0.10.0"
   },
-  "peerDependencies": {
-    "any-db": "2.x",
+  "dependencies": {
     "any-db-transaction": "2.x"
+  },
+  "peerDependencies": {
+    "any-db": "2.x"
   },
   "browser": {
     "any-db": false
@@ -39,7 +41,6 @@
   "devDependencies": {
     "coffee-script": "~1.4.0",
     "any-db": "2.x",
-    "any-db-transaction": "2.x",
     "any-db-postgres": "2.x",
     "any-db-sqlite3": "2.x",
     "any-db-mysql": "2.x",

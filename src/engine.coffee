@@ -65,6 +65,12 @@ class Engine
     .. _Any-DB Transaction: https://github.com/grncdr/node-any-db/blob/master/API.md#transaction
     ###
     tx = queries.mixinFactoryMethods(begin(@pool, callback))
+    tx.begin = (cb) ->
+      child = begin(tx, cb)
+      child.engine = tx.engine
+      child.compile = tx.compile
+      queries.mixinFactoryMethods(child)
+      
     tx.engine = @
     tx.compile = @dialect.compile.bind(@dialect)
     tx

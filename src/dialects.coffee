@@ -66,7 +66,6 @@ class BaseDialect
       if allowOverride and name and custom = @dialect['render' + name]
         string = custom.call(@, node)
       else
-        debugger unless node?.compile
         string = node.compile(@, @path)
       @path.pop(node)
       return string

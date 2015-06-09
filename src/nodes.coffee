@@ -365,7 +365,7 @@ class Join extends FixedNodeSet
     {nodes} = data
     join = new @(recur(nodes[0]), recur(nodes[2]))
     for clause in nodes.slice(4)
-      join.on(clause)
+      join.on(recur(clause))
     join
 
   constructor: (@type, @relation) ->

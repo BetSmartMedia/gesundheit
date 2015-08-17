@@ -41,6 +41,21 @@ test("https://github.com/BetSmartMedia/gesundheit/issues/64", function (t) {
   t.end()
 })
 
+test("https://github.com/BetSmartMedia/gesundheit/issues/67", function (t) {
+  var q = g.select('Batch', ['id']);
+  var coalesce = g.func('COALESCE')
+
+  //'COALESCE(Batch.Reference, Batch.id) ASC'
+  q.order([
+    // outer array prevents this pair from being treated as an array of orderings.
+    [coalesce(q.c('Batch.Reference'), q.c('Batch.Id')), 'ASC']
+  ]);
+
+  t.equal(q.render(),
+          'SELECT Batch.id FROM Batch ORDER BY COALESCE(Batch.Reference, Batch.Id) ASC')
+
+  t.end()
+})
 test("https://github.com/BetSmartMedia/gesundheit/issues/69", function (t) {
   var select = g.select('t2', [g.exists(g.select('t1').where({id: 3})).as('yup')])
 

@@ -17,7 +17,52 @@ else
 
 class BaseDialect
 
+  defaultStatementOrdering =
+    Select: [
+      'distinct'
+      'projections'
+      'relations'
+      'where'
+      'groupBy'
+      'having'
+      'orderBy'
+      'limit'
+      'offset'
+    ]
+
+    Update: [
+      'relation'
+      'updates'
+      'orderBy'
+      'limit'
+      'fromList'
+      'where'
+      'returning'
+    ]
+
+    Insert: [
+      'relation'
+      'columns'
+      'data'
+      'returning'
+    ]
+
+    Delete: [
+      'relations'
+      'where'
+      'orderBy'
+      'limit'
+      'returning'
+    ]
+
   reset: ->
+
+  childOrder: (type) ->
+     ###
+     Override this define custom node ordering in your dialects. The `type`
+     argument will be 'Select', 'Update', 'Insert', or 'Delete'
+     ###
+     defaultStatementOrdering[type]
 
   compile: (root) ->
     visitor = new Visitor(@)

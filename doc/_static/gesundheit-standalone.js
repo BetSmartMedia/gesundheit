@@ -57,11 +57,26 @@ if (process.browser) {
 }
 
 BaseDialect = (function() {
-  var Visitor, doubleQuote, needsQuote;
+  var Visitor, defaultStatementOrdering, doubleQuote, needsQuote;
 
   function BaseDialect() {}
 
+  defaultStatementOrdering = {
+    Select: ['distinct', 'projections', 'relations', 'where', 'groupBy', 'having', 'orderBy', 'limit', 'offset'],
+    Update: ['relation', 'updates', 'orderBy', 'limit', 'fromList', 'where', 'returning'],
+    Insert: ['relation', 'columns', 'data', 'returning'],
+    Delete: ['relations', 'where', 'orderBy', 'limit', 'returning']
+  };
+
   BaseDialect.prototype.reset = function() {};
+
+  BaseDialect.prototype.childOrder = function(type) {
+    /*
+         Override this define custom node ordering in your dialects. The `type`
+         argument will be 'Select', 'Update', 'Insert', or 'Delete'
+    */
+    return defaultStatementOrdering[type];
+  };
 
   BaseDialect.prototype.compile = function(root) {
     var text, visitor;
@@ -831,19 +846,20 @@ Statement = (function(_super) {
 
   Statement.prefix = '';
 
-  Statement.structure = function(structure) {
+  Statement.children = function(children) {
     var _this = this;
-    this._nodeOrder = [];
-    return structure.forEach(function(_arg) {
-      var k, type;
-      k = _arg[0], type = _arg[1];
-      _this._nodeOrder.push(k);
-      _this.prototype.__defineGetter__(k, function() {
-        var _base;
-        return (_base = this._private)[k] || (_base[k] = new type);
-      });
-      return _this.prototype.__defineSetter__(k, function(v) {
-        return this._private[k] = v;
+    this._defaultOrder = Object.keys(children);
+    return this._defaultOrder.forEach(function(k) {
+      var Constructor;
+      Constructor = children[k];
+      return Object.defineProperty(_this.prototype, k, {
+        get: function() {
+          var _base;
+          return (_base = this._private)[k] || (_base[k] = new Constructor);
+        },
+        set: function(v) {
+          return this._private[k] = v;
+        }
       });
     });
   };
@@ -868,19 +884,14 @@ Statement = (function(_super) {
   };
 
   Statement.prototype.compile = function(dialect) {
-    var k, node, parts;
-    parts = (function() {
-      var _k, _len2, _ref2, _results;
-      _ref2 = this.constructor._nodeOrder;
-      _results = [];
-      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-        k = _ref2[_k];
-        if (node = this._private[k]) {
-          _results.push(dialect.compile(node));
-        }
-      }
-      return _results;
-    }).call(this);
+    var nodeOrder, parts,
+      _this = this;
+    nodeOrder = dialect.dialect.childOrder(this.constructor.name) || this.constructor._defaultOrder;
+    parts = nodeOrder.filter(function(k) {
+      return _this._private[k];
+    }).map(function(k) {
+      return dialect.compile(_this._private[k]);
+    });
     if (parts.length) {
       return this.constructor.prefix + parts.join(' ');
     } else {
@@ -1783,7 +1794,17 @@ Select = (function(_super) {
 
   Select.prefix = 'SELECT ';
 
-  Select.structure([['distinct', Distinct], ['projections', SelectColumnSet], ['relations', RelationSet], ['where', Where], ['groupBy', GroupBy], ['having', Having], ['orderBy', OrderBy], ['limit', Limit], ['offset', Offset]]);
+  Select.children({
+    'distinct': Distinct,
+    'projections': SelectColumnSet,
+    'relations': RelationSet,
+    'where': Where,
+    'groupBy': GroupBy,
+    'having': Having,
+    'orderBy': OrderBy,
+    'limit': Limit,
+    'offset': Offset
+  });
 
   Select.prototype.initialize = function(opts) {
     this.projections;
@@ -1833,7 +1854,15 @@ Update = (function(_super) {
 
   Update.prefix = 'UPDATE ';
 
-  Update.structure([['relation', Relation], ['updates', UpdateSet], ['orderBy', OrderBy], ['limit', Limit], ['fromList', RelationSet], ['where', Where], ['returning', Returning]]);
+  Update.children({
+    'relation': Relation,
+    'updates': UpdateSet,
+    'orderBy': OrderBy,
+    'limit': Limit,
+    'fromList': RelationSet,
+    'where': Where,
+    'returning': Returning
+  });
 
   Returning.extend(Update);
 
@@ -1896,7 +1925,12 @@ Insert = (function(_super) {
 
   Insert.prefix = 'INSERT INTO ';
 
-  Insert.structure([['relation', Relation], ['columns', ColumnList], ['data', InsertData], ['returning', Returning]]);
+  Insert.children({
+    'relation': Relation,
+    'columns': ColumnList,
+    'data': InsertData,
+    'returning': Returning
+  });
 
   Returning.extend(Insert);
 
@@ -1990,7 +2024,13 @@ Delete = (function(_super) {
 
   Delete.prefix = 'DELETE ';
 
-  Delete.structure([['relations', RelationSet], ['where', Where], ['orderBy', OrderBy], ['limit', Limit], ['returning', Returning]]);
+  Delete.children({
+    'relations': RelationSet,
+    'where': Where,
+    'orderBy': OrderBy,
+    'limit': Limit,
+    'returning': Returning
+  });
 
   Returning.extend(Delete);
 

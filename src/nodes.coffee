@@ -97,12 +97,14 @@ class Statement extends Node
   @prefix = ''
 
   # Define the names and type of each lazily built child node
-  @structure = (structure) ->
-    @_nodeOrder = []
-    structure.forEach ([k, type]) =>
-      @_nodeOrder.push k
-      @::__defineGetter__ k, -> @_private[k] or= new type
-      @::__defineSetter__ k, (v) -> @_private[k] = v
+  @children = (children) ->
+    @_defaultOrder = Object.keys(children)
+    @_defaultOrder.forEach (k) =>
+      Constructor = children[k]
+      Object.defineProperty @::, k, {
+        get: -> @_private[k] or= new Constructor
+        set: (v) -> @_private[k] = v
+      }
 
   @unmarshal = (data, recur) ->
     it = new @
@@ -118,8 +120,8 @@ class Statement extends Node
     @initialize = null
 
   compile: (dialect) ->
-    parts = for k in @constructor._nodeOrder when node = @_private[k]
-      dialect.compile(node)
+    nodeOrder = dialect.dialect.childOrder(@constructor.name) || @constructor._defaultOrder
+    parts = nodeOrder.filter((k) => @_private[k]).map((k) => dialect.compile(@_private[k]))
     if parts.length
       @constructor.prefix + parts.join(' ')
     else
@@ -458,17 +460,17 @@ class Select extends Statement
   ###
   @prefix = 'SELECT '
 
-  @structure [
-    ['distinct',    Distinct]
-    ['projections', SelectColumnSet]
-    ['relations',   RelationSet]
-    ['where',       Where]
-    ['groupBy',     GroupBy]
-    ['having',      Having]
-    ['orderBy',     OrderBy]
-    ['limit',       Limit]
-    ['offset',      Offset]
-  ]
+  @children {
+    'distinct':    Distinct
+    'projections': SelectColumnSet
+    'relations':   RelationSet
+    'where':       Where
+    'groupBy':     GroupBy
+    'having':      Having
+    'orderBy':     OrderBy
+    'limit':       Limit
+    'offset':      Offset
+  }
 
   initialize: (opts) ->
     @projections  # ensure we have an (empty) projection set
@@ -481,22 +483,22 @@ class Update extends Statement
   ###
 
   @UpdateSet = class UpdateSet extends NodeSet
-    # must be pre-defined for the call to @structure below
+    # must be pre-defined for the call to @children below
     constructor: (nodes) -> super nodes, ', '
     compile: (dialect) ->
       if string = super then "SET #{string}" else ""
 
   @prefix = 'UPDATE '
 
-  @structure [
-    ['relation',  Relation]
-    ['updates',   UpdateSet]
-    ['orderBy',   OrderBy]
-    ['limit',     Limit]
-    ['fromList',  RelationSet] # Optional FROM portion
-    ['where',     Where]
-    ['returning', Returning]
-  ]
+  @children {
+    'relation':  Relation
+    'updates':   UpdateSet
+    'orderBy':   OrderBy
+    'limit':     Limit
+    'fromList':  RelationSet # Optional FROM portion
+    'where':     Where
+    'returning': Returning
+  }
 
   Returning.extend(@)
 
@@ -510,7 +512,7 @@ class Insert extends Statement
   ###
 
   @InsertData = class InsertData extends NodeSet
-    # must be pre-defined for the call to @structure below
+    # must be pre-defined for the call to @children below
     glue: ', '
     compile: (dialect) ->
       if string = super then "VALUES #{string}" else ""
@@ -519,12 +521,12 @@ class Insert extends Statement
 
   @prefix = 'INSERT INTO '
 
-  @structure [
-    ['relation',  Relation]
-    ['columns',   ColumnList]
-    ['data',      InsertData]
-    ['returning', Returning]
-  ]
+  @children {
+    'relation':  Relation
+    'columns':   ColumnList
+    'data':      InsertData
+    'returning': Returning
+  }
 
   Returning.extend(@)
 
@@ -575,13 +577,13 @@ class Delete extends Statement
   The root node of a DELETE query
   ###
   @prefix = 'DELETE '
-  @structure [
-    ['relations', RelationSet]
-    ['where',     Where]
-    ['orderBy',   OrderBy]
-    ['limit',     Limit]
-    ['returning', Returning]
-  ]
+  @children {
+    'relations': RelationSet
+    'where':     Where
+    'orderBy':   OrderBy
+    'limit':     Limit
+    'returning': Returning
+  }
 
   Returning.extend(@)
 

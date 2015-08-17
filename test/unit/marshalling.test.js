@@ -2,7 +2,7 @@ var g = require('../../lib')
 var test = require('tap').test
 
 test("Marshalling", function (t) {
-  t.plan(1)
+  t.plan(2)
 
   t.test("Unmarshal visitor", function (t) {
     t.plan(2);
@@ -31,5 +31,12 @@ test("Marshalling", function (t) {
       })
       unmarshal(g.select('my_table').toJSON())
     })
+  })
+
+  t.test("Copying queries with joins", function (t) {
+    t.plan(1)
+    var q1 = g.select('first').join('second', { on: { x: 3 } })
+    var q2 = q1.copy() // marshals and unmarshals
+    t.equal(q1.render(), q2.render())
   })
 })

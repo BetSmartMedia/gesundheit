@@ -147,11 +147,22 @@ class AbstractAlias extends Node
     new @(recur(data.obj), data.alias)
 
   constructor: (@obj, @alias) ->
+
   ref: -> @alias
-  compile: (dialect) ->
-    dialect.maybeParens(dialect.compile(@obj)) + " AS " + dialect.quote(@alias)
+
+  parens: true
+
+  compile: (dialect, parents) ->
+    if @shouldRenderFull(parents)
+      left = dialect.compile(@obj)
+      if @parens then left = dialect.maybeParens(left)
+      left + " AS " + dialect.quote(@alias)
+    else
+      dialect.quote(@alias)
 
   toJSON: -> merge super, {obj: @obj.toJSON(), @alias}
+
+  shouldRenderFull: (parents) -> true
 
 # End of generic base classes
 
@@ -189,16 +200,12 @@ class SqlFunction extends Node
 class FunctionAlias extends AbstractAlias
   @patch(SqlFunction)
 
-  shouldRenderFull = (parents) ->
+  parens: false
+
+  shouldRenderFull: (parents) ->
     return false if parents.some((it) -> it instanceof Column)
     parents.some (node) ->
       node instanceof ColumnSet or node instanceof RelationSet
-
-  compile: (dialect, parents) ->
-    if shouldRenderFull(parents)
-      dialect.compile(@obj) + " AS " + dialect.quote(@alias)
-    else
-      dialect.quote(@alias)
 
 class Parameter extends ValueNode
   ###
@@ -226,11 +233,8 @@ class RelationAlias extends AbstractAlias
   ### An aliased :class:`nodes::Relation` ###
   @patch(Relation)
   project: (field) -> Relation::project.call @, field
-  compile: (dialect, parents) ->
-    if parents.some((n) -> n instanceof Column)
-      dialect.quote(@alias)
-    else
-      super
+  shouldRenderFull: (parents) ->
+    !parents.some((n) -> n instanceof Column)
 
 class Field extends Identifier
   ### A column name ###
@@ -248,13 +252,13 @@ class Column extends FixedNodeSet
     ### Return an aliased version of this column. ###
     new Alias @, alias
 
-  @Alias = class Alias extends AbstractAlias
-    ### An aliased :class:`nodes::Column` ###
-    rel: -> @obj.rel()
-    compile: (dialect, parents) ->
-      for node in parents when node instanceof ColumnSet
-        return dialect.compile(@obj) + " AS " + dialect.quote(@alias)
-      dialect.quote(@alias)
+class ColumnAlias extends AbstractAlias
+  ### An aliased :class:`nodes::Column` ###
+  @patch(Column)
+  rel: -> @obj.rel()
+  parens: false
+  shouldRenderFull: (parents) ->
+    parents.some (node) -> node instanceof ColumnSet
 
 class Limit extends IntegerNode
   compile: ->

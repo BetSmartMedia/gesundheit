@@ -24,6 +24,23 @@ test("https://github.com/BetSmartMedia/gesundheit/issues/21", function (t) {
   t.end()
 })
 
+test("https://github.com/BetSmartMedia/gesundheit/issues/64", function (t) {
+  var sum = g.func('sum')
+  var count = g.func('count')
+
+  var q = g.select('t1', [
+    sum(g.text('c1')).as('r1'),
+    count(g.text('c2')).as('r2')
+  ])
+  
+  t.equal(q.copy().groupBy(g.text("r1")).render(),
+          'SELECT sum(c1) AS r1, count(c2) AS r2 FROM t1 GROUP BY r1')
+
+  t.equal(q.copy().groupBy("r1").render(),
+          'SELECT sum(c1) AS r1, count(c2) AS r2 FROM t1 GROUP BY t1.r1')
+  t.end()
+})
+
 test("https://github.com/BetSmartMedia/gesundheit/issues/69", function (t) {
   var select = g.select('t2', [g.exists(g.select('t1').where({id: 3})).as('yup')])
 

@@ -3105,7 +3105,7 @@ module.exports = SelectQuery = (function(_super) {
     var field, _i, _len;
     for (_i = 0, _len = fields.length; _i < _len; _i++) {
       field = fields[_i];
-      this.q.groupBy.addNode(this.column(field));
+      this.q.groupBy.addNode(field instanceof Node ? field : this.column(field));
     }
     return null;
   };
@@ -3334,20 +3334,9 @@ module.exports = SUDQuery = (function(_super) {
         will be treated as a field and each value as a direction.
     */
 
-    var direction, name, orderBy, orderings, push, rel, _i, _len, _ref, _results,
-      _this = this;
+    var direction, name, orderBy, orderings, rel, _i, _len, _ref, _results;
     rel = this.defaultRel();
     orderings = [];
-    push = function(name, direction) {
-      var column;
-      if (typeof name === 'string') {
-        return column = _this.column(name);
-      } else if (name instanceof Node) {
-        return column = name;
-      } else {
-        throw new Error("Can't turn " + name + " into an ordering");
-      }
-    };
     _results = [];
     for (_i = 0, _len = args.length; _i < _len; _i++) {
       orderBy = args[_i];

@@ -145,7 +145,7 @@ module.exports = class SelectQuery extends SUDQuery
 
   groupBy: (fields) ->
     ### Add a GROUP BY to the query. ###
-    @q.groupBy.addNode(@column(field)) for field in fields
+    @q.groupBy.addNode(if field instanceof Node then field else @column(field)) for field in fields
     null
 
   having: (constraint) ->

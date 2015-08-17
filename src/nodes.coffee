@@ -432,6 +432,26 @@ class Ordering extends FixedNodeSet
     direction = new ValueNode(direction) if typeof direction is 'string'
     super [projection, direction]
 
+class SubQuery extends Node
+  constructor: (@statement) ->
+    unless @statement instanceof Statement
+      throw new Error "#{@statement} is not a Statement"
+
+  compile: (dialect) ->
+    @statement.compile(dialect)
+
+  toJSON: ->
+    {_type: @constructor.name, statement: @statement}
+
+  copy: ->
+    unmarshal @toJSON()
+
+class SubQueryAlias extends AbstractAlias
+  @patch(SubQuery)
+
+  shouldRenderFull: (parents) ->
+    !parents.slice(0, -1).some (node) -> node instanceof AbstractAlias or node instanceof Binary
+
 class Select extends Statement
   ###
   The root node of a SELECT query
@@ -649,7 +669,7 @@ toRelation = (it) ->
   **Throws Errors** if the input is not valid.
   ###
   switch it.constructor
-    when Relation, Relation.Alias, SqlFunction, SqlFunction.Alias then it
+    when Relation, Relation.Alias, SqlFunction, SqlFunction.Alias, SubQuery.Alias then it
     when String then new Relation it
     when Object
       if alias = getAlias it
@@ -855,6 +875,7 @@ module.exports = {
   GroupBy
   OrderBy
   Ordering
+  SubQuery
   Select
   Update
   UpdateSet: Update.UpdateSet

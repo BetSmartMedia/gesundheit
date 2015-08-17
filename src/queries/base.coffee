@@ -1,7 +1,7 @@
 {inspect}      = require 'util'
 {EventEmitter} = require 'events'
-{toRelation}   = require '../nodes'
 assert         = require 'assert'
+nodes          = require '../nodes'
 
 
 module.exports = class BaseQuery extends EventEmitter
@@ -30,6 +30,9 @@ module.exports = class BaseQuery extends EventEmitter
     ### Instantiate a new query with a deep copy of this ones AST ###
     query = new @constructor @engine, rootNode: @q.copy()
     if (fn) then query.visit(fn) else query
+
+  as: (alias) ->
+    new nodes.SubQuery(@q).as(alias)
 
   visit: (fn) ->
     ###

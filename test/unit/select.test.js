@@ -202,6 +202,22 @@ test("SELECT queries", function (t) {
     t.end()
   })
 
+  t.test("Joining subqueries", function (t) {
+    var sum = g.func("SUM")
+    var innr = select('innr', ['outr_id', sum(g.text('metric')).as('total')]).groupBy('outr_id');
+    var outr = select('outr', ['*'])
+    outr.join(innr.as('innr'), {
+      on: { outr_id: outr.c('id') },
+      fields: [{total: 'total'}]
+    });
+    t.equal(outr.render(), [
+      "SELECT outr.*, innr.total AS total FROM outr INNER JOIN",
+      "(SELECT innr.outr_id, SUM(metric) AS total FROM innr GROUP BY innr.outr_id) AS innr",
+      "ON (innr.outr_id = outr.id)"
+    ].join(' '))
+    t.end()
+  });
+
   t.test("misc. SELECT tricks", function (t) {
     var q = select('t1', ['col1', 'col2'])
     t.equal(q.render(),

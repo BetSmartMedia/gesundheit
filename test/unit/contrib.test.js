@@ -24,3 +24,12 @@ test("https://github.com/BetSmartMedia/gesundheit/issues/21", function (t) {
   t.end()
 })
 
+test("https://github.com/BetSmartMedia/gesundheit/issues/69", function (t) {
+  var select = g.select('t2', [g.exists(g.select('t1').where({id: 3})).as('yup')])
+
+  t.deepEqual(select.compile(), [
+    'SELECT (EXISTS (SELECT * FROM t1 WHERE t1.id = $1)) AS yup FROM t2',
+    [3]
+  ])
+  t.end()
+})

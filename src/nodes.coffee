@@ -694,7 +694,14 @@ sqlFunction = (name, args) ->
       count = g.sqlFunction('count', [g.text('*')])
 
   ###
-  new SqlFunction name, new Tuple(args.map(toParam))
+  args = args.map(toParam)
+
+  if args.length is 1 and args[0] instanceof Tuple and args[0].nodes.length is 1
+    args = args[0]
+  else
+    args = new Tuple(args)
+
+  new SqlFunction name, args
 
 func = (name) ->
   ###
@@ -771,6 +778,9 @@ binaryOp = (left, op, right) ->
 class Prefixed extends ValueNode
   constructor: (@prefix, @node) ->
   compile: -> @prefix + @node.compile.apply(@node, arguments)
+
+class PrefixedAlias extends AbstractAlias
+  @patch(Prefixed)
 
 exists = (subquery) ->
   ### Create an ``EXISTS (<subquery>)`` node for `where` ###

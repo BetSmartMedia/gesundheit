@@ -138,26 +138,34 @@ module.exports = class SUDQuery extends BaseQuery
     ###
     rel = @defaultRel()
     orderings = []
-    for orderBy in args
-      switch orderBy.constructor
-        when String
-          orderings.push orderBy.split ' '
-        when Object
-          for name, dir of orderBy
-            orderings.push [name, dir]
-        else
-          if orderBy instanceof Node
-            @q.orderBy.addNode orderBy
-          else
-            throw new Error "Can't turn #{orderBy} into an ordering"
 
-    for [field, direction] in orderings
+    for orderBy in args
+      [name, direction] = if typeof orderBy == 'string'
+        orderBy.split ' '
+      else if !orderBy or typeof orderBy != 'object'
+        throw new Error "Can't turn #{orderBy} into an ordering"
+      else if Array.isArray(orderBy)
+        orderBy
+      else
+        [orderBy, '']
+
       direction = switch (direction || '').toLowerCase()
         when 'asc',  'ascending'  then 'ASC'
         when 'desc', 'descending' then 'DESC'
         when '' then ''
         else throw new Error "Unsupported ordering direction #{direction}"
-      @q.orderBy.addNode new Ordering(@column(field), direction)
+
+      if !name
+        throw new Error "No name given for ordering #{orderBy}"
+      else if typeof name == 'string'
+        # order('col ASC')
+        @q.orderBy.addNode new Ordering(@column(name), direction)
+      else if name instanceof Node
+        # order(someNode), orderBy([[someNode, 'ASC']])
+        @q.orderBy.addNode new Ordering(name, direction)
+      else
+        # order({ col: 'ASC' })
+        @order Object.keys(name).map((n) -> [n, name[n]])
 
   limit: (l) ->
     ### Set the LIMIT on this query ###

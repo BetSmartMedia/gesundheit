@@ -612,7 +612,7 @@ exported from this module so you can constructed and assemble them manually if
 you need to.
 */
 
-var AbstractAlias, And, Binary, CONST_NODES, Column, ColumnSet, ComparableMixin, Delete, Distinct, Field, FixedNodeSet, FunctionAlias, GroupBy, Having, Identifier, Insert, IntegerNode, JOIN_TYPES, Join, JoinType, Limit, Node, NodeSet, Offset, Or, OrderBy, Ordering, Parameter, ParenthesizedNodeSet, Prefixed, PrefixedAlias, Relation, RelationAlias, RelationSet, Returning, Select, SelectColumnSet, SqlFunction, Statement, TextAlias, TextNode, Tuple, Update, ValueNode, Where, binaryOp, copy, ctor, exists, func, getAlias, merge, name, notExists, sqlFunction, text, toColumn, toField, toParam, toProjection, toRelation, tuple, unmarshal, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2,
+var AbstractAlias, And, Binary, CONST_NODES, Column, ColumnAlias, ColumnSet, ComparableMixin, Delete, Distinct, Field, FixedNodeSet, FunctionAlias, GroupBy, Having, Identifier, Insert, IntegerNode, JOIN_TYPES, Join, JoinType, Limit, Node, NodeSet, Offset, Or, OrderBy, Ordering, Parameter, ParenthesizedNodeSet, Prefixed, PrefixedAlias, Relation, RelationAlias, RelationSet, Returning, Select, SelectColumnSet, SqlFunction, Statement, SubQuery, SubQueryAlias, TextAlias, TextNode, Tuple, Update, ValueNode, Where, binaryOp, copy, ctor, exists, func, getAlias, merge, name, notExists, sqlFunction, text, toColumn, toField, toParam, toProjection, toRelation, tuple, unmarshal, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   __slice = [].slice;
@@ -947,8 +947,19 @@ AbstractAlias = (function(_super) {
     return this.alias;
   };
 
-  AbstractAlias.prototype.compile = function(dialect) {
-    return dialect.maybeParens(dialect.compile(this.obj)) + " AS " + dialect.quote(this.alias);
+  AbstractAlias.prototype.parens = true;
+
+  AbstractAlias.prototype.compile = function(dialect, parents) {
+    var left;
+    if (this.shouldRenderFull(parents)) {
+      left = dialect.compile(this.obj);
+      if (this.parens) {
+        left = dialect.maybeParens(left);
+      }
+      return left + " AS " + dialect.quote(this.alias);
+    } else {
+      return dialect.quote(this.alias);
+    }
   };
 
   AbstractAlias.prototype.toJSON = function() {
@@ -956,6 +967,10 @@ AbstractAlias = (function(_super) {
       obj: this.obj.toJSON(),
       alias: this.alias
     });
+  };
+
+  AbstractAlias.prototype.shouldRenderFull = function(parents) {
+    return true;
   };
 
   return AbstractAlias;
@@ -1051,7 +1066,6 @@ SqlFunction = (function(_super) {
 })(Node);
 
 FunctionAlias = (function(_super) {
-  var shouldRenderFull;
 
   __extends(FunctionAlias, _super);
 
@@ -1061,7 +1075,9 @@ FunctionAlias = (function(_super) {
 
   FunctionAlias.patch(SqlFunction);
 
-  shouldRenderFull = function(parents) {
+  FunctionAlias.prototype.parens = false;
+
+  FunctionAlias.prototype.shouldRenderFull = function(parents) {
     if (parents.some(function(it) {
       return it instanceof Column;
     })) {
@@ -1070,14 +1086,6 @@ FunctionAlias = (function(_super) {
     return parents.some(function(node) {
       return node instanceof ColumnSet || node instanceof RelationSet;
     });
-  };
-
-  FunctionAlias.prototype.compile = function(dialect, parents) {
-    if (shouldRenderFull(parents)) {
-      return dialect.compile(this.obj) + " AS " + dialect.quote(this.alias);
-    } else {
-      return dialect.quote(this.alias);
-    }
   };
 
   return FunctionAlias;
@@ -1154,14 +1162,10 @@ RelationAlias = (function(_super) {
     return Relation.prototype.project.call(this, field);
   };
 
-  RelationAlias.prototype.compile = function(dialect, parents) {
-    if (parents.some(function(n) {
+  RelationAlias.prototype.shouldRenderFull = function(parents) {
+    return !parents.some(function(n) {
       return n instanceof Column;
-    })) {
-      return dialect.quote(this.alias);
-    } else {
-      return RelationAlias.__super__.compile.apply(this, arguments);
-    }
+    });
   };
 
   return RelationAlias;
@@ -1185,7 +1189,6 @@ Field = (function(_super) {
 })(Identifier);
 
 Column = (function(_super) {
-  var Alias;
 
   __extends(Column, _super);
 
@@ -1214,40 +1217,39 @@ Column = (function(_super) {
     return new Alias(this, alias);
   };
 
-  Column.Alias = Alias = (function(_super1) {
-
-    __extends(Alias, _super1);
-
-    function Alias() {
-      return Alias.__super__.constructor.apply(this, arguments);
-    }
-
-    /* An aliased :class:`nodes::Column`
-    */
-
-
-    Alias.prototype.rel = function() {
-      return this.obj.rel();
-    };
-
-    Alias.prototype.compile = function(dialect, parents) {
-      var node, _k, _len2;
-      for (_k = 0, _len2 = parents.length; _k < _len2; _k++) {
-        node = parents[_k];
-        if (node instanceof ColumnSet) {
-          return dialect.compile(this.obj) + " AS " + dialect.quote(this.alias);
-        }
-      }
-      return dialect.quote(this.alias);
-    };
-
-    return Alias;
-
-  })(AbstractAlias);
-
   return Column;
 
 })(FixedNodeSet);
+
+ColumnAlias = (function(_super) {
+
+  __extends(ColumnAlias, _super);
+
+  /* An aliased :class:`nodes::Column`
+  */
+
+
+  function ColumnAlias() {
+    return ColumnAlias.__super__.constructor.apply(this, arguments);
+  }
+
+  ColumnAlias.patch(Column);
+
+  ColumnAlias.prototype.rel = function() {
+    return this.obj.rel();
+  };
+
+  ColumnAlias.prototype.parens = false;
+
+  ColumnAlias.prototype.shouldRenderFull = function(parents) {
+    return parents.some(function(node) {
+      return node instanceof ColumnSet;
+    });
+  };
+
+  return ColumnAlias;
+
+})(AbstractAlias);
 
 Limit = (function(_super) {
 
@@ -1521,7 +1523,7 @@ Join = (function(_super) {
     _ref2 = nodes.slice(4);
     for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
       clause = _ref2[_k];
-      join.on(clause);
+      join.on(recur(clause));
     }
     return join;
   };
@@ -1715,6 +1717,56 @@ Ordering = (function(_super) {
   return Ordering;
 
 })(FixedNodeSet);
+
+SubQuery = (function(_super) {
+
+  __extends(SubQuery, _super);
+
+  function SubQuery(statement) {
+    this.statement = statement;
+    if (!(this.statement instanceof Statement)) {
+      throw new Error("" + this.statement + " is not a Statement");
+    }
+  }
+
+  SubQuery.prototype.compile = function(dialect) {
+    return this.statement.compile(dialect);
+  };
+
+  SubQuery.prototype.toJSON = function() {
+    return {
+      _type: this.constructor.name,
+      statement: this.statement
+    };
+  };
+
+  SubQuery.prototype.copy = function() {
+    return unmarshal(this.toJSON());
+  };
+
+  return SubQuery;
+
+})(Node);
+
+SubQueryAlias = (function(_super) {
+
+  __extends(SubQueryAlias, _super);
+
+  function SubQueryAlias() {
+    return SubQueryAlias.__super__.constructor.apply(this, arguments);
+  }
+
+  SubQueryAlias.patch(SubQuery);
+
+  SubQueryAlias.prototype.shouldRenderFull = function(parents) {
+    return !parents.slice(0, -1).some(function(node) {
+      return node instanceof AbstractAlias || node instanceof Binary;
+    });
+  };
+
+  return SubQueryAlias;
+
+})(AbstractAlias);
 
 Select = (function(_super) {
 
@@ -2087,6 +2139,7 @@ toRelation = function(it) {
     case Relation.Alias:
     case SqlFunction:
     case SqlFunction.Alias:
+    case SubQuery.Alias:
       return it;
     case String:
       return new Relation(it);
@@ -2341,6 +2394,7 @@ module.exports = {
   GroupBy: GroupBy,
   OrderBy: OrderBy,
   Ordering: Ordering,
+  SubQuery: SubQuery,
   Select: Select,
   Update: Update,
   UpdateSet: Update.UpdateSet,
@@ -2392,7 +2446,7 @@ merge = function(dest, src) {
 
 },{"./queries/select":13,"./unmarshal":16}],8:[function(require,module,exports){
 var process=require("__browserify_process");// Generated by CoffeeScript 1.4.0
-var BaseQuery, EventEmitter, assert, fluid, inspect, method, toRelation, _i, _len, _ref,
+var BaseQuery, EventEmitter, assert, fluid, inspect, method, nodes, _i, _len, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -2400,9 +2454,9 @@ inspect = require('util').inspect;
 
 EventEmitter = require('events').EventEmitter;
 
-toRelation = require('../nodes').toRelation;
-
 assert = require('assert');
+
+nodes = require('../nodes');
 
 module.exports = BaseQuery = (function(_super) {
 
@@ -2451,6 +2505,10 @@ module.exports = BaseQuery = (function(_super) {
     } else {
       return query;
     }
+  };
+
+  BaseQuery.prototype.as = function(alias) {
+    return new nodes.SubQuery(this.q).as(alias);
   };
 
   BaseQuery.prototype.visit = function(fn) {
@@ -3276,32 +3334,34 @@ module.exports = SUDQuery = (function(_super) {
         will be treated as a field and each value as a direction.
     */
 
-    var dir, direction, field, name, orderBy, orderings, rel, _i, _j, _len, _len1, _ref, _results;
+    var direction, name, orderBy, orderings, push, rel, _i, _len, _ref, _results,
+      _this = this;
     rel = this.defaultRel();
     orderings = [];
+    push = function(name, direction) {
+      var column;
+      if (typeof name === 'string') {
+        return column = _this.column(name);
+      } else if (name instanceof Node) {
+        return column = name;
+      } else {
+        throw new Error("Can't turn " + name + " into an ordering");
+      }
+    };
+    _results = [];
     for (_i = 0, _len = args.length; _i < _len; _i++) {
       orderBy = args[_i];
-      switch (orderBy.constructor) {
-        case String:
-          orderings.push(orderBy.split(' '));
-          break;
-        case Object:
-          for (name in orderBy) {
-            dir = orderBy[name];
-            orderings.push([name, dir]);
-          }
-          break;
-        default:
-          if (orderBy instanceof Node) {
-            this.q.orderBy.addNode(orderBy);
-          } else {
-            throw new Error("Can't turn " + orderBy + " into an ordering");
-          }
-      }
-    }
-    _results = [];
-    for (_j = 0, _len1 = orderings.length; _j < _len1; _j++) {
-      _ref = orderings[_j], field = _ref[0], direction = _ref[1];
+      _ref = (function() {
+        if (typeof orderBy === 'string') {
+          return orderBy.split(' ');
+        } else if (!orderBy || typeof orderBy !== 'object') {
+          throw new Error("Can't turn " + orderBy + " into an ordering");
+        } else if (Array.isArray(orderBy)) {
+          return orderBy;
+        } else {
+          return [orderBy, ''];
+        }
+      })(), name = _ref[0], direction = _ref[1];
       direction = (function() {
         switch ((direction || '').toLowerCase()) {
           case 'asc':
@@ -3316,7 +3376,17 @@ module.exports = SUDQuery = (function(_super) {
             throw new Error("Unsupported ordering direction " + direction);
         }
       })();
-      _results.push(this.q.orderBy.addNode(new Ordering(this.column(field), direction)));
+      if (!name) {
+        throw new Error("No name given for ordering " + orderBy);
+      } else if (typeof name === 'string') {
+        _results.push(this.q.orderBy.addNode(new Ordering(this.column(name), direction)));
+      } else if (name instanceof Node) {
+        _results.push(this.q.orderBy.addNode(new Ordering(name, direction)));
+      } else {
+        _results.push(this.order(Object.keys(name).map(function(n) {
+          return [n, name[n]];
+        })));
+      }
     }
     return _results;
   };

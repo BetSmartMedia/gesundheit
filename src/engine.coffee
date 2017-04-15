@@ -3,6 +3,7 @@ anyDB    = require('any-db')
 begin    = require('any-db-transaction')
 queries  = require('./queries/index')
 dialects = require('./dialects')
+EventEmitter = require('events').EventEmitter
 
 module.exports = -> Engine.create.apply Engine, arguments
 
